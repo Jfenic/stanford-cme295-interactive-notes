@@ -1,6 +1,10 @@
 # Cómo contribuir
 
+**Español** | [English](CONTRIBUTING.en.md)
+
 Gracias por ayudar a que estos apuntes sean más claros y útiles. Puedes colaborar con correcciones de contenido, ejemplos, referencias, nuevas clases o mejoras del sitio.
+
+Puedes escribir las incidencias y las descripciones de las pull requests en español o inglés.
 
 ## Informar de un error o proponer una idea
 
@@ -59,6 +63,12 @@ También puedes consultar la [guía web](guia.html).
 - Distingue los cálculos reales de las simplificaciones y los valores de demostración.
 - Incluye enlaces y atribución a las fuentes. Aporta explicaciones propias y evita incorporar materiales ajenos sin autorización.
 - Mantén la lectura en móvil y el uso con teclado; añade etiquetas comprensibles a los controles interactivos.
+
+## Mejorar las traducciones
+
+Los documentos en español usan la extensión `.md` y sus versiones en inglés, `.en.md`. Mantén los enlaces de idioma al principio de cada documento y enlaza a otros documentos en el mismo idioma cuando estén disponibles.
+
+Si cambias información compartida, actualiza ambas versiones para mantener coherentes el alcance, el estado de publicación y las limitaciones. Los nombres de los archivos de clases y los campos del catálogo se mantienen. Para traducir una clase al inglés, abre primero una incidencia para acordar cómo organizarla.
 
 ## Comprobar los cambios
 

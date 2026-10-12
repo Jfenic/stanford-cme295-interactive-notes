@@ -1,5 +1,7 @@
 # Créditos, fuentes y limitaciones
 
+**Español** | [English](CREDITOS.en.md)
+
 - **Curso en el que se inspiran los apuntes:** Stanford CME295 — *Transformers & Large Language Models*.
 - **Docentes citados en los apuntes:** Afshine Amidi y Shervin Amidi.
 - **Material de este repositorio:** apuntes comunitarios en español, organizados con asistencia de IA y pendientes de revisión progresiva.

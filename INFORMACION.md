@@ -1,10 +1,14 @@
 # Información del proyecto
 
+**Español** | [English](INFORMACION.en.md)
+
 ## Propósito
 
 Este proyecto nace de mis apuntes de estudio del curso Stanford CME295: Transformers & Large Language Models. El objetivo es facilitar el aprendizaje en español mediante explicaciones organizadas por clase, fórmulas y actividades interactivas, y mejorar el material con aportaciones de otras personas.
 
 Está pensado para quienes siguen el curso o quieren repasar sus conceptos. Los apuntes acompañan el estudio: conviene consultar las fuentes originales para profundizar y resolver dudas.
+
+La documentación está disponible en español e inglés. El contenido de las clases, las simulaciones y el sitio web están actualmente en español.
 
 ## Estado y alcance
 

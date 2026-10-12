@@ -1,10 +1,14 @@
 # Stanford CME295 · Apuntes interactivos en español
 
+**Español** | [English](README.en.md)
+
 Estoy creando estos apuntes mientras estudio **Stanford CME295: Transformers & Large Language Models**, para facilitar el aprendizaje de los conceptos de IA y compartir lo que voy entendiendo. El proyecto combina explicaciones, fórmulas y simulaciones que permiten explorar los temas a tu ritmo.
 
 Es un proyecto en construcción: puedes utilizarlo para repasar y contribuir con correcciones, ejemplos o mejoras en la experiencia de aprendizaje.
 
 > Material independiente y no oficial, elaborado con asistencia de IA. Puede contener errores y no está afiliado ni avalado por Stanford University o por los docentes del curso, Afshine Amidi y Shervin Amidi.
+
+La documentación del repositorio está disponible en español e inglés. Los apuntes, las simulaciones y el sitio web están actualmente en español.
 
 ## Empezar a aprender
 
