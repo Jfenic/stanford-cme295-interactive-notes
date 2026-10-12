@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guía para añadir clases · CME295</title>
+  <link rel="stylesheet" href="assets/site.css">
+  <style>
+    .guide {max-width:850px;margin:45px auto 90px;padding:0 18px}
+    .guide h1 {font-size:clamp(2rem,4vw,3.2rem)}
+    .guide h2 {margin:32px 0 12px}
+    .guide p,.guide li {color:var(--muted)}
+    .guide li {margin-bottom:12px}
+    .guide code {font-family:ui-monospace,Consolas,monospace;color:#a5d8ff;background:#15223a;padding:3px 6px;border-radius:6px}
+    .guide pre {overflow:auto;padding:18px;border:1px solid var(--line);border-radius:12px;background:#121d30;line-height:1.5}
+    .guide pre code {background:none;padding:0}
+  </style>
+</head>
+<body>
+<header class="site-header"><div class="wrap header-row"><a class="brand" href="index.html"><span class="mark">T</span><span>Transformers & LLMs / CME295</span></a><a class="header-link" href="index.html">← Volver al índice</a></div></header>
+<main class="guide">
+  <p class="eyebrow">Guía de mantenimiento</p>
+  <h1>Añadir apuntes nuevos es muy sencillo.</h1>
+  <p>La portada se actualiza desde un pequeño catálogo. No hace falta modificar su diseño ni instalar dependencias.</p>
+  <h2>1 · Sube el HTML</h2>
+  <p>Guarda los nuevos apuntes como <code>clases/clase-02.html</code>. Si partes de un archivo de la IA, puedes usarlo completo. Añade un enlace a la portada:</p>
+  <pre><code>&lt;a href="../index.html"&gt;← Volver al índice&lt;/a&gt;</code></pre>
+  <h2>2 · Actualiza el catálogo</h2>
+  <p>En <code>data/clases.js</code>, localiza la clase 2 y cambia su entrada por algo como esto:</p>
+  <pre><code>{
+  numero: 2,
+  titulo: 'Título de la segunda clase',
+  descripcion: 'Resumen breve de la clase.',
+  temas: ['Tema A', 'Tema B'],
+  archivo: 'clases/clase-02.html',
+  publicada: true,
+  laboratorio: false
+},</code></pre>
+  <p>Activa <code>publicada: true</code> solo cuando el archivo HTML esté subido, para evitar enlaces rotos.</p>
+  <h2>3 · Guarda los cambios en GitHub</h2>
+  <p>Sube los dos archivos modificados (el HTML y <code>data/clases.js</code>) a la rama desde la que publicas GitHub Pages. En cuanto se despliegue, aparecerá la nueva clase en la portada.</p>
+  <h2>Para comenzar desde cero</h2>
+  <p>En el archivo <code>README.md</code> del repositorio están los pasos completos de publicación con GitHub Pages. También puedes copiar <code>plantillas/plantilla-clase.html</code> para escribir una clase desde cero.</p>
+  <p>Estos apuntes se generan con ayuda de IA y deben revisarse con fuentes originales. El proyecto no está afiliado a Stanford University.</p>
+</main>
+<footer><div class="wrap"><span>Apuntes no oficiales · CME295</span><a href="index.html">Regresar a las clases</a></div></footer>
+</body>
+</html>

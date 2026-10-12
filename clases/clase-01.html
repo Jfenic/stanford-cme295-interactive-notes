@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Apuntes comunitarios en español de la primera clase de Stanford CME295 sobre Transformers y LLMs, con ejemplos interactivos y fórmulas.">
+    <title>Stanford CME295 · Transformers & LLMs (Lecture 1) — Guía & Laboratorio Interactivo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        stanford: {
+                            cardinal: '#8C1515',
+                            dark: '#580c0c',
+                            black: '#2e2d29'
+                        },
+                        slate: {
+                            850: '#151f32',
+                            950: '#070d19'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['Fira Code', 'Menlo', 'Monaco', 'Courier New', 'monospace']
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" 
+            ></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .glow-card {
+            box-shadow: 0 0 25px -5px rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .glow-accent {
+            box-shadow: 0 0 20px -3px rgba(99, 102, 241, 0.3);
+        }
+        .heat-cell {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .clock-hand {
+            transform-origin: 50% 100%;
+            transition: transform 0.1s linear;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-indigo-500 selection:text-white font-sans antialiased">
+
+    <div class="bg-slate-900 text-slate-300 border-b border-slate-800 text-sm px-4 py-2">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <a href="../index.html" class="text-sky-300 hover:text-white underline underline-offset-4">← Volver al índice de clases</a>
+            <span class="text-xs">Apuntes comunitarios no oficiales · Elaborados con asistencia de IA</span>
+        </div>
+    </div>
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-950/85 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="flex h-3 w-3 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                </span>
+                <div>
+                    <span class="text-xs font-semibold tracking-wider uppercase text-red-500 font-mono">Stanford CME295</span>
+                    <h1 class="text-base sm:text-lg font-bold text-slate-100 tracking-tight leading-none">
+                        Transformers & Large Language Models
+                    </h1>
+                </div>
+            </div>
+            
+            <nav class="hidden md:flex items-center space-x-1 text-sm font-medium">
+                <button onclick="switchTab('transcription')" id="tab-btn-transcription" class="px-4 py-2 rounded-lg text-white bg-indigo-600 transition shadow-sm font-semibold">
+                    Apuntes de la clase
+                </button>
+                <button onclick="switchTab('lab')" id="tab-btn-lab" class="px-4 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                    Laboratorio Interactivo
+                </button>
+                <button onclick="switchTab('cheatsheet')" id="tab-btn-cheatsheet" class="px-4 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition">
+                    Cheat Sheet QKV
+                </button>
+            </nav>
+
+            <div class="flex items-center space-x-2">
+                <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-mono border border-slate-700 hidden sm:inline-block">
+                    Afshine & Shervin Amidi
+                </span>
+            </div>
+        </div>
+
+        <!-- Mobile subnav -->
+        <div class="md:hidden flex border-t border-slate-800 px-4 py-2 bg-slate-900 justify-around text-xs font-medium">
+            <button onclick="switchTab('transcription')" class="text-indigo-400 py-1 font-semibold">Apuntes</button>
+            <button onclick="switchTab('lab')" class="text-slate-400 py-1">Laboratorio (5)</button>
+            <button onclick="switchTab('cheatsheet')" class="text-slate-400 py-1">Cheat Sheet</button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+        <!-- ======================================================== -->
+        <!-- TAB 1: GUÍA Y TRANSCRIPCIÓN ESTRUCTURADA DE LA CLASE      -->
+        <!-- ======================================================== -->
+        <section id="view-transcription" class="space-y-8">
+            <!-- Header Hero Banner -->
+            <div class="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-850 to-indigo-950/60 p-6 sm:p-8 border border-slate-800 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="max-w-3xl space-y-3 relative z-10">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-mono">
+                        <span>Clase 1 de 10 · Stanford Institute for Computational & Mathematical Engineering</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                        De RNNs a la Auto-Atención y la Revolución de los Transformers
+                    </h2>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        Guía de estudio estructurada y cronológica basada en la sesión impartida por <strong>Afshine Amidi</strong> y <strong>Shervin Amidi</strong>. Explora paso a paso los hitos teóricos, las fórmulas matemáticas, los límites del estado del arte anterior y la célebre frase guía: <code class="text-emerald-400 bg-slate-900 px-2 py-0.5 rounded font-mono">"a cute teddy bear is reading"</code>.
+                    </p>
+                </div>
+
+                <!-- Real-time Filter/Search Bar -->
+                <div class="mt-6 flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-800/80">
+                    <div class="relative flex-1">
+                        <input type="text" id="lecture-search-input" onkeyup="filterLectureNotes()" 
+                            placeholder="Buscar en los apuntes (ej: BPE, QKV, reloj, gradiente, softmax, residual)..." 
+                            class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-4 py-2.5 pl-10 text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="expandAllTimeline(true)" class="px-3.5 py-2 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition border border-slate-700">
+                            Expandir todo
+                        </button>
+                        <button onclick="expandAllTimeline(false)" class="px-3.5 py-2 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition border border-slate-700">
+                            Colapsar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="timeline-container" class="space-y-6 relative before:absolute before:inset-0 before:left-5 before:w-0.5 before:bg-slate-800">
+                
+                <!-- Item 1: Intro -->
+                <div class="timeline-item relative pl-12 group" data-keywords="presentacion afshine shervin amidi objetivos curso prerrequisitos stanford cme295 introduccion">
+                    <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-red-500 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
+                    <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-0')">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 font-semibold">[00:00:06]</span>
+                                <h3 class="font-bold text-base text-slate-100">Presentación de la cátedra, motivación y objetivos</h3>
+                            </div>
+                            <span class="text-xs text-indigo-400 font-mono">Ver detalle ▼</span>
+                        </div>
+                        <div id="item-0" class="mt-3 text-sm text-slate-300 space-y-2 border-t border-slate-800/80 pt-3">
+                            <p><strong>Expositores:</strong> Afshine Amidi (Google, Stanford) y Shervin Amidi (Google, Stanford).</p>
+                            <p>Afshine inicia la lección enmarcando el salto que representó pasar del aprendizaje supervisado tradicional a los Modelos de Lenguaje Masivos (LLMs). Explica que el objetivo de CME295 no es tratar a los LLMs como una "caja negra" con APIs, sino construir y deconstruir cada componente matemático y matricial que hace posible la comprensión del contexto humano.</p>
+                            <p class="text-xs text-slate-400 font-mono bg-slate-950 p-2.5 rounded border border-slate-800">Prerrequisitos clave: Álgebra lineal (multiplicación de tensores, proyecciones), probabilidad básica (distribuciones de probabilidad categóricas) y backpropagation.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 2: Historia -->
+                <div class="timeline-item relative pl-12 group" data-keywords="evolucion historica 2010s rnns lstms 2017 attention is all you need 2022 chatgpt 2026 agentes codigo">
+                    <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-indigo-500 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
+                    <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-1')">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800 font-semibold">[00:12:00]</span>
+                                <h3 class="font-bold text-base text-slate-100">Evolución Histórica: De modelos específicos a modelos de propósito general</h3>
+                            </div>
+                            <span class="text-xs text-indigo-400 font-mono">Ver detalle ▼</span>
+                        </div>
+                        <div id="item-1" class="mt-3 text-sm text-slate-300 space-y-2 border-t border-slate-800/80 pt-3">
+                            <ul class="list-disc list-inside space-y-1.5 text-slate-300">
+                                <li><strong class="text-slate-100">Década de 2010:</strong> Arquitecturas fragmentadas. Si querías análisis de sentimientos se entrenaba un LSTM específico; si querías traducción automática, un Seq2Seq; si querías reconocimiento de entidades (NER), un Bi-LSTM con CRF. No había generalización cruzada.</li>
+                                <li><strong class="text-slate-100">Junio 2017:</strong> Publicación de <em>"Attention Is All You Need"</em> (Vaswani et al., Google Brain / Google Research). Eliminación total de recurrencia y convolución en favor de auto-atención paralelizable en GPU.</li>
+                                <li><strong class="text-slate-100">2018 - 2020:</strong> La era del Pre-entrenamiento + Fine-tuning (BERT de Google para codificación bidireccional; GPT-2 y GPT-3 de OpenAI para generación autorregresiva causal).</li>
+                                <li><strong class="text-slate-100">2022 - 2026:</strong> RLHF (Aprendizaje por refuerzo con feedback humano), ChatGPT, y la actual frontera de razonamiento paso a paso, modelos multimodales y agentes autónomos de código.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 3: Tokenización -->
+                <div class="timeline-item relative pl-12 group" data-keywords="tokenizacion palabra caracter subpalabras bpe byte pair encoding vocabulario tokens">
+                    <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-emerald-500 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
+                    <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-2')">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-semibold">[00:17:06]</span>
+                                <h3 class="font-bold text-base text-slate-100">Tokenización: El puente entre el lenguaje natural y los números</h3>
+                            </div>
+                            <span class="text-xs text-emerald-400 font-mono">Ver detalle ▼</span>
+                        </div>
+                        <div id="item-2" class="mt-3 text-sm text-slate-300 space-y-3 border-t border-slate-800/80 pt-3">
+                            <p>Los computadores no operan sobre cadenas de texto, sino sobre matrices. Shervin Amidi ilustra los tres paradigmas de división del texto:</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <h4 class="font-semibold text-emerald-400 text-xs uppercase font-mono">1. Por Palabra (Word-Level)</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Vocabulario gigante (>500k palabras). Cualquier error tipográfico o palabra nueva genera tokens fuera de vocabulario (OOV).</p>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <h4 class="font-semibold text-indigo-400 text-xs uppercase font-mono">2. Por Carácter (Char-Level)</h4>
+                                    <p class="text-xs text-slate-400 mt-1">El tamaño depende del alfabeto: ASCII tiene 128 caracteres y Unicode incluye muchos más. Sin embargo, las secuencias se vuelven larguísimas y se destruye el significado semántico inmediato.</p>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <h4 class="font-semibold text-amber-400 text-xs uppercase font-mono">3. Subpalabras (BPE / WordPiece)</h4>
+                                    <p class="text-xs text-slate-400 mt-1">El estándar de oro de los LLMs. Une de forma iterativa los pares de caracteres más frecuentes. Conserva raíces de palabras ("play", "ing", "ed") y vocabulario manejable (~32k a ~100k).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 4: Tokens especiales -->
+                <div class="timeline-item relative pl-12 group" data-keywords="tokens especiales unk bos eos pad cls sep padding secuencia">
+                    <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-amber-500 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
+                    <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-3')">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800 font-semibold">[00:31:50]</span>
+                                <h3 class="font-bold text-base text-slate-100">Tokens Especiales: Señalización gramatical del tensor</h3>
+                            </div>
+                            <span class="text-xs text-amber-400 font-mono">Ver detalle ▼</span>
+                        </div>
+                        <div id="item-3" class="mt-3 text-sm text-slate-300 space-y-2 border-t border-slate-800/80 pt-3">
+                            <p>Para procesar lotes (batches) de oraciones de longitudes desiguales y coordinar el inicio y fin de la generación, se introducen tokens de control sintáctico:</p>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-xs">
+                                <div class="bg-slate-950 p-2.5 rounded border border-slate-800">
+                                    <span class="text-red-400 font-bold">&lt;UNK&gt;</span>
+                                    <p class="text-slate-400 mt-1">Desconocido (Out-of-vocab fallback)</p>
+                                </div>
+                                <div class="bg-slate-950 p-2.5 rounded border border-slate-800">
+                                    <span class="text-emerald-400 font-bold">&lt;BOS&gt; / &lt;s&gt;</span>
+                                    <p class="text-slate-400 mt-1">Inicio de secuencia (Begin of sequence)</p>
+                                </div>
+                                <div class="bg-slate-950 p-2.5 rounded border border-slate-800">
+                                    <span class="text-blue-400 font-bold">&lt;EOS&gt; / &lt;/s&gt;</span>
+                                    <p class="text-slate-400 mt-1">Fin de secuencia (End of sequence)</p>
+                                </div>
+                                <div class="bg-slate-950 p-2.5 rounded border border-slate-800">
+                                    <span class="text-purple-400 font-bold">&lt;PAD&gt;</span>
+                                    <p class="text-slate-400 mt-1">Relleno nulo para igualar longitudes en tensor</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 5: Embeddings & Word2Vec -->
+                <div class="timeline-item relative pl-12 group" data-keywords="representaciones vectoriales one hot word2vec cbow skip gram polisemia bank cute orden palabras">
+                    <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-cyan-500 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
+                    <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-4')">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-semibold">[00:37:52]</span>
+                                <h3 class="font-bold text-base text-slate-100">De One-Hot a Word2Vec: El dilema de la polisemia y el orden</h3>
+                            </div>
+                            <span class="text-xs text-cyan-400 font-mono">Ver detalle ▼</span>
+                        </div>
+                        <div id="item-4" class="mt-3 text-sm text-slate-300 space-y-2 border-t border-slate-800/80 pt-3">
+                            <p>Afshine explica la evolución geométrica del texto:</p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li><strong>One-Hot Vectors:</strong> Vectores ortogonales de longitud $|V|$. No existe noción de similitud angular ($\vec{u} \cdot \vec{v} = 0$ para cualquier par).</li>
+                                <li><strong>Word2Vec (2013):</strong> Proyecta cada palabra en $\mathbb{R}^d$ ($d \approx 300$). Palabras afines se agrupan por distancia coseno.</li>
+                            </ul>
+                            <div class="p-3 bg-red-950/30 border border-red-900/50 rounded-lg text-xs space-y-1.5 mt-2">
+                                <strong class="text-red-300 font-semibold uppercase font-mono">Limitaciones de embeddings estáticos usados sin contextualización:</strong>
+                                <p><strong>1. Polisemia:</strong> La palabra <code class="text-amber-300">"bank"</code> tiene el mismo vector idéntico en <em>"river bank"</em> (orilla de río) que en <em>"investment bank"</em> (entidad bancaria). No hay dinamismo contextual.</p>
+                                <p><strong>2. Ceguera al orden sintáctico:</strong> Un modelo basado en bolsa de embeddings estáticos considera idénticas las oraciones <em>"El niño abraza al oso"</em> y <em>"El oso abraza al niño"</em>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 6: Cuello de botella RNN -->
+                <div class="timeline-item relative pl-12 group" data-keywords="redes recurrentes rnn lstm cuello de botella estado oculto gradiente largo alcance">
+                    <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-violet-500 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
+                    <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-5')">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-violet-950 text-violet-400 border border-violet-800 font-semibold">[00:48:34]</span>
+                                <h3 class="font-bold text-base text-slate-100">Redes Recurrentes (RNN/LSTM) y el Cuello de Botella del Estado Oculto</h3>
+                            </div>
+                            <span class="text-xs text-violet-400 font-mono">Ver detalle ▼</span>
+                        </div>
+                        <div id="item-5" class="mt-3 text-sm text-slate-300 space-y-2 border-t border-slate-800/80 pt-3">
+                            <p>En las arquitecturas recurrentes tradicionales, el procesamiento es estrictamente secuencial:</p>
+                            <div class="bg-slate-950 p-2.5 rounded font-mono text-xs text-emerald-400 border border-slate-800 text-center">
+                                $h_t = \tanh(W x_t + U h_{t-1} + b)$
+                            </div>
+                            <p>Shervin Amidi detalla por qué la industria tuvo que abandonarlas:</p>
+                            <ol class="list-decimal list-inside space-y-1 text-slate-300">
+                                <li><strong>Incapacidad de paralelismo en GPU:</strong> Para computar $h_t$ debes forzosamente esperar a haber terminado $h_{t-1}$. Entrenar en billones de tokens tomaría siglos.</li>
+                                <li><strong>Cuello de botella de información:</strong> Todo el contenido de un párrafo de 500 palabras debe comprimirse a la fuerza en un único vector final $h_T$ de tamaño fijo.</li>
+                                <li><strong>Desvanecimiento del gradiente (Vanishing Gradient):</strong> La información de los primeros tokens se atenúa exponencialmente con la distancia.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 7: Self-Attention & QKV -->
+                <div class="timeline-item relative pl-12 group" data-keywords="mecanismo de atencion self-attention queries keys values formula softmax matriz proyeccion">
+                    <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-blue-500 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
+                    <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-6')">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800 font-semibold">[00:59:56]</span>
+                                <h3 class="font-bold text-base text-slate-100">La Revolución de Auto-Atención: Queries, Keys y Values</h3>
+                            </div>
+                            <span class="text-xs text-blue-400 font-mono">Ver detalle ▼</span>
+                        </div>
+                        <div id="item-6" class="mt-3 text-sm text-slate-300 space-y-3 border-t border-slate-800/80 pt-3">
+                            <p>En lugar de pasar un vector de relevos secuencial, la auto-atención crea conexiones directas entre cada par de palabras. Shervin dibuja en la pizarra la analogía de un sistema de base de datos o motor de búsqueda:</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 font-mono text-xs">
+                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <span class="text-blue-400 font-bold block mb-1">Query (Q = X · W_Q)</span>
+                                    <p class="text-slate-400">¿Qué estoy buscando? El criterio o pregunta que emite el token actual.</p>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <span class="text-indigo-400 font-bold block mb-1">Key (K = X · W_K)</span>
+                                    <p class="text-slate-400">¿Qué etiqueta o contenido tengo? Describe de qué trata cada token para emparejarse con el Query.</p>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <span class="text-emerald-400 font-bold block mb-1">Value (V = X · W_V)</span>
+                                    <p class="text-slate-400">¿Qué contenido informativo transmito? La información que se ponderará y transferirá al estado final.</p>
+                                </div>
+                            </div>
+
+                            <div class="p-3 bg-indigo-950/40 border border-indigo-900 rounded-lg text-center">
+                                <span class="text-xs uppercase font-mono text-indigo-300 font-semibold block mb-1">La Ecuación Fundamental del Transformer</span>
+                                <div class="text-base sm:text-lg font-mono text-yellow-300">
+                                    $Attention(Q, K, V) = softmax\left(\frac{Q K^T}{\sqrt{d_k}}\right) V$
+                                </div>
+                                <p class="text-xs text-slate-400 mt-2">
+                                    <strong>¿Por qué dividir por $\sqrt{d_k}$?</strong> En dimensiones altas ($d_k = 64$ o $128$), el producto punto $Q K^T$ alcanza magnitudes enormes. Esto empuja la función Softmax a regiones de gradiente casi plano (saturación), congelando el aprendizaje. El factor de escala preserva varianza unitaria.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 8: Positional Encodings & Reloj -->
+                <div class="timeline-item relative pl-12 group" data-keywords="arquitectura transformer encoder positional encodings analogia reloj manecillas horas minutos segundos seno coseno decoder cross-attention">
+                    <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-pink-500 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
+                    <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-7')">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-pink-950 text-pink-400 border border-pink-800 font-semibold">[01:12:00]</span>
+                                <h3 class="font-bold text-base text-slate-100">Embeddings Posicionales: La Analogía del Reloj de Afshine</h3>
+                            </div>
+                            <span class="text-xs text-pink-400 font-mono">Ver detalle ▼</span>
+                        </div>
+                        <div id="item-7" class="mt-3 text-sm text-slate-300 space-y-3 border-t border-slate-800/80 pt-3">
+                            <p>Dado que la multiplicación matricial de la atención opera simultáneamente sobre todos los tokens, la autoatención sin información posicional es <em>equivariante a las permutaciones</em>: no tiene idea de qué palabra vino primero y cuál después. Para resolverlo sin recurrencia, sumamos un vector de posición:</p>
+                            <div class="bg-slate-950 p-2.5 rounded font-mono text-xs text-pink-400 border border-slate-800 text-center">
+                                $\text{Input Final} = \text{Embedding(token)} + \text{PositionalEncoding(pos)}$
+                            </div>
+                            
+                            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+                                <h4 class="font-semibold text-pink-300 text-xs uppercase font-mono">La Analogía de las Manecillas del Reloj (Clock Analogy)</h4>
+                                <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                                    Afshine explica que codificar la posición como un único número entero escalado ($pos / L$) no funciona bien porque la distancia relativa cambia con el largo del texto. En cambio, idearon un sistema de <strong>frecuencias sinusoidales</strong>:
+                                </p>
+                                <ul class="list-disc list-inside text-xs text-slate-400 space-y-1 pl-1">
+                                    <li><strong>El segundero (Frecuencia alta):</strong> Gira rápido, completando una revolución a cada segundo. Corresponde a las primeras dimensiones ($i=0, 1$).</li>
+                                    <li><strong>El minutero (Frecuencia media):</strong> Avanza de forma constante y más pausada.</li>
+                                    <li><strong>La manecilla de las horas (Frecuencia baja):</strong> Apenas se desplaza, reconociendo el gran lapso temporal. Corresponde a las dimensiones altas del vector.</li>
+                                </ul>
+                                <p class="text-xs text-slate-300">
+                                    Gracias a las identidades trigonométricas de suma de ángulos, $PE_{pos + k}$ puede representarse como una transformación lineal sobre $PE_{pos}$, permitiendo al modelo aprender distancias relativas de forma natural.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 9: Trucos Arquitecturales -->
+                <div class="timeline-item relative pl-12 group" data-keywords="trucos arquitecturales conexiones residuales layer normalization multi-head attention dropout label smoothing">
+                    <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-teal-500 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
+                    <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-8')">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-teal-950 text-teal-400 border border-teal-800 font-semibold">[01:21:50]</span>
+                                <h3 class="font-bold text-base text-slate-100">Trucos de Arquitectura: Estabilidad y Flujo del Gradiente</h3>
+                            </div>
+                            <span class="text-xs text-teal-400 font-mono">Ver detalle ▼</span>
+                        </div>
+                        <div id="item-8" class="mt-3 text-sm text-slate-300 space-y-2 border-t border-slate-800/80 pt-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <strong class="text-teal-400 font-mono block">Conexiones Residuales (Skip Connections)</strong>
+                                    <p class="text-slate-400 mt-1">Calcular $x + \text{Sublayer}(x)$. En el paso hacia atrás (backprop), el gradiente fluye como $\frac{\partial}{\partial x}(x + f(x)) = 1 + f'(x)$, creando una ruta alternativa que puede facilitar la propagación del gradiente.</p>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <strong class="text-teal-400 font-mono block">Layer Normalization</strong>
+                                    <p class="text-slate-400 mt-1">A diferencia de BatchNorm (que normaliza a lo largo del batch y falla con secuencias de largo variable), LayerNorm normaliza a lo largo de las características de cada token individual de forma independiente.</p>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <strong class="text-teal-400 font-mono block">Multi-Head Attention (MHA)</strong>
+                                    <p class="text-slate-400 mt-1">Dividir $d_{model}$ en $h$ cabezas independientes ($h=8$). Las cabezas pueden aprender patrones diferentes (sintaxis, correferencias u otras relaciones), aunque no existe una especialización garantizada para cada una.</p>
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                                    <strong class="text-teal-400 font-mono block">Label Smoothing</strong>
+                                    <p class="text-slate-400 mt-1">Evita que la red se vuelva demasiado confiada con probabilidades duras $1.0$. Distribuye un pequeño $\epsilon$ entre las clases erróneas para mejorar la generalización y calibrar probabilidades.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 10: Demostración Shervin -->
+                <div class="timeline-item relative pl-12 group" data-keywords="demostracion practica shervin amidi dimensiones matrices flujo a cute teddy bear is reading traduccion frances">
+                    <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-emerald-400 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
+                    <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-9')">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-semibold">[01:27:42]</span>
+                                <h3 class="font-bold text-base text-slate-100">Traza Matricial Completa: "A cute teddy bear is reading"</h3>
+                            </div>
+                            <span class="text-xs text-emerald-400 font-mono">Ver detalle ▼</span>
+                        </div>
+                        <div id="item-9" class="mt-3 text-sm text-slate-300 space-y-2 border-t border-slate-800/80 pt-3">
+                            <p>Shervin Amidi concluye la clase unificando todas las dimensiones en la pizarra para una secuencia de $T = 6$ tokens:</p>
+                            <div class="bg-slate-950 p-3 rounded-lg font-mono text-xs text-slate-300 border border-slate-800 overflow-x-auto space-y-1">
+                                <div><span class="text-indigo-400">Tokens entrada:</span> ["a", "cute", "teddy", "bear", "is", "reading"] -> Forma: (T=6)</div>
+                                <div><span class="text-indigo-400">Embedding + Pos:</span> $X \in \mathbb{R}^{6 \times 512}$</div>
+                                <div><span class="text-blue-400">Proyección Q, K, V:</span> $Q = X W_Q (6 \times 64), \quad K = X W_K (6 \times 64), \quad V = X W_V (6 \times 64)$</div>
+                                <div><span class="text-amber-400">Matriz de Atención:</span> $Q K^T \in \mathbb{R}^{6 \times 6} \implies \text{Softmax}\left(\frac{Q K^T}{\sqrt{64}}\right) \in \mathbb{R}^{6 \times 6}$</div>
+                                <div><span class="text-emerald-400">Salida Contextualizada:</span> $\text{Score} \cdot V \in \mathbb{R}^{6 \times 64} \implies \text{Concatenar 8 cabezas} \to \mathbb{R}^{6 \times 512}$</div>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                En el decodificador, la máscara causal previene que el token francés que se está prediciendo atienda a palabras del futuro, mientras que la <strong>Cross-Attention</strong> permite que las consultas del francés miren hacia las representaciones de memoria generadas por el codificador en inglés.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- TAB 2: LABORATORIO INTERACTIVO (5 MÓDULOS ACTIVOS)        -->
+        <!-- ======================================================== -->
+        <section id="view-lab" class="hidden space-y-12">
+            
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-3">
+                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-mono font-semibold">
+                    Simulaciones didácticas interactivas
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                    Experimentación Directa de Conceptos de la Clase
+                </h2>
+                <p class="text-slate-400 text-sm sm:text-base">
+                    Explora representaciones visuales y simplificadas de conceptos de la clase. No se ejecuta un LLM real ni se calculan pesos de atención aprendidos.
+                </p>
+            </div>
+
+            <!-- MÓDULO 1: TOKENIZADOR INTERACTIVO EN VIVO -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 glow-card">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-6 h-6 rounded bg-indigo-500/20 text-indigo-400 font-mono font-bold text-xs flex items-center justify-center border border-indigo-500/40">1</span>
+                            <h3 class="text-lg font-bold text-white">Tokenizador en Vivo (Word vs Char vs BPE)</h3>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-400 mt-1">Compara segmentaciones ilustrativas. El modo «BPE» aplica reglas manuales (no un tokenizador real) y los ID son de demostración.</p>
+                    </div>
+
+                    <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs font-medium self-start">
+                        <button onclick="setTokenizerMode('word')" id="tok-mode-word" class="px-3 py-1.5 rounded-md bg-indigo-600 text-white font-semibold transition">Palabras</button>
+                        <button onclick="setTokenizerMode('subword')" id="tok-mode-subword" class="px-3 py-1.5 rounded-md text-slate-400 hover:text-white transition">BPE Subpalabras</button>
+                        <button onclick="setTokenizerMode('char')" id="tok-mode-char" class="px-3 py-1.5 rounded-md text-slate-400 hover:text-white transition">Caracteres</button>
+                    </div>
+                </div>
+
+                <!-- Input box -->
+                <div class="space-y-2">
+                    <label class="text-xs font-mono text-slate-400 uppercase tracking-wider flex justify-between">
+                        <span>Texto de entrada (editable):</span>
+                        <button onclick="resetTokenizerDefault()" class="text-indigo-400 hover:underline lowercase">Restablecer a frase de clase</button>
+                    </label>
+                    <input type="text" id="tokenizer-input" value="a cute teddy bear is reading" oninput="runTokenizer()"
+                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-100 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Special Tokens Switches -->
+                <div class="flex flex-wrap items-center gap-4 text-xs font-mono bg-slate-950/70 p-3.5 rounded-xl border border-slate-800">
+                    <span class="text-slate-400 uppercase font-semibold">Tokens especiales:</span>
+                    <label class="flex items-center gap-2 cursor-pointer text-emerald-400">
+                        <input type="checkbox" id="tok-check-bos" checked onchange="runTokenizer()" class="rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-0">
+                        <span>&lt;BOS&gt;</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer text-blue-400">
+                        <input type="checkbox" id="tok-check-eos" checked onchange="runTokenizer()" class="rounded bg-slate-900 border-slate-700 text-blue-500 focus:ring-0">
+                        <span>&lt;EOS&gt;</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer text-purple-400">
+                        <input type="checkbox" id="tok-check-pad" onchange="runTokenizer()" class="rounded bg-slate-900 border-slate-700 text-purple-500 focus:ring-0">
+                        <span>&lt;PAD&gt; (Hasta 12 tokens)</span>
+                    </label>
+                </div>
+
+                <!-- Token Chips Output Display -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-xs text-slate-400 font-mono">
+                        <span>Representación de Tensores en Memoria:</span>
+                        <span id="tok-stats" class="text-slate-300">Tokens: 8 | Caracteres: 28</span>
+                    </div>
+                    <div id="tokenizer-output" class="min-h-[90px] p-4 bg-slate-950 rounded-xl border border-slate-800 flex flex-wrap gap-2.5 items-center">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 2: SIMULADOR VISUAL DE SELF-ATTENTION (Q, K, V) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 glow-card">
+                <div class="border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded bg-blue-500/20 text-blue-400 font-mono font-bold text-xs flex items-center justify-center border border-blue-500/40">2</span>
+                        <h3 class="text-lg font-bold text-white">Simulador de Auto-Atención y Matriz Softmax (Q · K^T / √d_k)</h3>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">
+                        Selecciona un token como <strong>Query (consulta)</strong> y observa los pesos de atención de ejemplo. Los valores de la matriz son ilustrativos y predefinidos, no se calculan a partir de Q·Kᵀ.
+                    </p>
+                </div>
+
+                <!-- Words Selector Row -->
+                <div class="space-y-2">
+                    <span class="text-xs font-mono text-slate-400 uppercase">1. Selecciona el Token Activo (Query):</span>
+                    <div class="flex flex-wrap gap-2.5" id="attention-query-selector">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Attention Breakdown View -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Left: Interactive Bars for Selected Query -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="text-xs font-mono text-blue-400 uppercase font-semibold">Distribución de Atención para: <span id="current-query-label" class="text-white font-bold underline font-sans text-sm">cute</span></h4>
+                            <span class="text-xs font-mono text-slate-500">Softmax ponderado</span>
+                        </div>
+                        <div id="attention-bars-list" class="space-y-3">
+                            <!-- Injected by JS -->
+                        </div>
+                        <p class="text-xs text-slate-400 italic bg-slate-900/60 p-2.5 rounded border border-slate-800/80" id="attention-explanation-text">
+                            "cute" asigna su mayor atención al sustantivo que modifica ("teddy" y "bear"), permitiendo que el embedding contextual final herede semántica del sujeto.
+                        </p>
+                    </div>
+
+                    <!-- Right: Full N x N Attention Heatmap -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3 flex flex-col justify-between">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="text-xs font-mono text-emerald-400 uppercase font-semibold">Matriz Completa de Auto-Atención (N × N)</h4>
+                            <span class="text-xs font-mono text-slate-500">6x6 Tokens</span>
+                        </div>
+                        <div class="overflow-x-auto py-2">
+                            <div id="attention-heatmap" class="grid grid-cols-7 gap-1.5 min-w-[340px] text-center font-mono text-xs">
+                                <!-- Heatmap grid injected by JS -->
+                            </div>
+                        </div>
+                        <div class="text-xs text-slate-400 flex items-center justify-between border-t border-slate-800/80 pt-2 font-mono">
+                            <span>0.00 (Sin atención)</span>
+                            <div class="w-32 h-2.5 rounded bg-gradient-to-r from-slate-800 via-indigo-600 to-emerald-400"></div>
+                            <span class="text-emerald-400">1.00 (Máxima)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 3: VISUALIZADOR DE EMBEDDINGS POSICIONALES (RELOJ DE AFSHINE) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 glow-card">
+                <div class="border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded bg-pink-500/20 text-pink-400 font-mono font-bold text-xs flex items-center justify-center border border-pink-500/40">3</span>
+                        <h3 class="text-lg font-bold text-white">Embeddings Posicionales: Analogía del Reloj Sinusoidal</h3>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">
+                        La analogía del reloj ilustra frecuencias sinusoidales distintas: $\omega_i = 1 / 10000^{2i/d}$. Las velocidades que muestra este reloj son didácticas y no corresponden a dimensiones exactas del embedding original.
+                    </p>
+                </div>
+
+                <!-- Position Slider Control -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center text-xs font-mono">
+                        <label for="pos-slider" class="text-slate-300 font-semibold uppercase">
+                            Posición en la Secuencia (<span class="text-pink-400">pos = <span id="pos-display-val">3</span></span>):
+                        </label>
+                        <span id="pos-word-val" class="px-2.5 py-0.5 rounded bg-pink-950 text-pink-300 font-sans font-bold border border-pink-800">
+                            Token: "bear"
+                        </span>
+                    </div>
+                    <input type="range" id="pos-slider" min="0" max="15" value="3" oninput="updatePositionalClock()"
+                        class="w-full accent-pink-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                    <div class="flex justify-between text-slate-400 text-xs font-mono">
+                        <span>pos: 0 ("a")</span>
+                        <span>pos: 5 ("reading")</span>
+                        <span>pos: 10</span>
+                        <span>pos: 15</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <!-- Interactive Clock Face (SVG) -->
+                    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 flex flex-col items-center justify-center space-y-4">
+                        <span class="text-xs font-mono text-slate-400 uppercase">Esfera de Frecuencias Temporales</span>
+                        <div class="relative w-56 h-56 flex items-center justify-center">
+                            <!-- Clock dial -->
+                            <svg class="w-full h-full" viewBox="0 0 200 200">
+                                <circle cx="100" cy="100" r="90" fill="#0f172a" stroke="#334155" stroke-width="3" />
+                                <circle cx="100" cy="100" r="4" fill="#f8fafc" />
+                                <!-- Hour marks -->
+                                <line x1="100" y1="16" x2="100" y2="26" stroke="#94a3b8" stroke-width="2" />
+                                <line x1="184" y1="100" x2="174" y2="100" stroke="#94a3b8" stroke-width="2" />
+                                <line x1="100" y1="184" x2="100" y2="174" stroke="#94a3b8" stroke-width="2" />
+                                <line x1="16" y1="100" x2="26" y2="100" stroke="#94a3b8" stroke-width="2" />
+                                
+                                <!-- Clock Hands (controlled by JS angles) -->
+                                <!-- Hand 1: Fast (Seconds = Low dim, High freq) -->
+                                <line id="hand-fast" x1="100" y1="100" x2="100" y2="28" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" />
+                                <!-- Hand 2: Mid (Minutes = Mid freq) -->
+                                <line id="hand-mid" x1="100" y1="100" x2="100" y2="40" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" />
+                                <!-- Hand 3: Slow (Hours = High dim, Low freq) -->
+                                <line id="hand-slow" x1="100" y1="100" x2="100" y2="54" stroke="#a855f7" stroke-width="5" stroke-linecap="round" />
+                            </svg>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="grid grid-cols-3 gap-2 w-full text-center text-xs font-mono">
+                            <div class="bg-rose-950/40 border border-rose-900/60 p-1.5 rounded text-rose-300">
+                                <div class="font-bold">Dim 0-1</div>
+                                <div class="text-[10px] text-slate-400">Segundero (Rápido)</div>
+                            </div>
+                            <div class="bg-sky-950/40 border border-sky-900/60 p-1.5 rounded text-sky-300">
+                                <div class="font-bold">Dim 64-65</div>
+                                <div class="text-[10px] text-slate-400">Minutero (Medio)</div>
+                            </div>
+                            <div class="bg-purple-950/40 border border-purple-900/60 p-1.5 rounded text-purple-300">
+                                <div class="font-bold">Dim 510-511</div>
+                                <div class="text-[10px] text-slate-400">Horario (Lento)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sinusoidal Waves Canvas -->
+                    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-mono text-slate-400 uppercase">Curvas Seno y Coseno vs Posición</span>
+                            <span class="text-xs font-mono text-pink-400">PE(pos, 2i)</span>
+                        </div>
+                        <div class="w-full h-44 relative bg-slate-900/60 rounded-lg overflow-hidden border border-slate-800">
+                            <canvas id="canvas-sine-waves" class="w-full h-full block"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Al sumar este vector periódico continuo al embedding de la palabra, el modelo es capaz de proyectar algebraicamente desplazamientos relativos ($k$ pasos adelante) mediante un producto matricial lineal.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 4: SIMULADOR AUTORREGRESIVO DEL DECODER CON MÁSCARA CAUSAL -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 glow-card">
+                <div class="border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold text-xs flex items-center justify-center border border-emerald-500/40">4</span>
+                        <h3 class="text-lg font-bold text-white">Simulador Autorregresivo del Decodificador (Traducción al Francés)</h3>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">
+                        Revela paso a paso una traducción al francés preparada de antemano (no es generación real por un modelo): <em>"A cute teddy bear is reading"</em> &rarr; <em>"Un ours en peluche mignon lit"</em> usando la máscara causal con valor $-\infty$.
+                    </p>
+                </div>
+
+                <!-- Simulation Interactive Controls -->
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <button onclick="stepDecoderGeneration()" id="btn-decoder-step" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-mono font-bold transition flex items-center gap-2">
+                            <span>Siguiente Token &rarr;</span>
+                        </button>
+                        <button onclick="resetDecoderGeneration()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-mono transition">
+                            Reiniciar
+                        </button>
+                    </div>
+                    <div class="text-xs font-mono text-slate-400">
+                        Paso actual: <span id="decoder-step-num" class="text-emerald-400 font-bold">1</span> / 7
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Left: Generation Timeline -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                        <span class="text-xs font-mono text-slate-400 uppercase block border-b border-slate-800 pb-2">
+                            Secuencia Generada en el Decodificador:
+                        </span>
+                        <div id="decoder-generated-tokens" class="flex flex-wrap gap-2 min-h-[50px] items-center">
+                            <!-- Injected by JS -->
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 text-xs space-y-1.5">
+                            <span class="text-indigo-400 font-mono font-bold block">Cross-Attention Activa:</span>
+                            <p id="decoder-cross-text" class="text-slate-300">
+                                El decodificador consulta (Query) la memoria del encoder (Key, Value) para extraer el concepto semántico correcto.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Right: Causal Triangular Mask Visualizer -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <span class="text-xs font-mono text-emerald-400 uppercase font-bold">Máscara Causal Triangular (Decoder Self-Attention)</span>
+                            <span class="text-xs font-mono text-slate-500">Valor: $-\infty$</span>
+                        </div>
+                        <div id="causal-mask-matrix" class="grid grid-cols-7 gap-1 font-mono text-[11px] text-center py-2">
+                            <!-- Matrix grid injected by JS -->
+                        </div>
+                        <p class="text-xs text-slate-400 italic">
+                            Los valores superiores son forzados a $-\infty$ antes del Softmax. Al aplicar $\exp(-\infty) = 0$, el modelo no puede "hacer trampa" mirando palabras futuras.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 5: COMPARADOR DE TRUCOS ARQUITECTURALES -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 glow-card">
+                <div class="border-b border-slate-800 pb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded bg-teal-500/20 text-teal-400 font-mono font-bold text-xs flex items-center justify-center border border-teal-500/40">5</span>
+                        <h3 class="text-lg font-bold text-white">Laboratorio de Trucos de Arquitectura: Residuales y Label Smoothing</h3>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">
+                        Experimenta el impacto real de las conexiones residuales en el gradiente y cómo el label smoothing suaviza probabilidades extremas.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Trick 1: Residual vs Non-Residual Gradient Flow -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-xs font-mono text-teal-400 uppercase font-semibold">1. Conexión Residual: Flujo del Gradiente</h4>
+                            <button onclick="toggleResidualSimulation()" id="btn-toggle-residual" class="px-2.5 py-1 rounded bg-teal-600 text-white text-xs font-mono font-semibold">
+                                Residual: ON (x + f(x))
+                            </button>
+                        </div>
+                        <div class="space-y-3 py-2">
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs text-slate-400 font-mono">
+                                    <span>Capa 12 (Salida)</span>
+                                    <span class="text-emerald-400 font-bold">Magnitud Gradiente: 1.000</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-emerald-500 h-full w-full"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs text-slate-400 font-mono">
+                                    <span>Capa 6 (Intermedia)</span>
+                                    <span id="grad-mid-val" class="text-teal-400 font-bold">Magnitud Gradiente: 0.985</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
+                                    <div id="grad-mid-bar" class="bg-teal-500 h-full w-[98%] transition-all duration-300"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs text-slate-400 font-mono">
+                                    <span>Capa 1 (Entrada / Embeddings)</span>
+                                    <span id="grad-bot-val" class="text-teal-300 font-bold">Magnitud Gradiente: 0.960</span>
+                                </div>
+                                <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
+                                    <div id="grad-bot-bar" class="bg-teal-400 h-full w-[96%] transition-all duration-300"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <p id="residual-explanation" class="text-xs text-slate-400">
+                            <strong>Con residual activado:</strong> La ruta residual facilita la propagación de gradientes, aunque no garantiza que nunca se atenúen.
+                        </p>
+                    </div>
+
+                    <!-- Trick 2: Label Smoothing Interactive distribution -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-xs font-mono text-amber-400 uppercase font-semibold">2. Label Smoothing ($\epsilon$)</h4>
+                            <span class="text-xs font-mono text-slate-400">$\epsilon$ = <span id="ls-eps-display" class="text-amber-400 font-bold">0.10</span></span>
+                        </div>
+                        <div class="space-y-2">
+                            <input type="range" id="ls-slider" min="0" max="0.3" step="0.01" value="0.10" oninput="updateLabelSmoothing()"
+                                class="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                            <div class="flex justify-between text-[11px] text-slate-500 font-mono">
+                                <span>0.0 (One-Hot Duro [0, 1, 0, 0])</span>
+                                <span>0.30 (Suavizado Alto)</span>
+                            </div>
+                        </div>
+
+                        <div id="ls-bars-container" class="space-y-2 pt-1">
+                            <!-- Injected by JS -->
+                        </div>
+                        <p class="text-xs text-slate-400">
+                            Evita que los logits diverjan a $\pm\infty$ intentando forzar un $1.0$ exacto en Softmax, reduciendo el sobreajuste (overfitting).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- TAB 3: CHEAT SHEET QKV & FORMULARIO MATEMÁTICO            -->
+        <!-- ======================================================== -->
+        <section id="view-cheatsheet" class="hidden space-y-8">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-3">
+                <span class="px-3 py-1 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-full text-xs font-mono font-semibold">
+                    Compendio de Fórmulas y Referencia Rápida
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                    Stanford CME295 · Formulario Esencial de Transformers
+                </h2>
+                <p class="text-slate-400 text-sm">
+                    El resumen matemático de referencia creado al estilo de las famosas cheatsheets de Shervin y Afshine Amidi.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <span class="text-xs font-mono font-bold text-indigo-400 uppercase tracking-wider">1. Proyecciones Lineales</span>
+                    <h3 class="text-base font-bold text-white">Queries, Keys & Values</h3>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-sm text-yellow-300 space-y-1">
+                        <div>$Q = X \cdot W_Q \quad (N \times d_k)$</div>
+                        <div>$K = X \cdot W_K \quad (N \times d_k)$</div>
+                        <div>$V = X \cdot W_V \quad (N \times d_v)$</div>
+                    </div>
+                    <p class="text-xs text-slate-400">Donde $X \in \mathbb{R}^{N \times d_{model}}$ es la matriz de tokens de entrada con embeddings ya sumados.</p>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <span class="text-xs font-mono font-bold text-blue-400 uppercase tracking-wider">2. Scaled Dot-Product</span>
+                    <h3 class="text-base font-bold text-white">Auto-Atención Escalar</h3>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-sm text-yellow-300 text-center py-2.5">
+                        $\text{Attn}(Q, K, V) = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V$
+                    </div>
+                    <p class="text-xs text-slate-400">La matriz $Q K^T$ genera puntuaciones de similitud $N \times N$, normalizadas por fila mediante $\text{softmax}$.</p>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <span class="text-xs font-mono font-bold text-pink-400 uppercase tracking-wider">3. Posición Sinusoidal</span>
+                    <h3 class="text-base font-bold text-white">Embeddings Posicionales</h3>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-yellow-300 space-y-1">
+                        <div>$PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d}}\right)$</div>
+                        <div>$PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d}}\right)$</div>
+                    </div>
+                    <p class="text-xs text-slate-400">Permite derivar $PE_{pos+k}$ como una rotación ortogonal simple sobre $PE_{pos}$.</p>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <span class="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">4. Multi-Head</span>
+                    <h3 class="text-base font-bold text-white">Multi-Head Attention (MHA)</h3>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-yellow-300 space-y-1">
+                        <div>$\text{head}_i = \text{Attn}(Q W_i^Q, K W_i^K, V W_i^V)$</div>
+                        <div>$\text{MHA} = [\text{head}_1; ...; \text{head}_h] W^O$</div>
+                    </div>
+                    <p class="text-xs text-slate-400">Combina $h$ subespacios de atención independientes proyectándolos de nuevo a $\mathbb{R}^{d_{model}}$.</p>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <span class="text-xs font-mono font-bold text-teal-400 uppercase tracking-wider">5. Normalización</span>
+                    <h3 class="text-base font-bold text-white">LayerNorm (LN)</h3>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-yellow-300 text-center py-2">
+                        $y = \frac{x - \mu_L}{\sqrt{\sigma_L^2 + \epsilon}} \odot \gamma + \beta$
+                    </div>
+                    <p class="text-xs text-slate-400">Media $\mu_L$ y varianza $\sigma_L^2$ calculadas a lo largo de las dimensiones de cada token, invariante al tamaño de lote.</p>
+                </div>
+
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-3">
+                    <span class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">6. Suavizado</span>
+                    <h3 class="text-base font-bold text-white">Label Smoothing Loss</h3>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs text-yellow-300 text-center py-2">
+                        $q(k) = (1 - \epsilon) \cdot \mathbb{I}(k = y) + \frac{\epsilon}{K}$
+                    </div>
+                    <p class="text-xs text-slate-400">Reemplaza targets binarios $0/1$ por una mezcla suave para regularizar la pérdida de entropía cruzada.</p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-slate-800/80 bg-slate-950 py-8 mt-16 text-center text-xs text-slate-500 font-mono">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p><a class="underline underline-offset-4 text-sky-300" href="../index.html">Índice de clases</a> · Proyecto educativo independiente, no afiliado ni avalado por Stanford University.</p>
+            <p>Apuntes con asistencia de IA; revisa la clase y las fuentes oficiales para contrastar los detalles.</p>
+            <p>Guía de estudio interactiva basada en <strong>Stanford CME295: Transformers and Large Language Models</strong>.</p>
+            <p>Clase dictada por Afshine Amidi y Shervin Amidi · Stanford University.</p>
+        </div>
+    </footer>
+
+    <script>
+        /* ========================================================
+           STATE & NAVIGATION CONTROL
+           ======================================================== */
+        let currentTab = 'transcription';
+        
+        function switchTab(tabId) {
+            currentTab = tabId;
+            // Views
+            document.getElementById('view-transcription').classList.toggle('hidden', tabId !== 'transcription');
+            document.getElementById('view-lab').classList.toggle('hidden', tabId !== 'lab');
+            document.getElementById('view-cheatsheet').classList.toggle('hidden', tabId !== 'cheatsheet');
+
+            // Nav buttons styling
+            const tabs = ['transcription', 'lab', 'cheatsheet'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab-btn-' + t);
+                if (btn) {
+                    if (t === tabId) {
+                        btn.className = "px-4 py-2 rounded-lg text-white bg-indigo-600 transition shadow-sm font-semibold";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition";
+                    }
+                }
+            });
+
+            // Trigger canvas or components redraw if switching to lab
+            if (tabId === 'lab') {
+                setTimeout(() => {
+                    drawSinusoidalCanvas();
+                }, 100);
+            }
+        }
+
+        /* Toggle collapsible sections in timeline */
+        function toggleDetails(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.toggle('hidden');
+            }
+        }
+
+        function expandAllTimeline(expand) {
+            for (let i = 0; i < 10; i++) {
+                const el = document.getElementById('item-' + i);
+                if (el) {
+                    if (expand) el.classList.remove('hidden');
+                    else el.classList.add('hidden');
+                }
+            }
+        }
+
+        /* Real-time search filter for timeline items */
+        function filterLectureNotes() {
+            const query = document.getElementById('lecture-search-input').value.toLowerCase().trim();
+            const items = document.querySelectorAll('.timeline-item');
+            
+            items.forEach(item => {
+                const keywords = item.getAttribute('data-keywords') || '';
+                const text = item.innerText.toLowerCase();
+                if (!query || keywords.includes(query) || text.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        /* ========================================================
+           STREAMING_CHUNK:Module 1 - Live Tokenizer Implementation
+           ======================================================== */
+        let tokenizerMode = 'word'; // 'word' | 'subword' | 'char'
+
+        function setTokenizerMode(mode) {
+            tokenizerMode = mode;
+            ['word', 'subword', 'char'].forEach(m => {
+                const btn = document.getElementById('tok-mode-' + m);
+                if (btn) {
+                    if (m === mode) {
+                        btn.className = "px-3 py-1.5 rounded-md bg-indigo-600 text-white font-semibold transition";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-md text-slate-400 hover:text-white transition";
+                    }
+                }
+            });
+            runTokenizer();
+        }
+
+        function resetTokenizerDefault() {
+            document.getElementById('tokenizer-input').value = "a cute teddy bear is reading";
+            runTokenizer();
+        }
+
+        // Deterministic hash to give consistent color and ID to tokens
+        function hashToken(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = (hash << 5) - hash + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return Math.abs(hash) % 30000;
+        }
+
+        function runTokenizer() {
+            const input = document.getElementById('tokenizer-input').value.trim();
+            const container = document.getElementById('tokenizer-output');
+            const stats = document.getElementById('tok-stats');
+            const withBOS = document.getElementById('tok-check-bos').checked;
+            const withEOS = document.getElementById('tok-check-eos').checked;
+            const withPAD = document.getElementById('tok-check-pad').checked;
+
+            container.innerHTML = '';
+            let rawTokens = [];
+
+            if (input.length > 0) {
+                if (tokenizerMode === 'word') {
+                    rawTokens = input.split(/\s+/).filter(Boolean);
+                } else if (tokenizerMode === 'char') {
+                    rawTokens = input.split('').map(c => c === ' ' ? '␣' : c);
+                } else if (tokenizerMode === 'subword') {
+                    // Simplified BPE simulation (breaks long words into prefixes/roots)
+                    const words = input.split(/\s+/).filter(Boolean);
+                    words.forEach(w => {
+                        const low = w.toLowerCase();
+                        if (low === 'reading') {
+                            rawTokens.push('read', '##ing');
+                        } else if (low === 'teddy') {
+                            rawTokens.push('ted', '##dy');
+                        } else if (low.length > 5) {
+                            rawTokens.push(low.slice(0, 3), '##' + low.slice(3));
+                        } else {
+                            rawTokens.push(w);
+                        }
+                    });
+                }
+            }
+
+            const tokenSequence = [];
+            if (withBOS) tokenSequence.push({ token: '<BOS>', special: 'bos', id: 101 });
+            rawTokens.forEach(t => {
+                tokenSequence.push({ token: t, special: null, id: hashToken(t) + 1000 });
+            });
+            if (withEOS) tokenSequence.push({ token: '<EOS>', special: 'eos', id: 102 });
+
+            if (withPAD && tokenSequence.length < 12) {
+                const diff = 12 - tokenSequence.length;
+                for (let i = 0; i < diff; i++) {
+                    tokenSequence.push({ token: '<PAD>', special: 'pad', id: 0 });
+                }
+            }
+
+            // Render chips
+            tokenSequence.forEach(item => {
+                const chip = document.createElement('div');
+                let colorClass = "bg-indigo-950/70 text-indigo-300 border-indigo-700/60";
+                if (item.special === 'bos') colorClass = "bg-emerald-950/70 text-emerald-300 border-emerald-700/60";
+                if (item.special === 'eos') colorClass = "bg-blue-950/70 text-blue-300 border-blue-700/60";
+                if (item.special === 'pad') colorClass = "bg-purple-950/40 text-purple-400 border-purple-800/40 opacity-70";
+
+                chip.className = `px-3 py-1.5 rounded-lg border font-mono text-xs flex items-center space-x-2 transition hover:scale-105 ${colorClass}`;
+                const tokenLabel = document.createElement('span');
+                tokenLabel.className = 'font-bold';
+                tokenLabel.textContent = item.token;
+                const idLabel = document.createElement('span');
+                idLabel.className = 'text-[10px] opacity-60 bg-black/40 px-1 py-0.5 rounded';
+                idLabel.textContent = `ID demo:${item.id}`;
+                chip.append(tokenLabel, idLabel);
+                container.appendChild(chip);
+            });
+
+            if (stats) {
+                stats.innerText = `Tokens: ${tokenSequence.length} | Caracteres entrada: ${input.length}`;
+            }
+        }
+
+        /* ========================================================
+           STREAMING_CHUNK:Module 2 - Self-Attention Interactive Matrix
+           ======================================================== */
+        const sampleWords = ["a", "cute", "teddy", "bear", "is", "reading"];
+        let selectedQueryIdx = 1; // "cute"
+
+        // Simulated Softmax scores: Row = Query, Col = Keys
+        const rawAttentionScores = [
+            // a,    cute, teddy, bear,  is,   reading
+            [0.55, 0.15, 0.10, 0.12, 0.04, 0.04], // a
+            [0.08, 0.18, 0.42, 0.25, 0.03, 0.04], // cute -> high to teddy & bear
+            [0.04, 0.32, 0.16, 0.42, 0.02, 0.04], // teddy -> cute & bear
+            [0.05, 0.12, 0.46, 0.21, 0.08, 0.08], // bear -> teddy
+            [0.04, 0.04, 0.04, 0.12, 0.22, 0.54], // is -> reading
+            [0.03, 0.05, 0.08, 0.24, 0.40, 0.20], // reading -> bear & is
+        ];
+
+        const queryExplanations = [
+            '"a" es un artículo indeterminado; distribuye su mayor atención hacia el límite del sintagma nominal.',
+            '"cute" (adjetivo) proyecta fuerte atención hacia "teddy" y "bear", asociando la propiedad física al sujeto.',
+            '"teddy" forma una unidad léxica compuesta con "bear" ("osito de peluche"), por lo que ambos intercambian las atenciones más elevadas.',
+            '"bear" es el núcleo del sujeto; atiende hacia atrás a "teddy" y hacia adelante al predicado ("is reading").',
+            '"is" es el verbo auxiliar; enlaza temporalmente al sujeto ("bear") con el gerundio principal ("reading").',
+            '"reading" es el núcleo verbal de la acción; atiende con prioridad a su auxiliar ("is") y al agente ("bear").'
+        ];
+
+        function initAttentionModule() {
+            const selector = document.getElementById('attention-query-selector');
+            if (!selector) return;
+            selector.innerHTML = '';
+
+            sampleWords.forEach((word, idx) => {
+                const btn = document.createElement('button');
+                btn.id = 'attn-q-btn-' + idx;
+                btn.className = `px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium border transition ${
+                    idx === selectedQueryIdx 
+                        ? 'bg-blue-600 text-white border-blue-400 font-bold shadow-sm' 
+                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                }`;
+                btn.innerText = `Q: "${word}"`;
+                btn.onclick = () => selectQuery(idx);
+                selector.appendChild(btn);
+            });
+
+            renderAttentionForQuery();
+            renderHeatmap();
+        }
+
+        function selectQuery(idx) {
+            selectedQueryIdx = idx;
+            sampleWords.forEach((_, i) => {
+                const btn = document.getElementById('attn-q-btn-' + i);
+                if (btn) {
+                    if (i === idx) {
+                        btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold bg-blue-600 text-white border-blue-400 shadow-sm';
+                    } else {
+                        btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700';
+                    }
+                }
+            });
+            renderAttentionForQuery();
+            renderHeatmap();
+        }
+
+        function renderAttentionForQuery() {
+            const label = document.getElementById('current-query-label');
+            const barsList = document.getElementById('attention-bars-list');
+            const expl = document.getElementById('attention-explanation-text');
+            if (label) label.innerText = `"${sampleWords[selectedQueryIdx]}"`;
+            if (expl) expl.innerText = queryExplanations[selectedQueryIdx];
+            if (!barsList) return;
+
+            barsList.innerHTML = '';
+            const scores = rawAttentionScores[selectedQueryIdx];
+
+            sampleWords.forEach((word, kIdx) => {
+                const score = scores[kIdx];
+                const pct = Math.round(score * 100);
+
+                let barColor = 'bg-slate-700';
+                if (pct > 35) barColor = 'bg-emerald-500';
+                else if (pct > 20) barColor = 'bg-blue-500';
+                else if (pct > 10) barColor = 'bg-indigo-500';
+
+                const row = document.createElement('div');
+                row.className = 'space-y-1';
+                row.innerHTML = `
+                    <div class="flex justify-between items-center text-xs font-mono">
+                        <span class="text-slate-300">Key: <strong class="text-white">"${word}"</strong></span>
+                        <span class="text-slate-400 font-semibold">${(score).toFixed(2)} (${pct}%)</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden border border-slate-800">
+                        <div class="h-full rounded-full transition-all duration-500 ${barColor}" style="width: ${pct}%"></div>
+                    </div>
+                `;
+                barsList.appendChild(row);
+            });
+        }
+
+        function renderHeatmap() {
+            const container = document.getElementById('attention-heatmap');
+            if (!container) return;
+            container.innerHTML = '';
+
+            // Header corner
+            const corner = document.createElement('div');
+            corner.className = 'p-1 font-bold text-slate-500 text-[10px]';
+            corner.innerText = 'Q \\ K';
+            container.appendChild(corner);
+
+            // Columns headers (Keys)
+            sampleWords.forEach(w => {
+                const colHead = document.createElement('div');
+                colHead.className = 'p-1 text-[10px] text-slate-400 font-bold truncate';
+                colHead.title = w;
+                colHead.innerText = w;
+                container.appendChild(colHead);
+            });
+
+            // Rows (Queries)
+            sampleWords.forEach((qWord, qIdx) => {
+                const rowHead = document.createElement('div');
+                rowHead.className = `p-1 text-[10px] font-bold truncate text-right pr-1 ${qIdx === selectedQueryIdx ? 'text-blue-400 font-extrabold' : 'text-slate-400'}`;
+                rowHead.innerText = qWord;
+                container.appendChild(rowHead);
+
+                // Cells
+                sampleWords.forEach((kWord, kIdx) => {
+                    const cell = document.createElement('button');
+                    const score = rawAttentionScores[qIdx][kIdx];
+                    const alpha = Math.max(0.1, score);
+                    const isSelected = qIdx === selectedQueryIdx;
+
+                    cell.className = `heat-cell p-1.5 rounded text-[10px] font-mono border transition ${
+                        isSelected ? 'border-blue-500' : 'border-transparent'
+                    }`;
+                    cell.style.backgroundColor = `rgba(59, 130, 246, ${alpha})`;
+                    cell.innerText = score.toFixed(2);
+                    cell.title = `Q: "${qWord}" -> K: "${kWord}" = ${score.toFixed(3)}`;
+                    cell.onclick = () => selectQuery(qIdx);
+                    container.appendChild(cell);
+                });
+            });
+        }
+
+        /* ========================================================
+           STREAMING_CHUNK:Module 3 - Clock Positional Encoding Simulator
+           ======================================================== */
+        function updatePositionalClock() {
+            const slider = document.getElementById('pos-slider');
+            const pos = parseInt(slider.value, 10);
+            
+            document.getElementById('pos-display-val').innerText = pos;
+            const wordsList = ["a", "cute", "teddy", "bear", "is", "reading", "[P6]", "[P7]", "[P8]", "[P9]", "[P10]", "[P11]", "[P12]", "[P13]", "[P14]", "[P15]"];
+            document.getElementById('pos-word-val').innerText = `Token: "${wordsList[pos] || 'pos_' + pos}"`;
+
+            // Rotate clock hands based on frequencies
+            // Fast hand (Seconds): high angular speed = pos * 60 deg
+            const angleFast = (pos * 60) % 360;
+            // Mid hand (Minutes): medium speed = pos * 24 deg
+            const angleMid = (pos * 24) % 360;
+            // Slow hand (Hours): low speed = pos * 6 deg
+            const angleSlow = (pos * 6) % 360;
+
+            rotateHand('hand-fast', angleFast);
+            rotateHand('hand-mid', angleMid);
+            rotateHand('hand-slow', angleSlow);
+
+            drawSinusoidalCanvas();
+        }
+
+        function rotateHand(id, degrees) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            // Center is (100, 100)
+            el.setAttribute('transform', `rotate(${degrees} 100 100)`);
+        }
+
+        function drawSinusoidalCanvas() {
+            const canvas = document.getElementById('canvas-sine-waves');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw axis
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+
+            const pos = parseInt(document.getElementById('pos-slider').value, 10);
+
+            // Draw Wave 1: Fast (dim 0, sine)
+            ctx.strokeStyle = '#f43f5e';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let x = 0; x < width; x++) {
+                const p = (x / width) * 15;
+                const y = height / 2 - Math.sin(p * 1.2) * (height * 0.38);
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Draw Wave 2: Mid (dim 64, cosine)
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let x = 0; x < width; x++) {
+                const p = (x / width) * 15;
+                const y = height / 2 - Math.cos(p * 0.45) * (height * 0.38);
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Draw Wave 3: Slow (dim 510, sine)
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let x = 0; x < width; x++) {
+                const p = (x / width) * 15;
+                const y = height / 2 - Math.sin(p * 0.12) * (height * 0.38);
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            // Draw current position vertical marker
+            const markerX = (pos / 15) * width;
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(markerX, 0);
+            ctx.lineTo(markerX, height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Marker dot
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.arc(markerX, height / 2 - Math.sin(pos * 1.2) * (height * 0.38), 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        /* ========================================================
+           STREAMING_CHUNK:Module 4 - Autoregressive Decoder Simulation
+           ======================================================== */
+        const frenchTargetTokens = ["<BOS>", "Un", "ours", "en", "peluche", "mignon", "lit", "<EOS>"];
+        const frenchCrossExplanations = [
+            "Paso 0: Comienza con el token inicial obligatorio <BOS>.",
+            "Predice 'Un' atendiendo a 'A' del codificador en inglés.",
+            "Predice 'ours' atendiendo fuertemente al concepto 'bear'.",
+            "Predice 'en' (preposición francesa para estructurar 'ours en peluche').",
+            "Predice 'peluche' consolidando la traducción de 'teddy bear'.",
+            "Predice 'mignon' (adjetivo francés pospuesto) cruzando atención con 'cute'.",
+            "Predice 'lit' (verbo presente) cruzando atención con 'is reading'.",
+            "Predice <EOS> indicando el final formal de la generación autorregresiva."
+        ];
+        let currentDecoderStep = 1;
+
+        function renderDecoderModule() {
+            const container = document.getElementById('decoder-generated-tokens');
+            const stepNum = document.getElementById('decoder-step-num');
+            const crossText = document.getElementById('decoder-cross-text');
+            if (!container) return;
+
+            stepNum.innerText = currentDecoderStep;
+            crossText.innerText = frenchCrossExplanations[currentDecoderStep] || "Generación concluida.";
+
+            container.innerHTML = '';
+            for (let i = 0; i <= currentDecoderStep; i++) {
+                const tok = frenchTargetTokens[i];
+                const chip = document.createElement('div');
+                const isLatest = i === currentDecoderStep;
+                chip.className = `px-3 py-1.5 rounded-lg border font-mono text-xs flex items-center gap-1.5 transition ${
+                    isLatest 
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500 font-bold scale-105' 
+                        : 'bg-slate-900 text-slate-300 border-slate-800'
+                }`;
+                const tokenText = document.createElement('span');
+                tokenText.textContent = tok;
+                chip.appendChild(tokenText);
+                if (isLatest) {
+                    const dot = document.createElement('span');
+                    dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+                    chip.appendChild(dot);
+                }
+                container.appendChild(chip);
+            }
+
+            renderCausalMask();
+        }
+
+        function stepDecoderGeneration() {
+            if (currentDecoderStep < frenchTargetTokens.length - 1) {
+                currentDecoderStep++;
+                renderDecoderModule();
+            }
+        }
+
+        function resetDecoderGeneration() {
+            currentDecoderStep = 1;
+            renderDecoderModule();
+        }
+
+        function renderCausalMask() {
+            const container = document.getElementById('causal-mask-matrix');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const N = 6;
+            const labels = ["Un", "ours", "en", "pel", "mign", "lit"];
+
+            // Corner
+            const corner = document.createElement('div');
+            corner.className = 'p-1 text-[9px] text-slate-500 font-bold';
+            corner.innerText = 'Pos';
+            container.appendChild(corner);
+
+            labels.forEach(l => {
+                const th = document.createElement('div');
+                th.className = 'p-1 text-[10px] text-slate-400 font-bold';
+                th.innerText = l;
+                container.appendChild(th);
+            });
+
+            for (let row = 0; row < N; row++) {
+                const rowLabel = document.createElement('div');
+                rowLabel.className = 'p-1 text-[10px] text-slate-400 font-bold text-right pr-1';
+                rowLabel.innerText = labels[row];
+                container.appendChild(rowLabel);
+
+                for (let col = 0; col < N; col++) {
+                    const cell = document.createElement('div');
+                    if (col <= row) {
+                        // Allowed (Lower triangle)
+                        cell.className = 'p-1.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 font-mono';
+                        cell.innerText = '1';
+                        cell.title = `Permitido: paso ${row} atiende a posición ${col}`;
+                    } else {
+                        // Masked (-inf -> 0 in softmax)
+                        cell.className = 'p-1.5 rounded bg-red-950/30 text-red-500 border border-red-900/30 font-mono';
+                        cell.innerText = '-∞';
+                        cell.title = `Enmascarado causal: no puede mirar al futuro`;
+                    }
+                    container.appendChild(cell);
+                }
+            }
+        }
+
+        /* ========================================================
+           STREAMING_CHUNK:Module 5 - Architectural Tricks Simulation
+           ======================================================== */
+        let residualEnabled = true;
+
+        function toggleResidualSimulation() {
+            residualEnabled = !residualEnabled;
+            const btn = document.getElementById('btn-toggle-residual');
+            const midVal = document.getElementById('grad-mid-val');
+            const midBar = document.getElementById('grad-mid-bar');
+            const botVal = document.getElementById('grad-bot-val');
+            const botBar = document.getElementById('grad-bot-bar');
+            const expl = document.getElementById('residual-explanation');
+
+            if (residualEnabled) {
+                btn.className = "px-2.5 py-1 rounded bg-teal-600 text-white text-xs font-mono font-semibold";
+                btn.innerText = "Residual: ON (x + f(x))";
+                midVal.innerText = "Magnitud Gradiente: 0.985";
+                midBar.style.width = "98%";
+                midBar.className = "bg-teal-500 h-full transition-all duration-300";
+                botVal.innerText = "Magnitud Gradiente: 0.960";
+                botBar.style.width = "96%";
+                botBar.className = "bg-teal-400 h-full transition-all duration-300";
+                expl.innerHTML = "<strong>Con residual activado:</strong> La ruta residual facilita la propagación de gradientes, aunque no garantiza que nunca se atenúen.";
+            } else {
+                btn.className = "px-2.5 py-1 rounded bg-red-800 text-white text-xs font-mono font-semibold";
+                btn.innerText = "Residual: OFF (Red Estándar)";
+                midVal.innerText = "Magnitud Gradiente: 0.120";
+                midBar.style.width = "12%";
+                midBar.className = "bg-amber-600 h-full transition-all duration-300";
+                botVal.innerText = "Magnitud Gradiente: 0.002 (¡Desvanecido!)";
+                botBar.style.width = "1%";
+                botBar.className = "bg-red-600 h-full transition-all duration-300";
+                expl.innerHTML = "<strong class='text-red-400'>Sin residual (Desvanecimiento del gradiente):</strong> Multiplicaciones sucesivas de matrices jacobianas reducen el gradiente a cero en las capas profundas.";
+            }
+        }
+
+        function updateLabelSmoothing() {
+            const eps = parseFloat(document.getElementById('ls-slider').value);
+            document.getElementById('ls-eps-display').innerText = eps.toFixed(2);
+            renderLabelSmoothingBars(eps);
+        }
+
+        function renderLabelSmoothingBars(eps) {
+            const container = document.getElementById('ls-bars-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const classes = [
+                { name: '"bear" (Target correcto)', isTarget: true },
+                { name: '"cat"', isTarget: false },
+                { name: '"dog"', isTarget: false },
+                { name: '"wolf"', isTarget: false }
+            ];
+
+            const K = classes.length;
+            const targetProb = (1 - eps) + (eps / K);
+            const otherProb = eps / K;
+
+            classes.forEach(c => {
+                const prob = c.isTarget ? targetProb : otherProb;
+                const pct = (prob * 100).toFixed(1);
+
+                const row = document.createElement('div');
+                row.className = 'space-y-1';
+                row.innerHTML = `
+                    <div class="flex justify-between text-xs font-mono">
+                        <span class="${c.isTarget ? 'text-amber-300 font-bold' : 'text-slate-400'}">${c.name}</span>
+                        <span class="text-slate-300 font-mono">${(prob).toFixed(3)} (${pct}%)</span>
+                    </div>
+                    <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                        <div class="h-full rounded-full ${c.isTarget ? 'bg-amber-500' : 'bg-slate-700'}" style="width: ${pct}%"></div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        /* ========================================================
+           STREAMING_CHUNK:Page Initialization on DOM Load
+           ======================================================== */
+        window.addEventListener('DOMContentLoaded', () => {
+            runTokenizer();
+            initAttentionModule();
+            updatePositionalClock();
+            renderDecoderModule();
+            updateLabelSmoothing();
+            if (typeof renderMathInElement === 'function') {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false }
+                    ],
+                    throwOnError: false
+                });
+            }
+
+            // Resize listener for sinusoidal canvas
+            window.addEventListener('resize', () => {
+                drawSinusoidalCanvas();
+            });
+        });
+    </script>
+</body>
+</html>
