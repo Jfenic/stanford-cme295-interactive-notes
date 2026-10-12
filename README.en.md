@@ -8,7 +8,7 @@ This is a work in progress: use it to review the course and contribute correctio
 
 > Independent, unofficial material created with AI assistance. It may contain errors and is not affiliated with or endorsed by Stanford University or the course instructors, Afshine Amidi and Shervin Amidi.
 
-**Repository documentation is available in Spanish and English. The study notes, simulations, and website are currently in Spanish.**
+**Repository documentation is available in Spanish and English. Lecture 1 includes a Spanish/English selector for its notes and simulations. The homepage and web guide are in Spanish.**
 
 ## Start learning
 
@@ -23,7 +23,7 @@ Visit the [study notes website](https://Jfenic.github.io/stanford-cme295-interac
 
 | Content | Status |
 | --- | --- |
-| Lecture 1: tokenization, embeddings, RNN/LSTM, QKV attention, positions, and Transformer architecture | Available, with five educational labs |
+| Lecture 1: tokenization, embeddings, RNN/LSTM, QKV attention, positions, and Transformer architecture | Available, with seven educational labs |
 | Lectures 2–10 | Reserved entries in the index; no notes yet |
 | Homepage with lecture and topic search | Available |
 | Template for new lecture notes | Available |

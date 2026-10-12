@@ -8,11 +8,11 @@ This project grew out of my study notes for Stanford CME295: Transformers & Larg
 
 It is intended for people following the course or reviewing its concepts. The notes support your studies; consult the original sources to explore topics further and resolve questions.
 
-Repository documentation is available in Spanish and English. Lecture content, simulations, and the website are currently in Spanish.
+Repository documentation is available in Spanish and English. Lecture 1 provides notes and simulations in Spanish and English through a language selector. The homepage and web guide are in Spanish.
 
 ## Status and scope
 
-The first lecture is currently available, covering tokenization, embeddings, RNN/LSTM, self-attention, QKV, positions, and Transformer architecture. It includes five educational labs.
+The first lecture is currently available, covering tokenization, embeddings, RNN/LSTM, self-attention, QKV, positions, and Transformer architecture. It includes seven educational labs.
 
 The index reserves entries for lectures 2–10. These are placeholders for pending content, not completed lectures or a commitment to publication dates.
 

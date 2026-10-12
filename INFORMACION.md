@@ -8,11 +8,11 @@ Este proyecto nace de mis apuntes de estudio del curso Stanford CME295: Transfor
 
 Está pensado para quienes siguen el curso o quieren repasar sus conceptos. Los apuntes acompañan el estudio: conviene consultar las fuentes originales para profundizar y resolver dudas.
 
-La documentación está disponible en español e inglés. El contenido de las clases, las simulaciones y el sitio web están actualmente en español.
+La documentación está disponible en español e inglés. La clase 1 incluye apuntes y simulaciones en español e inglés mediante un selector de idioma. La portada y la guía web están en español.
 
 ## Estado y alcance
 
-Actualmente está disponible la primera clase, que recorre tokenización, embeddings, RNN/LSTM, autoatención, QKV, posiciones y arquitectura Transformer. Incluye cinco laboratorios pedagógicos.
+Actualmente está disponible la primera clase, que recorre tokenización, embeddings, RNN/LSTM, autoatención, QKV, posiciones y arquitectura Transformer. Incluye siete laboratorios pedagógicos.
 
 El índice reserva posiciones para las clases 2–10. Son marcadores de contenido pendiente, no clases ya preparadas ni un compromiso de fechas de publicación.
 

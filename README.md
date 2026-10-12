@@ -8,7 +8,7 @@ Es un proyecto en construcción: puedes utilizarlo para repasar y contribuir con
 
 > Material independiente y no oficial, elaborado con asistencia de IA. Puede contener errores y no está afiliado ni avalado por Stanford University o por los docentes del curso, Afshine Amidi y Shervin Amidi.
 
-La documentación del repositorio está disponible en español e inglés. Los apuntes, las simulaciones y el sitio web están actualmente en español.
+La documentación del repositorio está disponible en español e inglés. La clase 1 incluye un selector español/inglés para los apuntes y las simulaciones. La portada y la guía web están en español.
 
 ## Empezar a aprender
 
@@ -23,7 +23,7 @@ Consulta el [sitio de apuntes](https://Jfenic.github.io/stanford-cme295-interact
 
 | Contenido | Estado |
 | --- | --- |
-| Clase 1: tokenización, embeddings, RNN/LSTM, atención QKV, posiciones y arquitectura Transformer | Disponible, con cinco laboratorios didácticos |
+| Clase 1: tokenización, embeddings, RNN/LSTM, atención QKV, posiciones y arquitectura Transformer | Disponible, con siete laboratorios didácticos |
 | Clases 2–10 | Entradas reservadas en el índice; todavía sin apuntes |
 | Portada con buscador de clases y temas | Disponible |
 | Plantilla para preparar nuevas clases | Disponible |
