@@ -43,3 +43,9 @@ La clase 1 carga Tailwind, KaTeX y fuentes desde CDN, por lo que requiere conexi
 ## Participación y atribución
 
 Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para proponer correcciones o añadir contenido, y [CREDITOS.md](CREDITOS.md) para las atribuciones y limitaciones. El proyecto es independiente y no está afiliado ni avalado por Stanford University o por el equipo docente.
+
+## Contenido ampliado de la clase 1
+
+La pestaña de apuntes incluye doce explicaciones desde cero en español e inglés, ejemplos de atención QKV y dimensiones matriciales, y doce preguntas con respuestas razonadas. Cada uno de los siete laboratorios incorpora una pregunta interactiva y una aclaración sobre qué se calcula y qué utiliza datos ilustrativos.
+
+El simulador BPE calcula frecuencias y fusiona un par por paso, conserva los símbolos anteriores del vocabulario y respeta los límites de palabra. Utiliza caracteres y un corpus pequeño; no equivale a un tokenizador de producción basado en bytes.

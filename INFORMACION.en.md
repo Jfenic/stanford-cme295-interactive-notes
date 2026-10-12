@@ -43,3 +43,9 @@ Lecture 1 loads Tailwind, KaTeX, and fonts from CDNs, so an Internet connection 
 ## Participation and attribution
 
 Read [CONTRIBUTING.en.md](CONTRIBUTING.en.md) to propose corrections or add content, and [CREDITOS.en.md](CREDITOS.en.md) for attribution and limitations. The project is independent and is not affiliated with or endorsed by Stanford University or the teaching team.
+
+## Expanded lecture 1 content
+
+The notes tab includes twelve beginner explanations in Spanish and English, worked QKV and matrix-shape examples, and twelve questions with explained answers. Each of the seven labs adds an interactive question and distinguishes computations from illustrative data.
+
+The BPE simulator computes frequencies and merges one pair per step, retains earlier vocabulary symbols, and respects word boundaries. It uses characters and a small corpus rather than a production byte-level tokenizer.

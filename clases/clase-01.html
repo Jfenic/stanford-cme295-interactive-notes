@@ -155,7 +155,7 @@
                         Este recurso fue creado como material de estudio complementario y síntesis conceptual asistida por IA para Stanford CME295 (Lecture 1). Las herramientas interactivas son <em>modelos didácticos ilustrativos</em> concebidos para tocar y comprender la mecánica matemática (álgebra matricial, Softmax, frecuencias sinusoidales y retropropagación de gradientes), no inferencias neuronales ejecutadas sobre PyTorch o TensorFlow.
                     </p>
                 </div>
-                <a href="https://www.youtube.com/watch?v=114i2Kz-LZA" target="_blank" rel="noopener noreferrer" 
+                <a href="https://www.youtube.com/watch?v=114i2Kz-LZA" target="_blank" rel="noopener noreferrer"
                    class="shrink-0 px-4 py-2.5 rounded-xl bg-red-700/80 hover:bg-red-600 text-white font-mono text-xs font-bold transition flex items-center gap-2 border border-red-500/50 shadow-lg shadow-red-950/50">
                     <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                     <span data-i18n="banner_yt_btn">Ver Clase en YouTube</span>
@@ -366,7 +366,7 @@
                         <h3 class="text-lg sm:text-xl font-bold text-white tracking-tight" data-i18n="lab3_title">Laboratorio 3: Mecanismo de Atención QKV & Factor de Escala $\sqrt{d_k}$</h3>
                     </div>
                     <p class="text-xs sm:text-sm text-slate-400 mt-1.5 leading-relaxed" data-i18n="lab3_sub">
-                        Demostración del papel de $\frac{1}{\sqrt{d_k}}$: si las componentes de $q$ y $k$ son v.a. independientes de media 0 y varianza 1, su producto escalar $\sum q_i k_i$ tiene media 0 y varianza $d_k$. Al dividir por $\sqrt{d_k}$, la varianza vuelve a 1, impidiendo que Softmax sature en mesetas de gradiente nulo.
+                        Demostración del papel de $\frac{1}{\sqrt{d_k}}$: si las componentes de $q$ y $k$ son v.a. independientes de media 0 y varianza 1, su producto escalar $\sum q_i k_i$ tiene media 0 y varianza $d_k$. Al dividir por $\sqrt{d_k}$, la varianza vuelve a 1, reduciendo el riesgo de saturación de Softmax y gradientes pequeños.
                     </p>
                 </div>
 
@@ -493,7 +493,7 @@
                         <h3 class="text-lg sm:text-xl font-bold text-white tracking-tight" data-i18n="lab5_title">Laboratorio 5: Codificación Posicional — Reloj Didáctico vs Ecuación Real de Vaswani</h3>
                     </div>
                     <p class="text-xs sm:text-sm text-slate-400 mt-1.5 leading-relaxed" data-i18n="lab5_sub">
-                        Afin Amidi utiliza la intuición de un reloj cuyas manecillas giran a frecuencias distintas (segundero, minutero, horario). Contrastamos aquí esa metáfora didáctica con la fórmula trigonométrica continua en base 10.000.
+                        Afshine Amidi utiliza la intuición de un reloj cuyas manecillas giran a frecuencias distintas (segundero, minutero, horario). Contrastamos aquí esa metáfora didáctica con la fórmula trigonométrica continua en base 10.000.
                     </p>
                 </div>
 
@@ -533,7 +533,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                     <!-- Didactic clock -->
                     <div class="bg-slate-950 p-6 rounded-xl border border-slate-800 flex flex-col items-center justify-center space-y-4">
-                        <span class="text-xs font-mono text-slate-400 uppercase font-bold" data-i18n="clock_title">1. Analogía Pedagógica del Reloj de Afin</span>
+                        <span class="text-xs font-mono text-slate-400 uppercase font-bold" data-i18n="clock_title">1. Analogía Pedagógica del Reloj de Afshine</span>
                         <div class="relative w-48 h-48 flex items-center justify-center">
                             <svg class="w-full h-full" viewBox="0 0 200 200">
                                 <circle cx="100" cy="100" r="90" fill="#0b1120" stroke="#334155" stroke-width="3" />
@@ -542,7 +542,7 @@
                                 <line x1="184" y1="100" x2="174" y2="100" stroke="#94a3b8" stroke-width="2" />
                                 <line x1="100" y1="184" x2="100" y2="174" stroke="#94a3b8" stroke-width="2" />
                                 <line x1="16" y1="100" x2="26" y2="100" stroke="#94a3b8" stroke-width="2" />
-                                
+
                                 <line id="hand-fast" x1="100" y1="100" x2="100" y2="28" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" />
                                 <line id="hand-mid" x1="100" y1="100" x2="100" y2="40" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" />
                                 <line id="hand-slow" x1="100" y1="100" x2="100" y2="54" stroke="#a855f7" stroke-width="5" stroke-linecap="round" />
@@ -581,7 +581,7 @@
                         <h3 class="text-lg sm:text-xl font-bold text-white tracking-tight" data-i18n="lab6_title">Laboratorio 6: Decoder Autorregresivo — Masked Self-Attention vs Cross-Attention</h3>
                     </div>
                     <p class="text-xs sm:text-sm text-slate-400 mt-1.5 leading-relaxed" data-i18n="lab6_sub">
-                        Afin Amidi enfatiza la <strong>regla de las flechas</strong>: en Self-Attention todas las matrices provienen de la misma secuencia, mientras que en <strong>Cross-Attention</strong> el Decoder envía 1 flecha ($Q$) y el Encoder aporta 2 flechas ($K$ y $V$).
+                        Afshine Amidi enfatiza la <strong>regla de las flechas</strong>: en Self-Attention todas las matrices provienen de la misma secuencia, mientras que en <strong>Cross-Attention</strong> el Decoder envía 1 flecha ($Q$) y el Encoder aporta 2 flechas ($K$ y $V$).
                     </p>
                 </div>
 
@@ -720,7 +720,7 @@
             <div class="rounded-2xl bg-gradient-to-br from-slate-900 via-slate-850 to-indigo-950/60 p-6 sm:p-8 border border-slate-800 relative overflow-hidden">
                 <div class="max-w-3xl space-y-3 relative z-10">
                     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono">
-                        <span>Stanford CME295 · Autumn 2026</span>
+                        <span>Stanford CME295 · Lecture 1</span>
                     </div>
                     <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight" data-i18n="notes_header_title">
                         Apuntes Estructurados y Guía Cronológica de la Clase
@@ -733,8 +733,8 @@
                 <!-- Real-time search filter -->
                 <div class="mt-6 flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-800/80">
                     <div class="relative flex-1">
-                        <input type="text" id="lecture-search-input" onkeyup="filterLectureNotes()" 
-                            placeholder="Buscar apuntes (ej: BPE, QKV, reloj, gradiente, softmax, residual, cross-attention)..." 
+                        <input type="text" id="lecture-search-input" oninput="filterLectureNotes()"
+                            placeholder="Buscar apuntes (ej: BPE, QKV, reloj, gradiente, softmax, residual, cross-attention)..."
                             class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-4 py-2.5 pl-10 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -750,6 +750,8 @@
                     </div>
                 </div>
             </div>
+
+            <div id="study-intro" class="p-5 rounded-xl border border-indigo-800 bg-indigo-950/30"></div>
 
             <!-- Dynamic Timeline Container -->
             <div id="timeline-container" class="space-y-6 relative before:absolute before:inset-0 before:left-5 before:w-0.5 before:bg-slate-800">
@@ -884,6 +886,7 @@
         </div>
     </footer>
 
+    <script src="../assets/clase-01-study.js"></script>
     <script>
         let currentLang = 'es';
 
@@ -943,7 +946,7 @@
                 w2v_coords_label: "Coordenadas del vector h:",
                 w2v_limit_title: "Límite fundamental de Word2Vec:",
                 lab3_title: "Laboratorio 3: Mecanismo de Atención QKV & Factor de Escala \\(\\sqrt{d_k}\\)",
-                lab3_sub: "Demostración del papel de 1/sqrt(dk): si las componentes de q y k son v.a. independientes de media 0 y varianza 1, su producto escalar suma dk variables y tiene varianza dk. Al dividir por sqrt(dk), la varianza vuelve a 1, impidiendo que Softmax sature en mesetas de gradiente nulo.",
+                lab3_sub: "Demostración del papel de 1/sqrt(dk): si las componentes de q y k son v.a. independientes de media 0 y varianza 1, su producto escalar suma dk variables y tiene varianza dk. Al dividir por sqrt(dk), la varianza vuelve a 1, reduciendo el riesgo de saturación y gradientes pequeños.",
                 scale_dk_label: "Dimensión de la Clave (dk):",
                 scale_mode_label: "Factor de Escalamiento:",
                 scale_btn_on: "CON \\(\\sqrt{d_k}\\) (Var = 1)",
@@ -962,16 +965,16 @@
                 mha_no_weight: "0.0 (Sin peso)",
                 mha_max_weight: "1.0 (Atención máxima)",
                 lab5_title: "Laboratorio 5: Codificación Posicional — Reloj Didáctico vs Ecuación Real de Vaswani",
-                lab5_sub: "Afin Amidi utiliza la intuición de un reloj cuyas manecillas giran a frecuencias distintas (segundero, minutero, horario). Contrastamos aquí esa metáfora didáctica con la fórmula trigonométrica continua en base 10.000.",
+                lab5_sub: "Afshine Amidi utiliza la intuición de un reloj cuyas manecillas giran a frecuencias distintas (segundero, minutero, horario). Contrastamos aquí esa metáfora didáctica con la fórmula trigonométrica continua en base 10.000.",
                 pos_rigor_title: "Rigor Académico: Equivariancia a las Permutaciones, NO Invarianza",
                 pos_rigor_desc: "Sin posiciones, la auto-atención pura es equivariante a permutaciones: Attention(Π X) = Π Attention(X). Reordenar las palabras de entrada reordena exactamente la salida en el mismo orden, perdiendo la estructura sintáctica. Al sumar el tensor de posición X + PE, rompemos esta simetría y dotamos a la red de orden secuencial.",
                 pos_index_label: "Índice de Posición",
-                clock_title: "1. Analogía Pedagógica del Reloj de Afin",
+                clock_title: "1. Analogía Pedagógica del Reloj de Afshine",
                 clock_desc: "Manecillas rotando a distintas velocidades para formar una huella angular única en cada instante de la secuencia.",
                 vaswani_title: "2. Ecuación Real de Vaswani (2017)",
                 vaswani_desc: "Las frecuencias forman una progresión geométrica desde 2π hasta 10000·2π, permitiendo al modelo aprender desplazamientos relativos directos mediante rotaciones lineales.",
                 lab6_title: "Laboratorio 6: Decoder Autorregresivo — Masked Self-Attention vs Cross-Attention",
-                lab6_sub: "Afin Amidi enfatiza la regla de las flechas: en Self-Attention todas las matrices provienen de la misma secuencia, mientras que en Cross-Attention el Decoder envía 1 flecha (Q) y el Encoder aporta 2 flechas (K y V).",
+                lab6_sub: "Afshine Amidi enfatiza la regla de las flechas: en Self-Attention todas las matrices provienen de la misma secuencia, mientras que en Cross-Attention el Decoder envía 1 flecha (Q) y el Encoder aporta 2 flechas (K y V).",
                 btn_diag_cross: "Cross-Attention (Decoder ← Encoder)",
                 btn_diag_masked: "Masked Self-Attention (Solo Decoder)",
                 btn_decoder_step: "Siguiente Token →",
@@ -1070,7 +1073,7 @@
                 w2v_coords_label: "Vector coordinates h:",
                 w2v_limit_title: "Fundamental limit of Word2Vec:",
                 lab3_title: "Lab 3: QKV Attention & Scale Factor \\(\\sqrt{d_k}\\)",
-                lab3_sub: "Demonstrating the role of 1/sqrt(dk): if components of q and k are independent random variables with zero mean and unit variance, their dot product has variance dk. Dividing by sqrt(dk) brings variance back to 1, preventing Softmax from saturating in zero-gradient plateaus.",
+                lab3_sub: "Demonstrating the role of 1/sqrt(dk): if components of q and k are independent random variables with zero mean and unit variance, their dot product has variance dk. Dividing by sqrt(dk) brings variance back to 1, reducing the risk of saturation and small gradients.",
                 scale_dk_label: "Key Dimension (dk):",
                 scale_mode_label: "Scaling Factor Mode:",
                 scale_btn_on: "WITH \\(\\sqrt{d_k}\\) (Var = 1)",
@@ -1089,16 +1092,16 @@
                 mha_no_weight: "0.0 (No weight)",
                 mha_max_weight: "1.0 (Maximum attention)",
                 lab5_title: "Lab 5: Positional Encoding — Didactic Clock vs Vaswani Formula",
-                lab5_sub: "Afin Amidi introduces the clock metaphor where hands rotate at different speeds (seconds, minutes, hours). We contrast that intuition with the continuous geometric sine spectrum in base 10,000.",
+                lab5_sub: "Afshine Amidi introduces the clock metaphor where hands rotate at different speeds (seconds, minutes, hours). We contrast that intuition with the continuous geometric sine spectrum in base 10,000.",
                 pos_rigor_title: "Academic Rigor: Permutation Equivariance, NOT Invariance",
                 pos_rigor_desc: "Without positional encodings, pure self-attention is permutation equivariant: Attention(Π X) = Π Attention(X). Permuting the input tokens yields the exact same permutation in the outputs, discarding sequential order. Adding position vectors X + PE breaks this symmetry and injects sequential ordering.",
                 pos_index_label: "Position Index",
-                clock_title: "1. Afin's Pedagogical Clock Analogy",
+                clock_title: "1. Afshine's Pedagogical Clock Analogy",
                 clock_desc: "Hands rotating at different frequencies to generate a unique angular fingerprint for each sequence step.",
                 vaswani_title: "2. Vaswani (2017) Continuous Equation",
                 vaswani_desc: "Frequencies follow a geometric progression from 2π to 10000·2π, allowing the network to learn relative position shifts through linear projections.",
                 lab6_title: "Lab 6: Autoregressive Decoder — Masked Self-Attention vs Cross-Attention",
-                lab6_sub: "Afin Amidi highlights the arrow rule: in Self-Attention all matrices come from the same sequence, whereas in Cross-Attention the Decoder provides 1 arrow (Q) and the Encoder supplies 2 arrows (K and V).",
+                lab6_sub: "Afshine Amidi highlights the arrow rule: in Self-Attention all matrices come from the same sequence, whereas in Cross-Attention the Decoder provides 1 arrow (Q) and the Encoder supplies 2 arrows (K and V).",
                 btn_diag_cross: "Cross-Attention (Decoder ← Encoder)",
                 btn_diag_masked: "Masked Self-Attention (Decoder Only)",
                 btn_decoder_step: "Next Token →",
@@ -1177,6 +1180,8 @@
 
             // Refresh sub-modules with localized data
             renderTimelineNotes();
+            renderLabLearning();
+            filterLectureNotes();
             initMHAModule();
             updateW2VDetails();
             updateScalingSimulation();
@@ -1191,6 +1196,16 @@
         I18N.en.back_to_index = '← Back to the index';
         I18N.es.footer_line2 += ' Proyecto independiente y no oficial, sin afiliación ni aval de Stanford University o del equipo docente.';
         I18N.en.footer_line2 += ' Independent, unofficial project, not affiliated with or endorsed by Stanford University or the teaching team.';
+
+
+        I18N.es.notes_header_desc = 'Explicaciones desde cero, ejemplos desarrollados y preguntas de comprensión. Los enlaces al vídeo orientan el repaso; las marcas de tiempo están pendientes de comprobación.';
+        I18N.en.notes_header_desc = 'Beginner explanations, worked examples, and comprehension questions. Video links support review; timestamps await verification.';
+        I18N.es.lab2_sub = 'Los embeddings son parámetros aprendidos mediante un objetivo de entrenamiento. Word2Vec utiliza tareas de contexto; este panel ilustra la idea con coordenadas elegidas.';
+        I18N.en.lab2_sub = 'Embeddings are parameters learned through a training objective. Word2Vec uses context tasks; this panel illustrates the idea with selected coordinates.';
+        I18N.es.lab4_sub = 'Ocho cabezas con ancho 64 ilustran distintas combinaciones de información. Las matrices y etiquetas de este laboratorio están elegidas a mano, no aprendidas por un modelo.';
+        I18N.en.lab4_sub = 'Eight heads of width 64 illustrate different information combinations. Lab matrices and labels are hand-selected rather than learned by a model.';
+        I18N.es.ls_desc = 'Suaviza la distribución objetivo y puede reducir el exceso de confianza. No garantiza evitar logits grandes ni sustituye otras decisiones de entrenamiento.';
+        I18N.en.ls_desc = 'Softens the target distribution and may reduce overconfidence. It does not guarantee avoidance of large logits or replace other training choices.';
 
         function escapeNoteText(text) {
             return text.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -1248,8 +1263,6 @@
                 time: "00:00:06", sec: 6,
                 title_es: "Presentación de la cátedra CME295 y objetivos del curso",
                 title_en: "Introduction to CME295 Course & Learning Objectives",
-                desc_es: "Afshine y Shervin Amidi presentan la visión del curso en Stanford: desmitificar los LLMs analizando su arquitectura interna matemática, tensores, proyecciones y funciones de pérdida, superando la visión superficial de cajas negras o simples APIs.",
-                desc_en: "Afshine and Shervin Amidi present the vision for Stanford CME295: demystifying Large Language Models by studying internal tensor mathematics, projection mechanics, and loss functions, going far beyond superficial API black-box usage.",
                 keywords_es: "introduccion afshine shervin amidi objetivos cme295 stanford llm",
                 keywords_en: "introduction afshine shervin amidi goals objectives cme295 stanford llm"
             },
@@ -1257,8 +1270,6 @@
                 time: "00:12:46", sec: 766,
                 title_es: "Contexto Histórico: RNN, LSTM y sus Tres Cuellos de Botella",
                 title_en: "Historical Context: RNN, LSTM & The Three Key Bottlenecks",
-                desc_es: "Se analizan los modelos secuenciales previos. Tres limitaciones forzaron la invención del Transformer: 1) Cuello de botella secuencial (imposible paralelizar h_t = f(h_{t-1}, x_t) en GPUs), 2) Cuello de memoria al comprimir secuencias largas en un solo vector final, y 3) Desvanecimiento del gradiente en BPTT a través del tiempo.",
-                desc_en: "Review of recurrent baselines. Three major drawbacks prompted the Transformer: 1) Sequential bottleneck (impossible to parallelize h_t = f(h_{t-1}, x_t) on GPUs), 2) Memory bottleneck compressing long paragraphs into a single context vector, and 3) Vanishing gradients during Backpropagation Through Time (BPTT).",
                 keywords_es: "rnn lstm cuello de botella secuencial vanishing gradients bptt",
                 keywords_en: "rnn lstm sequential bottleneck vanishing gradients bptt memory"
             },
@@ -1266,8 +1277,6 @@
                 time: "00:17:06", sec: 1026,
                 title_es: "Fundamentos de Tokenización: Palabras, Caracteres y BPE",
                 title_en: "Tokenization Fundamentals: Words, Characters & BPE",
-                desc_es: "Shervin explica el compromiso clave: la tokenización por palabras genera vocabularios gigantescos (>500k) y problemas OOV (Out-of-Vocabulary); la de caracteres alarga las secuencias 10x perdiendo semántica. BPE (Byte Pair Encoding) surge como solución de compromiso óptima basada en subpalabras y frecuencias.",
-                desc_en: "Shervin explains the fundamental trade-off: word-level tokens create massive vocabularies (>500k) and Out-Of-Vocabulary (OOV) failures; character-level tokens bloat sequence lengths 10x with scarce semantic density. BPE (Byte Pair Encoding) provides the sweet spot by merging frequent subword units.",
                 keywords_es: "tokenizacion palabras caracteres bpe subpalabras oov trade-off",
                 keywords_en: "tokenization words characters bpe subwords oov trade-off"
             },
@@ -1275,8 +1284,6 @@
                 time: "00:31:42", sec: 1902,
                 title_es: "Tokens Especiales Sintácticos (<BOS>, <EOS>, <UNK>, <PAD>)",
                 title_en: "Special Syntactic Tokens (<BOS>, <EOS>, <UNK>, <PAD>)",
-                desc_es: "Explicación de las etiquetas de control que estructuran los tensores: <BOS> (inicio de decodificación autorregresiva), <EOS> (condición de parada), <PAD> (relleno para ensamblar matrices rectangulares en batches de GPU) y <UNK> para caracteres no representables.",
-                desc_en: "Breakdown of essential control tokens structuring tensors: <BOS> (triggers autoregressive decoding), <EOS> (halting condition), <PAD> (padding for rectangular batch matrices on GPUs), and <UNK> for unseen characters.",
                 keywords_es: "tokens especiales bos eos unk pad sintaxis gpu batch",
                 keywords_en: "special tokens bos eos unk pad syntax gpu batch rectangular"
             },
@@ -1284,8 +1291,6 @@
                 time: "00:37:44", sec: 2264,
                 title_es: "De One-Hot a Embeddings: Tarea Proxy de Word2Vec y Polisemia",
                 title_en: "From One-Hot to Embeddings: Word2Vec Proxy Task & Polysemy",
-                desc_es: "Afin ilustra cómo los embeddings surgen como subproducto de entrenar una red de 2 capas para predecir palabras vecinas mediante un cuello de botella d. Limitación crucial de Word2Vec: asigna un único vector estático invariable a palabras polisémicas como 'bank' o 'cute'.",
-                desc_en: "Afin demonstrates that word embeddings emerge as weights of an auxiliary 2-layer network trained to predict context tokens via a bottleneck dimension d. Critical flaw of Word2Vec: it assigns a static, context-free vector to polysemic words like 'bank' or 'cute'.",
                 keywords_es: "word2vec embeddings estaticos tarea proxy bottleneck polisemia bank",
                 keywords_en: "word2vec embeddings static proxy task bottleneck polysemy bank"
             },
@@ -1293,17 +1298,13 @@
                 time: "00:55:14", sec: 3314,
                 title_es: "Surgimiento del Mecanismo de Atención e Intuición Q, K, V",
                 title_en: "Emergence of Attention: The Q, K, V Intuition",
-                desc_es: "Analogía con motores de búsqueda para resolver representaciones contextuales: Query (Q: pregunta que formula el token), Key (K: etiqueta descriptiva de cada palabra) y Value (V: contenido semántico que se agrega y pondera mediante la afinidad Q·K^T).",
-                desc_en: "Search engine analogy for dynamic contextual representations: Query (Q: question asked by the current token), Key (K: tag describing all candidate tokens), and Value (V: semantic payload aggregated according to Q·K^T compatibility).",
                 keywords_es: "atencion self-attention queries keys values q k v contexto",
                 keywords_en: "attention self-attention queries keys values q k v context"
             },
             {
                 time: "01:04:45", sec: 3885,
-                title_es: "Formulación Matricial: Softmax(QK^T / sqrt(d_k)) V",
-                title_en: "Matrix Formulation: Softmax(QK^T / sqrt(d_k)) V",
-                desc_es: "Desarrollo del cálculo tensorial escalado. Shervin demuestra por qué el factor 1/sqrt(d_k) es matemático: la varianza de la suma de d_k productos aleatorios crece linealmente con d_k, empujando los logits a regiones donde el gradiente de Softmax colapsa a 0.",
-                desc_en: "Scaled dot-product tensor formulation. Shervin proves why 1/sqrt(d_k) is mandatory: the variance of summing d_k products grows linearly with d_k, pushing logits into saturation regions where Softmax gradients vanish to zero.",
+                title_es: "Dimensiones, Softmax y Multi-Head Attention",
+                title_en: "Dimensions, Softmax and Multi-Head Attention",
                 keywords_es: "scaled dot product matriz softmax raiz dk varianza gradientes",
                 keywords_en: "scaled dot product matrix softmax sqrt dk variance gradients"
             },
@@ -1311,8 +1312,6 @@
                 time: "01:12:26", sec: 4346,
                 title_es: "Positional Encoding: Analogía del Reloj y Ondas Sinusoidales",
                 title_en: "Positional Encoding: Clock Analogy & Sinusoidal Waves",
-                desc_es: "Al ser la auto-atención pura equivariante a las permutaciones (carece de orden posicional nativo), Afin recurre a la metáfora de un reloj con manecillas a distintas frecuencias para ilustrar cómo el vector sinusoidal continuo inyecta un identificador de orden inequívoco.",
-                desc_en: "Since pure self-attention is permutation equivariant (blind to sequence order), Afin presents the clock analogy with hands sweeping at different frequencies to explain how continuous sinusoidal vectors inject deterministic order.",
                 keywords_es: "positional encoding reloj manecillas ondas sinusoidales equivariancia",
                 keywords_en: "positional encoding clock hands sinusoidal waves equivariance order"
             },
@@ -1320,8 +1319,6 @@
                 time: "01:16:21", sec: 4581,
                 title_es: "Arquitectura del Encoder y Redes Feed-Forward (FFN)",
                 title_en: "Encoder Architecture & Position-Wise Feed-Forward Networks",
-                desc_es: "Anatomía de la pila del codificador: tras Multi-Head Attention, cada token se proyecta individualmente a través de un bloque FFN bi-capa con expansión d_ff = 2048 y activación ReLU/GELU, permitiendo transformaciones no lineales complejas.",
-                desc_en: "Anatomy of the encoder stack: following Multi-Head Attention, every token vector is passed independently through a position-wise two-layer FFN expanded to d_ff = 2048 with ReLU/GELU activations for non-linear feature transformation.",
                 keywords_es: "encoder ffn feed forward capas mlp expansion",
                 keywords_en: "encoder ffn feed forward layers mlp expansion"
             },
@@ -1329,8 +1326,6 @@
                 time: "01:18:25", sec: 4705,
                 title_es: "Arquitectura del Decoder: Masked Self-Attention y Cross-Attention",
                 title_en: "Decoder Architecture: Masked Self-Attention & Cross-Attention",
-                desc_es: "El Decodificador incorpora dos atenciones cruciales: 1) Masked Self-Attention con máscara causal (-infinito) para no filtrar el futuro, y 2) Cross-Attention donde el Decoder emite la Query (Q) y el Encoder suministra Keys (K) y Values (V).",
-                desc_en: "The Decoder introduces two critical attention mechanisms: 1) Masked Self-Attention with a causal triangular mask (-inf) preventing future lookahead, and 2) Cross-Attention where the Decoder issues the Query (Q) while the Encoder provides Keys (K) and Values (V).",
                 keywords_es: "decoder cross attention masked self-attention mascara causal flechas",
                 keywords_en: "decoder cross attention masked self-attention causal mask arrows"
             },
@@ -1338,8 +1333,6 @@
                 time: "01:22:15", sec: 4935,
                 title_es: "Trucos de Entrenamiento: Residuales, LayerNorm y Label Smoothing",
                 title_en: "Training Stability Tricks: Residuals, LayerNorm & Label Smoothing",
-                desc_es: "Shervin detalla la ingeniería para que modelos profundos converjan: conexiones residuales x + f(x) que abren autopistas directas para el gradiente (I + df/dx), normalización por capas (LayerNorm) y regularización suave de probabilidades con Label Smoothing.",
-                desc_en: "Shervin details the stability tricks enabling deep networks to converge: residual connections x + f(x) opening gradient identity highways (I + df/dx), Layer Normalization, and probability regularization using Label Smoothing.",
                 keywords_es: "trucos entrenamiento residual layernorm label smoothing autopista estabilidad",
                 keywords_en: "training tricks residual layernorm label smoothing highway stability"
             },
@@ -1347,12 +1340,50 @@
                 time: "01:27:42", sec: 5262,
                 title_es: "Recorrido Completo: 'a cute teddy bear is reading' & Cierre",
                 title_en: "End-to-End Walkthrough: 'a cute teddy bear is reading' & Closing",
-                desc_es: "Traza final de extremo a extremo: tokenización de 6 palabras, suma de embeddings posicionales, paso por las 6 capas del Encoder y traducción autorregresiva en el Decoder al francés ('Un ours en peluche mignon lit') hasta emitir <EOS>.",
-                desc_en: "Complete pipeline recap: tokenizing 6 input words, adding positional encodings, passing through 6 Encoder layers, and autoregressively generating the French translation in the Decoder ('Un ours en peluche mignon lit') until <EOS> is emitted.",
                 keywords_es: "recorrido completo a cute teddy bear is reading frances traduccion cierre",
                 keywords_en: "end to end walkthrough a cute teddy bear is reading french translation recap"
             }
         ];
+
+        const labAnswers = {};
+        function renderLabLearning() {
+            const labIds = ['lab-1-tokenizer','lab-2-word2vec','lab-3-attention','lab-4-multihead','lab-5-positional','lab-6-decoder','lab-7-tricks'];
+            window.CME295_LAB_LEARNING[currentLang].forEach((lesson, idx) => {
+                const lab = document.getElementById(labIds[idx]);
+                let panel = document.getElementById('learning-' + idx);
+                if (!panel) { panel = document.createElement('div'); panel.id = 'learning-' + idx; lab.appendChild(panel); }
+                panel.className = 'p-4 sm:p-5 rounded-xl bg-indigo-950/30 border border-indigo-800 space-y-4';
+                const es = currentLang === 'es';
+                panel.innerHTML = '<p class="text-sm leading-relaxed text-slate-300"><strong>' + (es ? 'Qué hace este laboratorio: ' : 'What this lab does: ') + '</strong>' + escapeNoteText(lesson.note) + '</p><fieldset><legend class="text-sm font-bold text-indigo-300">' + (es ? 'Comprueba lo aprendido' : 'Check your understanding') + '</legend><p class="text-sm my-3">' + escapeNoteText(lesson.q) + '</p><div class="flex flex-col gap-2">' + lesson.options.map((option, i) => '<button type="button" aria-pressed="' + (labAnswers[idx] === i) + '" onclick="answerLab(' + idx + ',' + i + ')" class="text-left p-3 rounded-lg border border-slate-600 hover:border-indigo-400 focus:outline focus:outline-2 focus:outline-indigo-400 text-sm">' + escapeNoteText(option) + '</button>').join('') + '</div><p id="lab-feedback-' + idx + '" role="status" aria-live="polite" class="mt-3 text-sm leading-relaxed"></p></fieldset>';
+                if (labAnswers[idx] !== undefined) showLabFeedback(idx);
+            });
+            const intro = document.getElementById('study-intro');
+            intro.innerHTML = currentLang === 'es'
+                ? '<h3 class="font-bold text-indigo-300">Aprender desde cero</h3><p class="mt-2 text-sm leading-relaxed">Lee los apartados en orden. Cada uno incluye una explicación desarrollada y una pregunta con respuesta razonada. Los ejemplos añadidos son explicaciones independientes, no una transcripción del vídeo. Las marcas de tiempo sirven como orientación y están pendientes de comprobación.</p>'
+                : '<h3 class="font-bold text-indigo-300">Learning from scratch</h3><p class="mt-2 text-sm leading-relaxed">Read the sections in order. Each includes an expanded explanation and a question with an explained answer. Added examples are independent explanations, not a video transcript. Timestamps are navigation aids awaiting verification.</p>';
+            intro.innerHTML += '<p class="mt-3 text-sm">' + (currentLang === 'es' ? 'Fuentes para profundizar: ' : 'Further reading: ') + '<a class="underline text-indigo-300" href="https://github.com/afshinea/stanford-cme-295-transformers-large-language-models" target="_blank" rel="noopener noreferrer">CME295 cheatsheet</a> · <a class="underline text-indigo-300" href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener noreferrer">Attention Is All You Need</a> · <a class="underline text-indigo-300" href="https://aclanthology.org/P16-1162/" target="_blank" rel="noopener noreferrer">BPE — Sennrich et al.</a></p>';
+        }
+        function showLabFeedback(idx) {
+            const lesson = window.CME295_LAB_LEARNING[currentLang][idx];
+            const correct = labAnswers[idx] === lesson.correct;
+            const feedback = document.getElementById('lab-feedback-' + idx);
+            feedback.textContent = (currentLang === 'es' ? (correct ? 'Correcto. ' : 'Revisa tu respuesta. ') : (correct ? 'Correct. ' : 'Review your answer. ')) + lesson.why;
+            feedback.className = 'mt-3 text-sm leading-relaxed ' + (correct ? 'text-emerald-300' : 'text-amber-300');
+        }
+        function answerLab(idx, option) {
+            labAnswers[idx] = option;
+            const buttons = document.querySelectorAll('#learning-' + idx + ' button');
+            buttons.forEach((button, i) => {button.setAttribute('aria-pressed', String(i === option)); button.classList.toggle('bg-indigo-900', i === option);});
+            showLabFeedback(idx);
+        }
+
+        function renderStudySection(idx) {
+            const lesson = window.CME295_STUDY[currentLang][idx];
+            const label = currentLang === 'es' ? 'Comprueba lo aprendido' : 'Check your understanding';
+            const answer = currentLang === 'es' ? 'Ver respuesta razonada' : 'Show explained answer';
+            return lesson.p.slice(1).map(p => '<p class="leading-relaxed">' + escapeNoteText(p) + '</p>').join('') +
+                '<div class="mt-5 p-4 rounded-xl border border-indigo-800 bg-indigo-950/30"><h4 class="font-bold text-indigo-300">' + label + '</h4><p class="mt-2">' + escapeNoteText(lesson.q) + '</p><details class="mt-3"><summary class="cursor-pointer text-indigo-300 focus:outline focus:outline-2">' + answer + '</summary><p class="mt-3 leading-relaxed">' + escapeNoteText(lesson.a) + '</p></details></div>';
+        }
 
         function renderTimelineNotes() {
             const container = document.getElementById('timeline-container');
@@ -1361,7 +1392,7 @@
 
             lectureNotesData.forEach((item, idx) => {
                 const title = (currentLang === 'es') ? item.title_es : item.title_en;
-                const desc = (currentLang === 'es') ? item.desc_es : item.desc_en;
+                const desc = window.CME295_STUDY[currentLang][idx].p[0];
                 const keywords = (currentLang === 'es') ? item.keywords_es : item.keywords_en;
                 const seeMoreText = (currentLang === 'es') ? "Ver detalle ▼" : "View details ▼";
 
@@ -1372,9 +1403,9 @@
                 wrapper.innerHTML = `
                     <div class="absolute left-3.5 top-2 w-3.5 h-3.5 rounded-full bg-indigo-500 border-4 border-slate-950 group-hover:scale-125 transition-transform"></div>
                     <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-800 hover:border-slate-700 transition">
-                        <div class="flex flex-wrap items-center justify-between gap-2 cursor-pointer" onclick="toggleDetails('item-${idx}')">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
                             <div class="flex items-center space-x-3">
-                                <a href="https://www.youtube.com/watch?v=114i2Kz-LZA&t=${item.sec}s" target="_blank" rel="noopener noreferrer" 
+                                <a href="https://www.youtube.com/watch?v=114i2Kz-LZA&t=${item.sec}s" target="_blank" rel="noopener noreferrer"
                                    class="text-xs font-mono px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 font-semibold hover:bg-red-900 transition flex items-center gap-1"
                                    onclick="event.stopPropagation()">
                                     <span>[${item.time}]</span>
@@ -1382,10 +1413,11 @@
                                 </a>
                                     <h3 class="font-bold text-sm sm:text-base text-slate-100">${escapeNoteText(title)}</h3>
                             </div>
-                            <span class="text-xs text-indigo-400 font-mono">${seeMoreText}</span>
+                            <button type="button" aria-controls="item-${idx}" aria-expanded="true" onclick="toggleDetails('item-${idx}')" class="text-xs text-indigo-300 font-mono">${seeMoreText}</button>
                         </div>
                         <div id="item-${idx}" class="mt-3 text-sm text-slate-300 space-y-2 border-t border-slate-800/80 pt-3">
                             <p class="leading-relaxed">${escapeNoteText(desc)}</p>
+                            ${renderStudySection(idx)}
                         </div>
                     </div>
                 `;
@@ -1395,13 +1427,14 @@
 
         function toggleDetails(id) {
             const el = document.getElementById(id);
-            if (el) el.classList.toggle('hidden');
+            if (el) { el.classList.toggle('hidden'); document.querySelector('[aria-controls="' + id + '"]').setAttribute('aria-expanded', String(!el.classList.contains('hidden'))); }
         }
 
         function expandAllTimeline(expand) {
             lectureNotesData.forEach((_, idx) => {
                 const el = document.getElementById('item-' + idx);
                 if (el) {
+                    document.querySelector('[aria-controls="item-' + idx + '"]').setAttribute('aria-expanded', String(expand));
                     if (expand) el.classList.remove('hidden');
                     else el.classList.add('hidden');
                 }
@@ -1526,30 +1559,45 @@
             }
         }
 
-        const bpeCorpusData = {
-            reading: {
-                steps: [
-                    { tokens: ["r", "e", "a", "d", "i", "n", "g", "•", "a", "n", "d", "•", "r", "e", "a", "d", "i", "n", "g", "•", "b", "e", "a", "r", "s"], pair: null, vocab: ["r","e","a","d","i","n","g","a","d","b","s","•"], note_es: "Paso 0: Segmentación de caracteres atómicos iniciales.", note_en: "Step 0: Initial atomic character segmentation." },
-                    { tokens: ["r", "e", "a", "d", "in", "g", "•", "a", "n", "d", "•", "r", "e", "a", "d", "in", "g", "•", "b", "e", "a", "r", "s"], pair: "('i', 'n') -> 'in'", vocab: ["r","e","a","d","g","b","s","•","in"], note_es: "Fusión 1: El par ('i', 'n') es el más frecuente y se fusiona en 'in'.", note_en: "Merge 1: Pair ('i', 'n') is most frequent; merged into 'in'." },
-                    { tokens: ["r", "e", "a", "d", "ing", "•", "a", "n", "d", "•", "r", "e", "a", "d", "ing", "•", "b", "e", "a", "r", "s"], pair: "('in', 'g') -> 'ing'", vocab: ["r","e","a","d","b","s","•","in","ing"], note_es: "Fusión 2: ('in', 'g') se combina formando el sufijo morfológico 'ing'.", note_en: "Merge 2: ('in', 'g') combines to form morphological suffix 'ing'." },
-                    { tokens: ["read", "ing", "•", "a", "n", "d", "•", "read", "ing", "•", "b", "e", "a", "r", "s"], pair: "('r', 'e', 'a', 'd') -> 'read'", vocab: ["read","ing","b","s","•","a","n","d"], note_es: "Fusión 3: La raíz común 'read' se consolida como token de subpalabra.", note_en: "Merge 3: Common root 'read' consolidates as subword token." },
-                    { tokens: ["reading", "•", "and", "•", "reading", "•", "bears"], pair: "('read', 'ing') -> 'reading'", vocab: ["reading","and","bears","•"], note_es: "Fusión 4: 'reading' completo ya forma parte del vocabulario BPE.", note_en: "Merge 4: Full word 'reading' now forms part of the vocabulary." }
-                ]
-            },
-            cute: {
-                steps: [
-                    { tokens: ["c", "u", "t", "e", "•", "t", "e", "d", "d", "y", "•", "b", "e", "a", "r"], pair: null, vocab: ["c","u","t","e","t","d","y","b","a","r","•"], note_es: "Paso 0: Caracteres base.", note_en: "Step 0: Base characters." },
-                    { tokens: ["c", "u", "t", "e", "•", "t", "e", "dd", "y", "•", "b", "e", "a", "r"], pair: "('d', 'd') -> 'dd'", vocab: ["c","u","t","e","t","y","b","a","r","dd"], note_es: "Fusión 1: Geminada 'dd' fusionada.", note_en: "Merge 1: 'dd' merged into single unit." },
-                    { tokens: ["cute", "•", "teddy", "•", "bear"], pair: "('teddy', 'bear')", vocab: ["cute","teddy","bear"], note_es: "Fusión final: Tokens léxicos consolidados.", note_en: "Final merge: Consolidating lexical tokens." }
-                ]
-            },
-            low: {
-                steps: [
-                    { tokens: ["l", "o", "w", "•", "l", "o", "w", "e", "r", "•", "l", "o", "w", "e", "s", "t"], pair: null, vocab: ["l","o","w","e","r","s","t","•"], note_es: "Paso 0: Segmentación de letras base.", note_en: "Step 0: Character base segmentation." },
-                    { tokens: ["low", "•", "low", "e", "r", "•", "low", "e", "s", "t"], pair: "('l', 'o', 'w') -> 'low'", vocab: ["low","e","r","s","t"], note_es: "Fusión 1: La raíz común 'low' se unifica.", note_en: "Merge 1: Common root 'low' unifies." },
-                    { tokens: ["low", "•", "lower", "•", "lowest"], pair: "('low', 'er') & ('low', 'est')", vocab: ["low","lower","lowest"], note_es: "Fusión final: Raíz y sufijos comparativos consolidados.", note_en: "Final merge: Root and comparative suffixes consolidated." }
-                ]
+        function buildBPECorpus(corpus, maxMerges = 12) {
+            let words = corpus.trim().split(/\s+/).map(word => Array.from(word));
+            const vocab = new Set(words.flat());
+            const flatten = () => words.flatMap((word, i) => i ? ['•', ...word] : word);
+            const steps = [{tokens: flatten(), pair: null, vocab: [...vocab],
+                note_es: 'Paso 0: caracteres por palabra. Los espacios son separadores y no se fusionan.',
+                note_en: 'Step 0: characters within each word. Spaces are separators and are never merged.'}];
+            for (let step = 0; step < maxMerges; step++) {
+                const counts = new Map();
+                for (const word of words) for (let i = 0; i < word.length - 1; i++) {
+                    const key = JSON.stringify([word[i], word[i + 1]]);
+                    counts.set(key, (counts.get(key) || 0) + 1);
+                }
+                if (!counts.size) break;
+                // Equal-frequency ties use first occurrence in corpus order.
+                let best = null, frequency = 0;
+                for (const [key, count] of counts) if (count > frequency) {best = key; frequency = count;}
+                const [left, right] = JSON.parse(best), merged = left + right;
+                let replacements = 0;
+                words = words.map(word => {
+                    const result = [];
+                    for (let i = 0; i < word.length; i++) {
+                        if (word[i] === left && word[i + 1] === right) {result.push(merged); i++; replacements++;}
+                        else result.push(word[i]);
+                    }
+                    return result;
+                });
+                vocab.add(merged);
+                steps.push({tokens: flatten(), pair: left + ' + ' + right + ' → ' + merged,
+                    vocab: [...vocab], frequency, replacements,
+                    note_es: 'Par más frecuente: ' + left + ' + ' + right + ' (' + frequency + ' apariciones). Sustituciones no solapadas: ' + replacements + '. Empates: primera aparición en el corpus. Se conservan los símbolos previos del vocabulario.',
+                    note_en: 'Most frequent pair: ' + left + ' + ' + right + ' (' + frequency + ' occurrences). Non-overlapping replacements: ' + replacements + '. Ties: first occurrence in the corpus. Earlier vocabulary symbols are retained.'});
             }
+            return {steps};
+        }
+        const bpeCorpusData = {
+            reading: buildBPECorpus('reading and reading bears'),
+            cute: buildBPECorpus('cute teddy bear is cute'),
+            low: buildBPECorpus('low lower lowest newer')
         };
 
         let currentBPECorpusKey = 'reading';
@@ -1565,14 +1613,14 @@
             const data = bpeCorpusData[currentBPECorpusKey];
             const stepObj = data.steps[currentBPEStep];
 
-            const stepText = (currentLang === 'es') 
-                ? `Paso ${currentBPEStep} de ${data.steps.length - 1}` 
+            const stepText = (currentLang === 'es')
+                ? `Paso ${currentBPEStep} de ${data.steps.length - 1}`
                 : `Step ${currentBPEStep} of ${data.steps.length - 1}`;
             document.getElementById('bpe-step-counter').innerText = stepText;
 
             document.getElementById('bpe-btn-prev').disabled = (currentBPEStep === 0);
             document.getElementById('bpe-btn-next').disabled = (currentBPEStep === data.steps.length - 1);
-            
+
             document.getElementById('bpe-status-message').innerText = (currentLang === 'es') ? stepObj.note_es : stepObj.note_en;
 
             const badge = document.getElementById('bpe-merged-pair-badge');
@@ -1588,8 +1636,8 @@
                 } else {
                     const isMerged = tok.length > 1;
                     span.className = `px-2 py-0.5 rounded-md font-mono text-xs border transition ${
-                        isMerged 
-                            ? 'bg-amber-950/80 text-amber-300 border-amber-600 font-bold scale-105' 
+                        isMerged
+                            ? 'bg-amber-950/80 text-amber-300 border-amber-600 font-bold scale-105'
                             : 'bg-slate-900 text-slate-300 border-slate-800'
                     }`;
                     span.textContent = tok;
@@ -1630,34 +1678,34 @@
         }
 
         const w2vPoints = [
-            { word: "teddy", x: 0.72, y: 0.65, cluster: "toy", 
+            { word: "teddy", x: 0.72, y: 0.65, cluster: "toy",
               expl_es: "Palabra central de la clase. En Word2Vec se agrupa fuertemente con 'bear' y 'soft'.",
               expl_en: "Lecture key token. In Word2Vec it clusters closely with 'bear' and 'soft'." },
-            { word: "bear", x: 0.76, y: 0.58, cluster: "toy", 
+            { word: "bear", x: 0.76, y: 0.58, cluster: "toy",
               expl_es: "Núcleo del sustantivo; vector muy cercano a 'teddy' por co-ocurrencia sistemática.",
               expl_en: "Noun head; vector situated very close to 'teddy' due to frequent co-occurrence." },
-            { word: "cute", x: 0.62, y: 0.72, cluster: "toy", 
+            { word: "cute", x: 0.62, y: 0.72, cluster: "toy",
               expl_es: "Adjetivo descriptor de peluches y animales. Comparte cuadrante con el objeto modificado.",
               expl_en: "Descriptive adjective for toys/animals. Shares quadrant with the modified entity." },
-            { word: "soft", x: 0.55, y: 0.60, cluster: "toy", 
+            { word: "soft", x: 0.55, y: 0.60, cluster: "toy",
               expl_es: "Atributo físico táctil que orbita el espacio semántico de 'teddy bear'.",
               expl_en: "Tactile attribute orbiting the semantic neighborhood of 'teddy bear'." },
-            { word: "reading", x: -0.50, y: 0.60, cluster: "action", 
+            { word: "reading", x: -0.50, y: 0.60, cluster: "action",
               expl_es: "Verbo de acción cognitiva. Se proyecta en el polo opuesto de actividades intelectuales.",
               expl_en: "Cognitive action verb. Projects into the distinct quadrant of intellectual activities." },
-            { word: "learning", x: -0.62, y: 0.52, cluster: "action", 
+            { word: "learning", x: -0.62, y: 0.52, cluster: "action",
               expl_es: "Acción similar a 'reading' en el espacio de representación distribuida.",
               expl_en: "Action akin to 'reading' in the distributed continuous semantic space." },
-            { word: "book", x: -0.38, y: 0.45, cluster: "action", 
+            { word: "book", x: -0.38, y: 0.45, cluster: "action",
               expl_es: "Objeto directo típico del verbo 'reading'.",
               expl_en: "Direct syntactic argument typically paired with verb 'reading'." },
-            { word: "Paris", x: -0.60, y: -0.65, cluster: "geo", 
+            { word: "Paris", x: -0.60, y: -0.65, cluster: "geo",
               expl_es: "Capital francesa (ejemplo clásico de analogías en la pizarra de Stanford).",
               expl_en: "Capital city (classic Stanford lecture analogy: Paris - France + Spain = Madrid)." },
-            { word: "France", x: -0.45, y: -0.75, cluster: "geo", 
+            { word: "France", x: -0.45, y: -0.75, cluster: "geo",
               expl_es: "País asociado por el vector de relación capital-país.",
               expl_en: "Country node connected by the capital-to-country relational shift." },
-            { word: "Madrid", x: -0.72, y: -0.48, cluster: "geo", 
+            { word: "Madrid", x: -0.72, y: -0.48, cluster: "geo",
               expl_es: "Capital española; ilustra la aritmética de traslación vectorial.",
               expl_en: "Spanish capital; illustrates vector offset arithmetic in continuous embeddings." }
         ];
@@ -1759,7 +1807,7 @@
 
         function setScalingMode(active) {
             isScalingActive = active;
-            document.getElementById('btn-scale-on').className = active 
+            document.getElementById('btn-scale-on').className = active
                 ? "flex-1 py-2 rounded-lg bg-rose-600 text-white font-mono text-xs font-bold transition shadow-sm"
                 : "flex-1 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 font-mono text-xs font-bold hover:text-white transition";
             document.getElementById('btn-scale-off').className = !active
@@ -1811,8 +1859,8 @@
             const badgeEl = document.getElementById('scale-status-badge');
             const explEl = document.getElementById('scale-math-expl');
 
-            const statusSuffix = (gradMagnitude < 0.03) 
-                ? ((currentLang === 'es') ? '(¡CONGELADO!)' : '(VANISHED!)') 
+            const statusSuffix = (gradMagnitude < 0.03)
+                ? ((currentLang === 'es') ? '(¡CONGELADO!)' : '(VANISHED!)')
                 : ((currentLang === 'es') ? '(Saludable)' : '(Healthy)');
             gradValEl.innerText = `${gradMagnitude.toFixed(3)} ${statusSuffix}`;
             gradBarEl.style.width = `${Math.min(100, (gradMagnitude / 0.25) * 100)}%`;
@@ -1822,38 +1870,38 @@
                 badgeEl.className = "px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 font-bold";
                 gradBarEl.className = "h-full bg-red-500 rounded-full transition-all duration-200";
                 alertBox.className = "p-3 bg-red-950/40 border border-red-800/60 rounded-lg text-xs space-y-1 text-slate-300";
-                
+
                 if (currentLang === 'es') {
                     alertBox.innerHTML = `
                         <strong class="text-red-400 font-mono block">⚠️ Desvanecimiento del Gradiente:</strong>
                         <p>Sin dividir por $\\sqrt{d_k}$, los productos escalares crecen a magnitudes de $\\pm ${Math.round(Math.sqrt(dk) * 2.5)}$. Softmax satura asignando >99% a un token. Como $\\frac{\\partial S_i}{\\partial z_i} = p_i(1-p_i) \\to 0$, el gradiente retropropagado es prácticamente NULO.</p>
                     `;
-                    explEl.innerHTML = `Sin escala, la varianza es $\\text{Var} = ${dk}$. Softmax se convierte en un escalón duro no diferenciable.`;
+                    explEl.innerHTML = `Sin escala, la varianza es $\\text{Var} = ${dk}$. Softmax puede concentrarse mucho y tener gradientes muy pequeños; sigue siendo diferenciable.`;
                 } else {
                     alertBox.innerHTML = `
                         <strong class="text-red-400 font-mono block">⚠️ Vanishing Gradient Alert:</strong>
                         <p>Without dividing by $\\sqrt{d_k}$, dot products blow up to $\\pm ${Math.round(Math.sqrt(dk) * 2.5)}$. Softmax saturates assigning >99% to one token. Since $\\frac{\\partial S_i}{\\partial z_i} = p_i(1-p_i) \\to 0$, backpropagated gradient vanishes completely.</p>
                     `;
-                    explEl.innerHTML = `Without scaling, variance reaches $\\text{Var} = ${dk}$. Softmax collapses into an unlearnable step function.`;
+                    explEl.innerHTML = `Without scaling, variance reaches $\\text{Var} = ${dk}$. Softmax can become highly concentrated with very small gradients; it remains differentiable.`;
                 }
             } else {
                 badgeEl.innerText = (currentLang === 'es') ? "Varianza Normalizada" : "Variance Normalized";
                 badgeEl.className = "px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold";
                 gradBarEl.className = "h-full bg-emerald-500 rounded-full transition-all duration-200";
                 alertBox.className = "p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-lg text-xs space-y-1 text-slate-300";
-                
+
                 if (currentLang === 'es') {
                     alertBox.innerHTML = `
                         <strong class="text-emerald-300 font-mono block">✅ Aprendizaje Estable:</strong>
-                        <p>Al dividir por $\\sqrt{${dk}} = ${(Math.sqrt(dk)).toFixed(1)}$, la varianza del producto escalar se mantiene en 1.0. Las probabilidades se distribuyen suavemente y el gradiente fluye con fuerza.</p>
+                        <p>Al dividir por $\\sqrt{${dk}} = ${(Math.sqrt(dk)).toFixed(1)}$, la teoría predice varianza 1 bajo las hipótesis indicadas. Este gráfico usa logits elegidos, no una estimación de varianza ni una garantía de aprendizaje.</p>
                     `;
-                    explEl.innerHTML = `Al dividir por $\\sqrt{d_k} = ${(Math.sqrt(dk)).toFixed(1)}$, los logits preservan su escala óptima independientemente de la dimensión.`;
+                    explEl.innerHTML = `Al dividir por $\\sqrt{d_k} = ${(Math.sqrt(dk)).toFixed(1)}$, en este ejemplo se reduce la magnitud de los logits; no se garantiza una escala óptima en todo modelo.`;
                 } else {
                     alertBox.innerHTML = `
                         <strong class="text-emerald-300 font-mono block">✅ Stable Optimization:</strong>
-                        <p>Dividing by $\\sqrt{${dk}} = ${(Math.sqrt(dk)).toFixed(1)}$ rescales the dot product variance back to 1.0. Probabilities stay smooth and gradients flow robustly.</p>
+                        <p>Dividing by $\\sqrt{${dk}} = ${(Math.sqrt(dk)).toFixed(1)}$ predicts unit variance under the stated assumptions. This plot uses selected logits, not an empirical variance estimate or a learning guarantee.</p>
                     `;
-                    explEl.innerHTML = `Dividing by $\\sqrt{d_k} = ${(Math.sqrt(dk)).toFixed(1)}$ preserves optimal logit scale regardless of key dimension.`;
+                    explEl.innerHTML = `Dividing by $\\sqrt{d_k} = ${(Math.sqrt(dk)).toFixed(1)}$ reduces logit magnitude in this example; it does not guarantee optimal scale in every model.`;
                 }
             }
             refreshMath(alertBox);
@@ -1862,8 +1910,8 @@
 
         const sampleWords = ["a", "cute", "teddy", "bear", "is", "reading"];
         const mhaHeadsData = [
-            { id: 1, 
-              title_es: "Cabeza 1: Adjetivo &rarr; Sustantivo", 
+            { id: 1,
+              title_es: "Cabeza 1: Adjetivo &rarr; Sustantivo",
               title_en: "Head 1: Adjective &rarr; Noun Modifier",
               desc_es: "Especializada en enlazar propiedades calificativas al sustantivo diana. 'cute' proyecta el 85% de su atención hacia 'teddy' y 'bear'.",
               desc_en: "Specialized in binding modifying attributes to the noun. 'cute' concentrates 85% of its attention onto 'teddy' and 'bear'.",
@@ -1876,8 +1924,8 @@
                 [0.0, 0.0, 0.1, 0.5, 0.2, 0.2]
               ]
             },
-            { id: 2, 
-              title_es: "Cabeza 2: Sujeto &rarr; Verbo Principal", 
+            { id: 2,
+              title_es: "Cabeza 2: Sujeto &rarr; Verbo Principal",
               title_en: "Head 2: Subject &rarr; Main Action Verb",
               desc_es: "Monitorea la concordancia agente-acción. 'bear' atiende con gran intensidad a 'reading'.",
               desc_en: "Tracks subject-agent to verb action relations. 'bear' attends heavily towards 'reading'.",
@@ -1890,8 +1938,8 @@
                 [0.0, 0.0, 0.1, 0.5, 0.2, 0.2]
               ]
             },
-            { id: 3, 
-              title_es: "Cabeza 3: Núcleo Nominal Compuesto", 
+            { id: 3,
+              title_es: "Cabeza 3: Núcleo Nominal Compuesto",
               title_en: "Head 3: Compound Noun Phrase",
               desc_es: "Agrupa sintagmas compuestos: vincula bidireccionalmente 'teddy' con 'bear' como un único ente conceptual.",
               desc_en: "Binds multi-word compound noun phrases: links 'teddy' and 'bear' bidirectionally as a single concept.",
@@ -1904,8 +1952,8 @@
                 [0.0, 0.0, 0.3, 0.5, 0.1, 0.1]
               ]
             },
-            { id: 4, 
-              title_es: "Cabeza 4: Determinante Sintáctico", 
+            { id: 4,
+              title_es: "Cabeza 4: Determinante Sintáctico",
               title_en: "Head 4: Determiner / Specifier",
               desc_es: "Conecta el determinante 'a' con el límite del sustantivo que cuantifica ('bear').",
               desc_en: "Binds indefinite article 'a' to the noun boundary ('bear') it quantifies.",
@@ -1918,8 +1966,8 @@
                 [0.1, 0.0, 0.1, 0.3, 0.2, 0.3]
               ]
             },
-            { id: 5, 
-              title_es: "Cabeza 5: Auxiliar &rarr; Gerundio", 
+            { id: 5,
+              title_es: "Cabeza 5: Auxiliar &rarr; Gerundio",
               title_en: "Head 5: Auxiliary &rarr; Continuous Verb",
               desc_es: "Sintaxis de tiempo verbal: 'is' conecta directamente con 'reading' reconociendo la forma continua.",
               desc_en: "Verbal aspect: 'is' connects directly to 'reading' recognizing the continuous tense.",
@@ -1932,8 +1980,8 @@
                 [0.0, 0.0, 0.0, 0.1, 0.6, 0.3]
               ]
             },
-            { id: 6, 
-              title_es: "Cabeza 6: Identidad Auto-referencial", 
+            { id: 6,
+              title_es: "Cabeza 6: Identidad Auto-referencial",
               title_en: "Head 6: Self-Identity Retention",
               desc_es: "Diagonal predominante: preserva la identidad intrínseca de cada vector de token.",
               desc_en: "Dominant diagonal: retains the intrinsic lexical identity of each individual token.",
@@ -1946,8 +1994,8 @@
                 [0.01, 0.02, 0.03, 0.04, 0.05, 0.85]
               ]
             },
-            { id: 7, 
-              title_es: "Cabeza 7: Token Anterior (Bigrama Posicional)", 
+            { id: 7,
+              title_es: "Cabeza 7: Token Anterior (Bigrama Posicional)",
               title_en: "Head 7: Previous Token (Positional Bigram)",
               desc_es: "Flujo secuencial adyacente: cada posición atiende fuertemente al token previo (i -> i-1).",
               desc_en: "Immediate sequential context: each position attends strongly to the preceding word (i -> i-1).",
@@ -1960,8 +2008,8 @@
                 [0.0, 0.0, 0.0, 0.05, 0.80, 0.15]
               ]
             },
-            { id: 8, 
-              title_es: "Cabeza 8: Contexto Global Oracional", 
+            { id: 8,
+              title_es: "Cabeza 8: Contexto Global Oracional",
               title_en: "Head 8: Global Sentence Context",
               desc_es: "Distribución difusa uniforme para registrar el tópico global del pasaje completo.",
               desc_en: "Diffuse uniform attention capturing sentence-level global topic context.",
@@ -2175,8 +2223,8 @@
                 const chip = document.createElement('div');
                 const isLatest = i === currentDecoderStep;
                 chip.className = `px-3 py-1.5 rounded-lg border font-mono text-xs flex items-center gap-1.5 transition ${
-                    isLatest 
-                        ? 'bg-teal-500/20 text-teal-300 border-teal-500 font-bold scale-105' 
+                    isLatest
+                        ? 'bg-teal-500/20 text-teal-300 border-teal-500 font-bold scale-105'
                         : 'bg-slate-900 text-slate-300 border-slate-800'
                 }`;
 
@@ -2338,7 +2386,7 @@
                 botVal.innerText = "0.960";
                 botBar.style.width = "96%";
                 botBar.className = "bg-indigo-400 h-full transition-all duration-300";
-                
+
                 if (currentLang === 'es') {
                     expl.innerHTML = "<strong>Con residual activado:</strong> La derivada $\\frac{\\partial(x + f(x))}{\\partial x} = I + \\frac{\\partial f(x)}{\\partial x}$ introduce una autopista aditiva de identidad $I$. Esto <em>mitiga y facilita</em> el flujo del gradiente a través de las 12 capas, aunque no constituye una garantía absoluta sin inicialización adecuada y Layer Normalization.";
                 } else {
@@ -2354,7 +2402,7 @@
                 botVal.innerText = vanishedLabel;
                 botBar.style.width = "1%";
                 botBar.className = "bg-red-600 h-full transition-all duration-300";
-                
+
                 if (currentLang === 'es') {
                     expl.innerHTML = "<strong class='text-red-400'>Sin residual (Desvanecimiento del gradiente):</strong> Multiplicaciones sucesivas de matrices jacobianas $\\prod_{l=1}^L W_l$ causan una atenuación exponencial, provocando que las capas inferiores reciban gradientes prácticamente nulos.";
                 } else {
