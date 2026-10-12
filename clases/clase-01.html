@@ -567,7 +567,7 @@
                                 $$PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d}}\right), \quad PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d}}\right)$$
                             </div>
                             <p data-i18n="vaswani_desc">
-                                Las frecuencias forman una progresión geométrica desde $2\pi$ hasta $10000 \cdot 2\pi$, permitiendo al modelo aprender desplazamientos relativos directos mediante rotaciones lineales.
+                                Los periodos (longitudes de onda en unidades de posición) son T_i = 2π·10000^(2i/d_model). Las frecuencias angulares son ω_i = 10000^(−2i/d_model) radianes por posición; las frecuencias en ciclos son ω_i/(2π). Para d_model finito, el periodo máximo es 2π·10000^(1−2/d_model), cercano pero inferior a 10000·2π.
                             </p>
                         </div>
                     </div>
@@ -705,7 +705,7 @@
 
                         <div id="ls-bars-container" class="space-y-2 pt-1"></div>
                         <p class="text-xs text-slate-400 leading-relaxed" data-i18n="ls_desc">
-                            Previene que el modelo asigne logits infinitamente grandes al token correcto penalizando la entropía extrema.
+                            Suaviza las etiquetas objetivo: deja de exigir probabilidad uno para el token correcto y puede reducir la sobreconfianza.
                         </p>
                     </div>
                 </div>
@@ -776,6 +776,7 @@
             </div>
 
             <!-- Tensor Shapes Table -->
+            <p class="p-4 rounded-xl border border-indigo-800 text-sm text-slate-300 leading-relaxed" data-i18n="architecture_note">Aquí se describe el Transformer original de 2017: post-LN, LayerNorm(x + SubLayer(x)), y FFN con ReLU. Variantes posteriores utilizan pre-LN, x + SubLayer(LayerNorm(x)), y activaciones como GELU o bloques con compuertas como SwiGLU. Son alternativas de diseño, no requisitos universales. N en la tabla significa número de tokens, no número de capas.</p>
             <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl space-y-4">
                 <h3 class="text-base font-bold text-white flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> <span data-i18n="cs_table_title">Dimensiones de Tensores en el Modelo Base</span>
@@ -972,7 +973,7 @@
                 clock_title: "1. Analogía Pedagógica del Reloj de Afshine",
                 clock_desc: "Manecillas rotando a distintas velocidades para formar una huella angular única en cada instante de la secuencia.",
                 vaswani_title: "2. Ecuación Real de Vaswani (2017)",
-                vaswani_desc: "Las frecuencias forman una progresión geométrica desde 2π hasta 10000·2π, permitiendo al modelo aprender desplazamientos relativos directos mediante rotaciones lineales.",
+                vaswani_desc: "Los periodos (longitudes de onda en unidades de posición) son T_i = 2π·10000^(2i/d_model). Las frecuencias angulares son ω_i = 10000^(−2i/d_model) radianes por posición; las frecuencias en ciclos son ω_i/(2π). Para d_model finito, el periodo máximo es 2π·10000^(1−2/d_model), cercano pero inferior a 10000·2π.",
                 lab6_title: "Laboratorio 6: Decoder Autorregresivo — Masked Self-Attention vs Cross-Attention",
                 lab6_sub: "Afshine Amidi enfatiza la regla de las flechas: en Self-Attention todas las matrices provienen de la misma secuencia, mientras que en Cross-Attention el Decoder envía 1 flecha (Q) y el Encoder aporta 2 flechas (K y V).",
                 btn_diag_cross: "Cross-Attention (Decoder ← Encoder)",
@@ -992,7 +993,7 @@
                 ls_title: "2. Regularización por Label Smoothing",
                 ls_hard: "0.0 (One-Hot Duro)",
                 ls_reg: "0.30 (Regularizado)",
-                ls_desc: "Previene que el modelo asigne logits infinitamente grandes al token correcto penalizando la entropía extrema.",
+                ls_desc: "Suaviza las etiquetas objetivo: deja de exigir probabilidad uno para el token correcto y puede reducir la sobreconfianza.",
                 notes_header_title: "Apuntes Estructurados y Guía Cronológica de la Clase",
                 notes_header_desc: "Síntesis pedagógica punto a punto con enlaces directos para saltar al segundo exacto de la explicación de Afshine y Shervin Amidi en el vídeo original.",
                 notes_btn_expand: "Expandir todo",
@@ -1099,7 +1100,7 @@
                 clock_title: "1. Afshine's Pedagogical Clock Analogy",
                 clock_desc: "Hands rotating at different frequencies to generate a unique angular fingerprint for each sequence step.",
                 vaswani_title: "2. Vaswani (2017) Continuous Equation",
-                vaswani_desc: "Frequencies follow a geometric progression from 2π to 10000·2π, allowing the network to learn relative position shifts through linear projections.",
+                vaswani_desc: "Periods (wavelengths in position units) are T_i = 2π·10000^(2i/d_model). Angular frequencies are ω_i = 10000^(−2i/d_model) radians per position; frequencies in cycles are ω_i/(2π). For finite d_model, the maximum period is 2π·10000^(1−2/d_model), close to but below 10000·2π.",
                 lab6_title: "Lab 6: Autoregressive Decoder — Masked Self-Attention vs Cross-Attention",
                 lab6_sub: "Afshine Amidi highlights the arrow rule: in Self-Attention all matrices come from the same sequence, whereas in Cross-Attention the Decoder provides 1 arrow (Q) and the Encoder supplies 2 arrows (K and V).",
                 btn_diag_cross: "Cross-Attention (Decoder ← Encoder)",
@@ -1119,7 +1120,7 @@
                 ls_title: "2. Regularization via Label Smoothing",
                 ls_hard: "0.0 (Hard One-Hot)",
                 ls_reg: "0.30 (Regularized)",
-                ls_desc: "Prevents the model from producing unbounded positive logits for the target class, penalizing overconfidence.",
+                ls_desc: "Softens target labels: the correct token no longer has a target probability of one, which may reduce overconfidence.",
                 notes_header_title: "Structured Study Notes & Chronological Lecture Guide",
                 notes_header_desc: "Pedagogical point-by-point summary with direct clickable links jumping to the exact second in the original lecture video.",
                 notes_btn_expand: "Expand All",
@@ -1204,8 +1205,11 @@
         I18N.en.lab2_sub = 'Embeddings are parameters learned through a training objective. Word2Vec uses context tasks; this panel illustrates the idea with selected coordinates.';
         I18N.es.lab4_sub = 'Ocho cabezas con ancho 64 ilustran distintas combinaciones de información. Las matrices y etiquetas de este laboratorio están elegidas a mano, no aprendidas por un modelo.';
         I18N.en.lab4_sub = 'Eight heads of width 64 illustrate different information combinations. Lab matrices and labels are hand-selected rather than learned by a model.';
-        I18N.es.ls_desc = 'Suaviza la distribución objetivo y puede reducir el exceso de confianza. No garantiza evitar logits grandes ni sustituye otras decisiones de entrenamiento.';
-        I18N.en.ls_desc = 'Softens the target distribution and may reduce overconfidence. It does not guarantee avoidance of large logits or replace other training choices.';
+        I18N.es.ls_desc = 'Deja de exigir probabilidad uno para el token correcto: reparte una pequeña masa entre las alternativas y puede reducir la sobreconfianza. No garantiza calibración ni evita por sí solo logits grandes.';
+        I18N.en.ls_desc = 'Stops targeting probability one for the correct token: a small mass is distributed among alternatives, which may reduce overconfidence. It does not guarantee calibration or prevent large logits by itself.';
+
+        I18N.es.architecture_note = "Aquí se describe el Transformer original de 2017: post-LN, LayerNorm(x + SubLayer(x)), y FFN con ReLU. Variantes posteriores utilizan pre-LN, x + SubLayer(LayerNorm(x)), y activaciones como GELU o bloques con compuertas como SwiGLU. Son alternativas de diseño, no requisitos universales. N en la tabla significa número de tokens, no número de capas.";
+        I18N.en.architecture_note = "This sheet describes the original 2017 Transformer: post-LN, LayerNorm(x + SubLayer(x)), and a ReLU FFN. Later variants use pre-LN, x + SubLayer(LayerNorm(x)), and activations such as GELU or gated blocks such as SwiGLU. These are design alternatives, not universal requirements. N in the table means token count, not layer count.";
 
         function escapeNoteText(text) {
             return text.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
