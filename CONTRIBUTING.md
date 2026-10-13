@@ -55,6 +55,10 @@ Para cambios amplios, como reorganizar una clase o sustituir una simulación, ab
 
 También puedes consultar la [guía web](guia.html).
 
+## Estilo común
+
+Sigue [ESTILO.md](ESTILO.md). Todas las clases comparten identidad visual, orden de apartados y formato de teoría, práctica y cuestionarios. La plantilla utiliza `assets/lesson.css` y `assets/lesson.js`.
+
 ## Criterios para las aportaciones
 
 - Prioriza la claridad y la precisión. Explica las siglas y distingue una intuición de una afirmación formal.

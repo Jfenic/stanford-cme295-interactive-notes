@@ -53,6 +53,10 @@ For larger changes, such as reorganizing a lecture or replacing a simulation, op
 
 You can also consult the [web guide in Spanish](guia.html).
 
+## Shared style
+
+Follow [ESTILO.md (Spanish)](ESTILO.md) for visual identity, section order, theory, practice, and questions. The shared template uses `assets/lesson.css` and `assets/lesson.js`.
+
 ## Contribution guidelines
 
 - Prioritize clarity and accuracy. Explain acronyms and distinguish intuition from formal claims.
