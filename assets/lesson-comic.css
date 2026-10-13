@@ -37,3 +37,4 @@ body{background-color:#f3f0e8;background-image:none}
 p,li,summary,label,.quiz-option-btn,.timestamp-tag,.status-label{overflow-wrap:anywhere}
 .table-scroll,.math-block{max-width:100%;overflow-x:auto}
 @media(max-width:700px){.lab-controls,.metrics-row,.quiz-options{grid-template-columns:minmax(0,1fr)}.check-box summary{display:block}}
+@media(max-width:700px){.section-panel{overflow:hidden}.section-panel>h2{margin:-20px -20px 24px;padding:16px;max-width:calc(100% + 40px)}.prose h3,.prose h4{overflow-wrap:anywhere}}
