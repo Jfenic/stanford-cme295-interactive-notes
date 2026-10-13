@@ -1,0 +1,53 @@
+/* Colorful professional brutalism. Visual layer; original lesson behavior preserved. */
+:root{--bg-paper:#f2efe7;--accent-cobalt:#2546d3;--bg-cobalt-tint:#edf0ff;--bg-green-tint:#e1f3e6;--bg-amber-tint:#fff0c0;--shadow-solid:6px 6px 0 #171717}
+body{background-image:radial-gradient(#17171712 1px,transparent 1px);background-size:18px 18px}
+.container{max-width:1180px}
+.site-header{background:#171717;color:white;border-bottom:4px solid #2546d3}
+.site-header .btn-rect{background:#fff;color:#171717;box-shadow:3px 3px 0 #777}
+.site-header .btn-rect.active{background:#ffe36e;color:#171717;border-color:#ffe36e}
+.class-badge{background:#ffe36e!important;color:#171717!important;border-color:#ffe36e!important}
+.hero-panel{background:#ffe36e;position:relative;border:3px solid #171717;padding:36px;box-shadow:8px 8px 0 #171717;margin-block:32px}
+.hero-panel:before{content:'02 / LLM';display:block;font:800 .8rem var(--font-mono);letter-spacing:.12em;border:2px solid #171717;background:#fff;width:fit-content;padding:6px 12px;margin-bottom:18px}
+h1{font-size:clamp(2.25rem,5vw,4rem);line-height:1.08;max-width:23ch;letter-spacing:-.045em}
+.hero-summary{font-size:1.1rem;max-width:68ch}
+.eyebrow-label{color:#171717;font-size:.75rem}
+.meta-grid{gap:14px;border-top:2px solid #171717;padding-top:22px}
+.meta-item{background:#fff;border:2px solid #171717;box-shadow:3px 3px 0 #171717}
+.independence-notice{background:#fff8df;border-left:7px solid #171717;font-size:.85rem}
+.section-nav{background:#2546d3;padding:16px;gap:12px;box-shadow:5px 5px 0 #171717}
+.section-nav .btn-rect{background:white;color:#171717;border:2px solid #171717;font-weight:800}
+.section-nav .btn-rect:hover{background:#ffe36e;transform:translate(-1px,-1px)}
+.section-panel{padding:30px;border-width:2px;background:white;position:relative;margin-bottom:36px}
+.section-panel>h2{background:#edf0ff;padding:18px 22px;margin:-30px -30px 30px;border-bottom:2px solid #171717;border-top:8px solid #2546d3;font-size:clamp(1.5rem,3vw,2.1rem)}
+#inicio>h2{background:#e1f3e6;border-top-color:#185b36}
+#practica>h2{background:#fff0c0;border-top-color:#d38b00}
+#cuestionario>h2{background:#f1e6ff;border-top-color:#6f32a8}
+#referencias>h2{background:#e5f4f8;border-top-color:#126176}
+.prose{max-width:78ch}
+.prose h3{font-size:1.35rem;border-left:5px solid #2546d3;padding-left:14px;margin-top:34px}
+.timestamp-tag{background:#fff0c0;color:#5c4000;box-shadow:none;font-size:.7rem}
+.math-block{background:#edf0ff;border-left:6px solid #2546d3}
+th{background:#171717;color:#fff}tbody tr:nth-child(even){background:#f5f3ed}
+details.check-box{background:#edf0ff;border-left:7px solid #2546d3;box-shadow:3px 3px 0 #171717}
+details.check-box .check-answer{background:#e1f3e6}
+.lab-box{background:#fff8e4;border:3px solid #171717;padding:26px;box-shadow:6px 6px 0 #171717}
+.lab-box>h3{background:#ffe36e;padding:14px 18px;border:2px solid #171717;margin-top:0}
+.lab-controls{background:white;border-width:2px;gap:20px}
+.control-group label{font-weight:800}
+input[type=range]{accent-color:#2546d3}
+.lab-output{background:#fff!important;border:2px solid #171717}
+.metric-card{background:#edf0ff;border-top:5px solid #2546d3;padding:18px}
+.metric-card:nth-child(2){background:#e1f3e6;border-top-color:#185b36}
+.metric-card:nth-child(3){background:#fff0c0;border-top-color:#d38b00}
+.metric-val{font-size:1.8rem;font-weight:900;color:#171717}
+.prob-fill{background:#2546d3}.prob-fill.filtered{background:#b8b6ae}
+.quiz-item{background:white;border:2px solid #171717;box-shadow:4px 4px 0 #171717;margin-block:22px}
+.quiz-question-header{background:#f1e6ff;border-bottom:2px solid #171717}
+.quiz-option-btn{background:#f9f8f3;border:2px solid #171717;min-height:48px}
+.quiz-option-btn:hover:not(:disabled){background:#fff0c0}
+.quiz-feedback.correct{background:#e1f3e6;color:#185b36}
+.quiz-feedback.wrong{background:#fde8e5;color:#8a1c1c}
+.btn-rect{font-weight:800;border-radius:0;min-height:44px}
+a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #2546d3;outline-offset:4px}
+@media(max-width:640px){.hero-panel{padding:22px;box-shadow:4px 4px 0 #171717}.section-panel{padding:20px}.section-panel>h2{margin:-20px -20px 24px;padding:16px}.lab-box{padding:16px}.lab-controls{grid-template-columns:minmax(0,1fr)}.meta-grid{grid-template-columns:minmax(0,1fr)}.section-nav{gap:8px}.section-nav .btn-rect{flex:1 1 130px}h1{font-size:2.3rem}.metric-val{font-size:1.5rem}}
+@media(prefers-reduced-motion:reduce){.section-nav .btn-rect:hover{transform:none}}

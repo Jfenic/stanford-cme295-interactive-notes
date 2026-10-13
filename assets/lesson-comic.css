@@ -1,0 +1,34 @@
+/* Comic brutalism. Use on the shared template and the class-2 preview. */
+:root{--comic-yellow:#ffe36e;--comic-blue:#2546d3;--comic-coral:#ff806e;--comic-mint:#a9e5c7;--comic-lilac:#d8b7f2;--comic-ink:#171717}
+body{background-color:#f3f0e8;background-image:none}
+.lesson-header,.site-header{background:#171717;color:#fff;border-bottom:3px solid #171717}
+.lesson-header a{color:#fff}.lesson-header button{background:white;color:#171717}.lesson-header button[aria-pressed=true]{background:var(--comic-yellow);color:#171717}
+.lesson-section{--section-color:var(--comic-blue)}
+#inicio{--section-color:var(--comic-blue)}#teoria{--section-color:var(--comic-coral)}#practica{--section-color:var(--comic-yellow)}#cuestionario{--section-color:var(--comic-mint)}#referencias{--section-color:var(--comic-lilac)}
+.lesson-section>h2,.section-panel>h2{background:var(--section-color);color:#171717;border:3px solid #171717;padding:16px 20px;box-shadow:4px 4px 0 #171717}
+#inicio>h2{background:var(--comic-blue);color:white}#teoria>h2{background:var(--comic-coral)}#practica>h2{background:var(--comic-yellow)}#cuestionario>h2{background:var(--comic-mint)}#referencias>h2{background:var(--comic-lilac)}
+.lesson-nav,.section-nav{background:#fff;border:3px solid #171717;gap:12px;padding:14px}
+.lesson-nav a,.section-nav .btn-rect{flex:1 1 120px;text-align:center;background:var(--comic-blue);color:white;box-shadow:3px 3px 0 #171717;border:2px solid #171717;min-height:46px}
+.lesson-nav a:nth-child(2),.section-nav a:nth-child(2){background:var(--comic-coral);color:#171717}
+.lesson-nav a:nth-child(3),.section-nav a:nth-child(3){background:var(--comic-yellow);color:#171717}
+.lesson-nav a:nth-child(4),.section-nav a:nth-child(4){background:var(--comic-mint);color:#171717}
+.lesson-nav a:nth-child(5),.section-nav a:nth-child(5){background:var(--comic-lilac);color:#171717}
+.lesson-nav a:hover,.section-nav .btn-rect:hover{outline:2px solid #171717;outline-offset:3px}
+.hero-panel,.comic-hero{background:var(--comic-yellow);border:3px solid #171717;box-shadow:7px 7px 0 #171717;padding:32px;margin:30px 6px 32px 0}
+.hero-panel:before{content:'CME295 / CUADERNO INTERACTIVO';background:#fff;font-size:.7rem}
+.comic-hero{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(210px,.8fr);gap:28px;align-items:center}
+.comic-hero h1{font-size:clamp(2rem,4.6vw,3.8rem);max-width:23ch}
+.comic-art{border:3px solid #171717;background-color:var(--comic-coral);background-image:radial-gradient(#17171755 1px,transparent 1px);background-size:7px 7px;padding:20px;box-shadow:4px 4px 0 #171717}
+.comic-art svg{display:block;width:100%;height:auto;max-height:230px}
+.comic-speech{position:relative;background:white;border:3px solid #171717;box-shadow:3px 3px 0 #171717;padding:12px 16px;font-weight:850;font-size:1rem;margin:0 0 18px;line-height:1.4}
+.comic-speech:after{content:'';position:absolute;bottom:-12px;left:24px;width:18px;height:18px;background:white;border-right:3px solid #171717;border-bottom:3px solid #171717;transform:skewY(28deg)}
+.comic-kicker{font:800 .8rem ui-monospace,Consolas,monospace;letter-spacing:.05em;text-transform:uppercase}
+.lesson-panel,.section-panel,.lab-box,.quiz-item{border:3px solid #171717;box-shadow:5px 5px 0 #171717;background:white}
+.lesson-check,details.check-box{background:#f4edff;border:3px solid #171717;border-left:8px solid #6f32a8}
+.lesson-check summary,details.check-box summary{color:#4f237b;font-weight:800}
+.lesson-limit{background:#fff5d7;color:#704600}
+.lab-box>h3{background:var(--comic-yellow);border:2px solid #171717}
+.quiz-question-header{background:var(--comic-mint)}
+.quiz-feedback.correct{background:#def5e8;color:#185b36}.quiz-feedback.wrong{background:#ffe7e2;color:#8a1c1c}
+.timestamp-tag{background:var(--comic-yellow);color:#171717;white-space:normal}
+@media(max-width:700px){.comic-hero{grid-template-columns:minmax(0,1fr);padding:20px}.comic-art{max-width:320px;margin:auto;width:100%}.hero-panel{padding:22px}.section-nav .btn-rect,.lesson-nav a{flex-basis:125px}.comic-hero h1{font-size:2.2rem}.lesson-section>h2{font-size:1.6rem}}

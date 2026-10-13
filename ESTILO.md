@@ -1,22 +1,22 @@
 # Estilo y formato de los apuntes
 
-Este documento define el estándar para crear y revisar todas las clases. La identidad visual es brutalismo profesional; esta especificación y la plantilla común guían las nuevas clases. Las clases existentes se adaptarán progresivamente, sin dar por hecho que ya cumplen todo el estándar.
+Este documento define el estándar para crear y revisar todas las clases. La identidad visual es brutalismo con cómic; esta especificación y la plantilla común guían las nuevas clases. Las clases existentes se adaptarán progresivamente, sin dar por hecho que ya cumplen todo el estándar.
 
-## Identidad visual: brutalismo profesional
+## Identidad visual: brutalismo con cómic
 
-El diseño combina estructura editorial sobria con bordes visibles y geometría contundente. La legibilidad tiene prioridad sobre el efecto visual.
+El estilo aprobado combina viñetas de cómic y estructura editorial profesional. Referencia implementada: `clase-02-diseno-comic.html`. Mantener superficies limpias para texto largo y fórmulas; los recursos de cómic ayudan a orientar y explicar.
 
-- Tema claro fijo: fondo papel `#f3f0e8`, paneles blancos `#ffffff`, texto y bordes carbón `#171717`, texto secundario `#52524d`. No introducir temas distintos por clase.
-- Azul cobalto `#2546d3` para enlaces, foco y teoría; verde oscuro `#185b36` para aciertos; ámbar oscuro `#704600` para pistas y límites. El estado siempre incluye texto, nunca solo color.
-- Bordes de 2 px en tarjetas y controles, 3 px en divisores principales. Esquinas rectas. Sombras sólidas de 3–5 px, sin desenfoque, reservadas para paneles principales y botones.
-- Títulos grandes, peso 850, espaciado compacto y jerarquía editorial. Mayúsculas solo en etiquetas breves. No usar mayúsculas en párrafos ni distorsionar tipografía.
-- Tipografía Inter cuando esté disponible, con fuentes de sistema como respaldo. Monoespaciada solo para metadatos, código, dimensiones y datos.
-- Texto de teoría de 17 px en escritorio y 16 px en móvil, interlineado 1.75 y ancho máximo de 75 caracteres. Evitar teoría en columnas estrechas.
-- Contenedor máximo de 1100 px; margen lateral mínimo de 18 px. Paneles con 20–28 px de espacio interior. Tablas y ecuaciones anchas se desplazan internamente.
-- Navegación en botones rectangulares; idioma activo con fondo carbón y texto blanco. Controles de al menos 44 px de altura, foco azul visible y estados reconocibles con teclado.
-- Preguntas en bloque azul muy claro con borde negro y acento lateral. Límites en bloque ámbar claro; respuestas correctas con texto explicativo verde oscuro.
-- Sin degradados, glassmorphism, sombras suaves, tarjetas 3D ni animaciones decorativas. No añadir neones ni un color diferente por módulo.
-- Utilizar `assets/lesson.css` y la plantilla común. La clase 1 aporta referencias didácticas, pero su tema oscuro anterior no define la nueva identidad. Portada y clases existentes se adaptarán progresivamente.
+- Papel cálido `#f3f0e8`, paneles blancos y tinta carbón `#171717`. Cabecera negra y portada amarilla.
+- Paleta: azul cobalto `#2546d3`, coral `#ff806e`, amarillo `#ffe36e`, menta `#a9e5c7`, lila `#d8b7f2`. Asignación fija: inicio azul, teoría coral, práctica amarillo, cuestionario menta, referencias lila. Enlaces azules y feedback verde oscuro; estados acompañados de texto.
+- Bordes de tinta de 2–3 px, esquinas rectas y sombras sólidas de 3–7 px. No rotar texto ni añadir efectos 3D a las tarjetas.
+- Viñetas, bocadillos y trama de puntos en cabeceras o ilustraciones, nunca detrás de párrafos, fórmulas o controles. Personajes ocasionales, no en cada párrafo.
+- Títulos contundentes, mayúsculas solo en etiquetas breves. Inter o fuente de sistema para teoría, 17 px en escritorio y 16 px en móvil, interlineado 1.75, ancho máximo de 75 caracteres. Monoespaciada solo para código y datos.
+- Portada con título, resumen e ilustración. SVG para componentes simples como robot, tokens y relaciones. No utilizar la maqueta rasterizada como sustituto de una interfaz real.
+- Contenedor máximo de 1180 px, margen mínimo de 18 px, paneles con 20–28 px interiores. Teoría extensa en una columna; columnas auxiliares solo para actividades breves, apiladas en móvil.
+- Navegación rectangular numerada con colores coherentes. Selector Español / English; conservar estado al cambiar idioma. Controles de al menos 44 px y foco visible.
+- Preguntas en panel lila claro, prácticas con cabecera amarilla, aciertos en verde claro, errores con explicación y reintento. Bocadillos para pistas cortas, no para sustituir teoría desarrollada.
+- Sin glassmorphism, sombras difusas, neones ni animaciones decorativas. Respetar reducción de movimiento y teclado.
+- La plantilla carga `assets/lesson.css` y `assets/lesson-comic.css`. La vista previa de clase 2 incorpora además `assets/lesson-color.css` para adaptar el HTML recibido. Clases existentes y portada se adaptarán progresivamente; no afirmar que ya usan el tema.
 
 ## Navegación común
 
