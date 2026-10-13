@@ -32,3 +32,8 @@ body{background-color:#f3f0e8;background-image:none}
 .quiz-feedback.correct{background:#def5e8;color:#185b36}.quiz-feedback.wrong{background:#ffe7e2;color:#8a1c1c}
 .timestamp-tag{background:var(--comic-yellow);color:#171717;white-space:normal}
 @media(max-width:700px){.comic-hero{grid-template-columns:minmax(0,1fr);padding:20px}.comic-art{max-width:320px;margin:auto;width:100%}.hero-panel{padding:22px}.section-nav .btn-rect,.lesson-nav a{flex-basis:125px}.comic-hero h1{font-size:2.2rem}.lesson-section>h2{font-size:1.6rem}}
+/* Long translated words and intrinsic grid widths must stay inside mobile panels. */
+.container,.section-panel,.prose,.lab-box,.lab-controls,.lab-output,.control-group,.metric-card,.quiz-item,.quiz-question-header,.table-scroll{min-width:0}
+p,li,summary,label,.quiz-option-btn,.timestamp-tag,.status-label{overflow-wrap:anywhere}
+.table-scroll,.math-block{max-width:100%;overflow-x:auto}
+@media(max-width:700px){.lab-controls,.metrics-row,.quiz-options{grid-template-columns:minmax(0,1fr)}.check-box summary{display:block}}
