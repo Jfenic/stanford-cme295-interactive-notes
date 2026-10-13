@@ -24,7 +24,8 @@ Consulta el [sitio de apuntes](https://Jfenic.github.io/stanford-cme295-interact
 | Contenido | Estado |
 | --- | --- |
 | Clase 1: tokenización, embeddings, RNN/LSTM, atención QKV, posiciones y arquitectura Transformer | Disponible, con siete laboratorios didácticos |
-| Clases 2–10 | Entradas reservadas en el índice; todavía sin apuntes |
+| Clase 2: LLMs, arquitecturas, escalado e inferencia | Disponible en español e inglés, con laboratorios y cuestionarios |
+| Clases 3–10 | Entradas reservadas en el índice; todavía sin apuntes |
 | Portada con buscador de clases y temas | Disponible |
 | Plantilla para preparar nuevas clases | Disponible |
 

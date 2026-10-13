@@ -1,0 +1,2794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CME295 / APUNTES — Clase 02: Modelos Extensos de Lenguaje (LLMs)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Space+Grotesk:wght@700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    :root {
+      --bg-paper: #f4f1ea;
+      --bg-panel: #ffffff;
+      --ink: #141414;
+      --text-muted: #4a4a46;
+      --comic-yellow: #fbd023;
+      --comic-yellow-light: #fff6c5;
+      --comic-coral: #ef5d53;
+      --comic-coral-light: #ffe3e0;
+      --comic-blue: #3b82f6;
+      --comic-blue-dark: #1d4ed8;
+      --comic-blue-light: #e6f0ff;
+      --comic-mint: #82d8b5;
+      --comic-mint-light: #e3f9ef;
+      --comic-mint-dark: #116142;
+      --comic-lavender: #c4b5fd;
+      --comic-lavender-light: #f1ecff;
+      --border-thick: 3px solid #141414;
+      --border-thin: 2px solid #141414;
+      --shadow-comic: 5px 5px 0px #141414;
+      --shadow-comic-sm: 3px 3px 0px #141414;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-paper);
+      color: var(--ink);
+      font-family: var(--font-sans);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-paper);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.07) 1px, transparent 1px);
+      background-size: 16px 16px;
+      color: var(--ink);
+      font-size: 16.5px;
+      line-height: 1.65;
+    }
+
+    /* Control de visibilidad de idioma (un idioma activo a la vez) */
+    html[lang="es"] [data-lang="en"] {
+      display: none !important;
+    }
+    html[lang="en"] [data-lang="es"] {
+      display: none !important;
+    }
+
+    /* Accesibilidad de foco por teclado */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid var(--comic-blue);
+      outline-offset: 2px;
+    }
+
+    /* Contenedor tipo página de cómic */
+    .comic-page {
+      max-width: 1180px;
+      margin: 18px auto 64px;
+      padding: 0 16px;
+    }
+
+    /* Tramas de semitono (Halftone comic patterns) */
+    .halftone-yellow {
+      background-color: var(--comic-yellow);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.16) 1.5px, transparent 1.5px);
+      background-size: 10px 10px;
+    }
+
+    .halftone-coral {
+      background-color: var(--comic-coral);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.2) 1.6px, transparent 1.6px);
+      background-size: 9px 9px;
+    }
+
+    .halftone-mint {
+      background-color: var(--comic-mint);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.14) 1.5px, transparent 1.5px);
+      background-size: 10px 10px;
+    }
+
+    .halftone-lavender {
+      background-color: var(--comic-lavender);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.14) 1.5px, transparent 1.5px);
+      background-size: 10px 10px;
+    }
+
+    /* =====================================================================
+       CABECERA NEGRA SUPERIOR (ESTILO CÓMIC)
+       ===================================================================== */
+    .top-comic-bar {
+      background-color: var(--ink);
+      color: #ffffff;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      padding: 10px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 8px;
+      z-index: 100;
+      margin-bottom: 16px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .index-link {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--comic-yellow);
+      text-decoration: none;
+      border: 2px solid var(--comic-yellow);
+      padding: 4px 10px;
+      text-transform: uppercase;
+    }
+
+    .index-link:hover {
+      background-color: var(--comic-yellow);
+      color: var(--ink);
+    }
+
+    .lang-toggle {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .lang-btn {
+      min-width: 44px;
+      min-height: 36px;
+      padding: 4px 12px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.88rem;
+      border: 2px solid #ffffff;
+      background-color: var(--ink);
+      color: #ffffff;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    .lang-btn.active,
+    .lang-btn[aria-pressed="true"] {
+      background-color: var(--comic-yellow);
+      color: var(--ink);
+      border-color: var(--comic-yellow);
+      box-shadow: 2px 2px 0px #ffffff;
+    }
+
+    .top-nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .top-nav-links a {
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .top-nav-links a:hover {
+      color: var(--comic-yellow);
+      text-decoration: underline;
+    }
+
+    .btn-download-top {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 800;
+      background-color: var(--comic-mint);
+      color: var(--ink);
+      border: 2px solid #ffffff;
+      padding: 5px 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    .btn-download-top:hover {
+      background-color: var(--comic-yellow);
+    }
+
+    /* =====================================================================
+       VIÑETA HERO PRINCIPAL (AMARILLO + CORAL DIVIDIDO EN DIAGONAL)
+       ===================================================================== */
+    .hero-comic-banner {
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      overflow: hidden;
+      margin-bottom: 16px;
+      position: relative;
+      background-color: var(--comic-yellow);
+    }
+
+    @media (max-width: 860px) {
+      .hero-comic-banner {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hero-left {
+      padding: 28px 30px;
+      position: relative;
+      z-index: 2;
+      border-right: var(--border-thick);
+    }
+
+    @media (max-width: 860px) {
+      .hero-left {
+        border-right: none;
+        border-bottom: var(--border-thick);
+      }
+    }
+
+    .hero-headline {
+      font-family: var(--font-display);
+      font-size: clamp(2.1rem, 4.2vw, 3.35rem);
+      font-weight: 900;
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+      margin: 0 0 14px 0;
+      color: var(--ink);
+    }
+
+    .hero-subline {
+      font-size: 1.12rem;
+      font-weight: 800;
+      margin: 0 0 14px 0;
+      color: var(--ink);
+    }
+
+    .hero-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .hero-badge {
+      background-color: #ffffff;
+      border: var(--border-thin);
+      padding: 4px 10px;
+      box-shadow: var(--shadow-comic-sm);
+    }
+
+    .hero-right {
+      padding: 20px 24px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 240px;
+      overflow: hidden;
+    }
+
+    /* Bocadillo de diálogo estilo cómic */
+    .speech-bubble {
+      background-color: #ffffff;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 10px 16px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1rem;
+      line-height: 1.25;
+      position: relative;
+      display: inline-block;
+    }
+
+    .speech-bubble.lavender {
+      background-color: var(--comic-lavender-light);
+    }
+
+    .speech-bubble.yellow {
+      background-color: var(--comic-yellow-light);
+    }
+
+    .speech-bubble::after {
+      content: "";
+      position: absolute;
+      bottom: -13px;
+      right: 24px;
+      border-width: 13px 12px 0 0;
+      border-style: solid;
+      border-color: var(--ink) transparent transparent transparent;
+    }
+
+    .stamp-clase {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background-color: #ffffff;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 6px 12px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      transform: rotate(5deg);
+      z-index: 3;
+    }
+
+    /* =====================================================================
+       FILA DE 5 PESTAÑAS NUMERADAS DE COLORES (01 A 05)
+       ===================================================================== */
+    .comic-tabs-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 780px) {
+      .comic-tabs-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .comic-tab {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      min-height: 54px;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      text-decoration: none;
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.05rem;
+      transition: transform 0.1s ease;
+    }
+
+    .comic-tab:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0px #141414;
+    }
+
+    .comic-tab:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #141414;
+    }
+
+    .comic-tab .tab-num {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 1.15rem;
+    }
+
+    .tab-01 { background-color: #4a86f7; }
+    .tab-02 { background-color: var(--comic-coral); }
+    .tab-03 { background-color: var(--comic-yellow); }
+    .tab-04 { background-color: var(--comic-mint); }
+    .tab-05 { background-color: var(--comic-lavender); }
+
+    /* =====================================================================
+       SISTEMA DE VIÑETAS (COMIC PANELS)
+       ===================================================================== */
+    .comic-spread {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 920px) {
+      .comic-spread {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comic-panel {
+      background-color: var(--bg-panel);
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      padding: 24px 26px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Encabezado de viñeta con etiqueta numérica inclinada */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .num-tag {
+      background-color: var(--comic-coral);
+      color: var(--ink);
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 6px 14px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.45rem;
+      line-height: 1;
+      transform: skewX(-8deg);
+      display: inline-block;
+    }
+
+    .num-tag.blue { background-color: #4a86f7; color: #ffffff; }
+    .num-tag.yellow { background-color: var(--comic-yellow); }
+    .num-tag.mint { background-color: var(--comic-mint); }
+    .num-tag.lavender { background-color: var(--comic-lavender); }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.35rem, 2.3vw, 1.85rem);
+      font-weight: 900;
+      margin: 0;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .timestamp-badge {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 800;
+      background-color: var(--bg-paper);
+      border: var(--border-thin);
+      padding: 3px 8px;
+      margin-left: auto;
+    }
+
+    /* Cuerpo de viñeta con personaje ilustrado a la derecha */
+    .panel-body-with-char {
+      display: grid;
+      grid-template-columns: 1fr 190px;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .panel-body-with-char {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .char-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+    }
+
+    /* Diagrama inferior de flujo (TEXTO -> TOKENS -> PREDICCIÓN) */
+    .flow-diagram-box {
+      background-color: var(--bg-paper);
+      border: var(--border-thin);
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1.1fr auto 1.8fr auto 1.5fr;
+      gap: 10px;
+      align-items: center;
+      overflow-x: auto;
+    }
+
+    @media (max-width: 780px) {
+      .flow-diagram-box {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .flow-arrow {
+        transform: rotate(90deg);
+      }
+    }
+
+    .flow-card {
+      background-color: #ffffff;
+      border: var(--border-thin);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 10px 12px;
+      font-size: 0.9rem;
+    }
+
+    .flow-caption {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+      margin-top: 6px;
+      color: var(--ink);
+    }
+
+    .tokens-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .token-chip {
+      background-color: var(--comic-blue-light);
+      border: 2px solid var(--ink);
+      padding: 3px 7px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .token-chip.subword {
+      background-color: var(--comic-coral-light);
+    }
+
+    /* Panel lateral interactivo "PRUEBA / ..." */
+    .prueba-panel {
+      background-color: var(--bg-panel);
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .prueba-header {
+      border-bottom: var(--border-thick);
+      padding: 12px 18px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .prueba-body {
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    /* Deslizadores estilo cómic */
+    input[type="range"].comic-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 12px;
+      background: var(--comic-blue);
+      border: 2px solid var(--ink);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"].comic-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--comic-blue);
+      border: 3px solid var(--ink);
+      box-shadow: 2px 2px 0px var(--ink);
+      cursor: pointer;
+    }
+
+    /* Barras de probabilidad estilo cómic */
+    .mini-prob-box {
+      background-color: var(--bg-paper);
+      border: var(--border-thin);
+      padding: 12px;
+      position: relative;
+    }
+
+    .mini-prob-row {
+      display: grid;
+      grid-template-columns: 78px 1fr 48px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .mini-prob-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .mini-bar-track {
+      height: 16px;
+      background-color: #dcd8ce;
+      border: 2px solid var(--ink);
+      overflow: hidden;
+    }
+
+    .mini-bar-fill {
+      height: 100%;
+      transition: width 0.2s ease;
+    }
+
+    .fill-blue { background-color: #3b5bdb; }
+    .fill-coral { background-color: var(--comic-coral); }
+    .fill-lavender { background-color: #a78bfa; }
+    .fill-gray { background-color: #9ca3af; }
+    .fill-mint { background-color: #10b981; }
+
+    .stamp-callout {
+      background-color: #ffffff;
+      border: var(--border-thin);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 6px 10px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.74rem;
+      text-align: center;
+      line-height: 1.15;
+      transform: rotate(-4deg);
+      text-transform: uppercase;
+    }
+
+    .btn-comic-primary {
+      width: 100%;
+      min-height: 44px;
+      background-color: #2563eb;
+      color: #ffffff;
+      border: var(--border-thin);
+      box-shadow: var(--shadow-comic-sm);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-comic-primary:hover {
+      background-color: #1d4ed8;
+    }
+
+    .btn-comic-primary:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px var(--ink);
+    }
+
+    .btn-comic-secondary {
+      min-height: 40px;
+      padding: 6px 14px;
+      background-color: var(--bg-paper);
+      color: var(--ink);
+      border: var(--border-thin);
+      box-shadow: var(--shadow-comic-sm);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.86rem;
+      cursor: pointer;
+    }
+
+    .btn-comic-secondary:hover {
+      background-color: var(--comic-yellow);
+    }
+
+    /* =====================================================================
+       TIRA CÓMICA INFERIOR: "COMPRUEBA LO APRENDIDO" (MINT GREEN STRIP)
+       ===================================================================== */
+    .comprueba-strip {
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    @media (max-width: 860px) {
+      .comprueba-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comprueba-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+
+    .comprueba-banner-title {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.35rem;
+      line-height: 1.05;
+      text-transform: uppercase;
+      transform: rotate(-4deg);
+      color: var(--ink);
+    }
+
+    .comprueba-card {
+      background-color: #ffffff;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 16px 18px;
+    }
+
+    .comprueba-question {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.15rem;
+      margin: 0 0 12px 0;
+    }
+
+    .comprueba-options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .comic-opt-btn {
+      background-color: var(--bg-paper);
+      border: var(--border-thin);
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--ink);
+      min-height: 54px;
+    }
+
+    .comic-opt-btn:hover:not(:disabled) {
+      background-color: var(--comic-yellow-light);
+      box-shadow: var(--shadow-comic-sm);
+    }
+
+    .opt-letter {
+      background-color: #ffffff;
+      border: 2px solid var(--ink);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.9rem;
+      padding: 2px 7px;
+      flex-shrink: 0;
+    }
+
+    .comic-opt-btn.is-correct {
+      background-color: var(--comic-mint-light);
+      border: 3px solid var(--comic-mint-dark);
+      box-shadow: var(--shadow-comic-sm);
+    }
+
+    .comic-opt-btn.is-correct .opt-letter {
+      background-color: var(--comic-mint-dark);
+      color: #ffffff;
+    }
+
+    .comic-opt-btn.is-wrong {
+      background-color: var(--comic-coral-light);
+      border: 3px solid #991b1b;
+    }
+
+    .comic-opt-btn.is-wrong .opt-letter {
+      background-color: #991b1b;
+      color: #ffffff;
+    }
+
+    .comprueba-feedback-box {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border: var(--border-thin);
+      background-color: var(--comic-mint-light);
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 0.92rem;
+    }
+
+    .comprueba-feedback-box.visible {
+      display: flex;
+    }
+
+    .comprueba-feedback-box.wrong {
+      background-color: var(--comic-yellow-light);
+    }
+
+    /* =====================================================================
+       CAJAS DE TEORÍA ESTRUCTURADA, FÓRMULAS Y TABLAS
+       ===================================================================== */
+    .comic-subcard {
+      background-color: var(--bg-paper);
+      border: var(--border-thin);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .comic-subcard h4 {
+      margin: 0 0 6px 0;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .comic-subcard p,
+    .comic-subcard ul {
+      margin: 0;
+      font-size: 0.94rem;
+    }
+
+    .comic-subcard ul {
+      padding-left: 18px;
+    }
+
+    .math-strip {
+      background-color: #ffffff;
+      border: var(--border-thin);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 10px 14px;
+      margin: 10px 0;
+      overflow-x: auto;
+      font-size: 0.95rem;
+    }
+
+    .warning-badge-box {
+      background-color: var(--comic-yellow-light);
+      border: var(--border-thin);
+      border-left: 6px solid var(--ink);
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      margin-top: 10px;
+    }
+
+    .section-divider-banner {
+      background-color: var(--ink);
+      color: #ffffff;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      padding: 12px 20px;
+      margin: 34px 0 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      scroll-margin-top: 84px;
+    }
+
+    .section-divider-banner h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Matriz 3x3 interactiva BERT vs GPT */
+    .attn-grid-3x3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .attn-cell {
+      border: 2px solid var(--ink);
+      padding: 8px 4px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 800;
+      background-color: #ffffff;
+    }
+
+    .attn-cell.active-cell {
+      background-color: var(--comic-mint);
+    }
+
+    .attn-cell.masked-cell {
+      background-color: var(--comic-coral-light);
+      color: #991b1b;
+    }
+
+    /* Cuadrícula de expertos MoE */
+    .experts-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .expert-chip {
+      border: 2px solid var(--ink);
+      padding: 6px 4px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 800;
+      background-color: #ffffff;
+      transition: transform 0.15s ease;
+    }
+
+    .expert-chip.shared-active {
+      background-color: var(--comic-yellow);
+      box-shadow: 2px 2px 0px var(--ink);
+    }
+
+    .expert-chip.routed-active {
+      background-color: var(--comic-mint);
+      box-shadow: 2px 2px 0px var(--ink);
+      transform: translate(-1px, -1px);
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      background-color: #ffffff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 2px solid var(--ink);
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--comic-yellow);
+      font-family: var(--font-display);
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="comic-page">
+
+    <!-- ===================================================================
+         BARRA SUPERIOR NEGRA (CME295 / APUNTES + ES/EN + NAVEGACIÓN)
+         =================================================================== -->
+    <header class="top-comic-bar">
+      <div class="brand-group">
+        <a href="../index.html" class="index-link">
+          <span data-lang="es">← Índice</span>
+          <span data-lang="en">← Index</span>
+        </a>
+        <span class="brand-title">CME295 / APUNTES</span>
+      </div>
+
+      <div class="lang-toggle" role="group" aria-label="Selector de idioma / Language selector">
+        <button type="button" id="btn-es" class="lang-btn active" aria-pressed="true" onclick="setLanguage('es')">ES</button>
+        <button type="button" id="btn-en" class="lang-btn" aria-pressed="false" onclick="setLanguage('en')">EN</button>
+      </div>
+
+      <nav class="top-nav-links" aria-label="Navegación principal">
+        <a href="#inicio">
+          <span data-lang="es">Inicio</span>
+          <span data-lang="en">Start</span>
+        </a>
+        <a href="#teoria">
+          <span data-lang="es">Teoría</span>
+          <span data-lang="en">Theory</span>
+        </a>
+        <a href="#practica">
+          <span data-lang="es">Laboratorio</span>
+          <span data-lang="en">Lab</span>
+        </a>
+        <a href="#cuestionario">Quiz</a>
+        <a href="#referencias">
+          <span data-lang="es">Referencias</span>
+          <span data-lang="en">References</span>
+        </a>
+        <button type="button" class="btn-download-top" onclick="downloadComicHTML()">
+          <span data-lang="es">↓ HTML GitHub</span>
+          <span data-lang="en">↓ GitHub HTML</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- ===================================================================
+         BANNER HERO ESTILO CÓMIC (AMARILLO SEMITONO + CORAL + ROBOT SVG)
+         =================================================================== -->
+    <section class="hero-comic-banner" aria-labelledby="hero-title">
+      <div class="hero-left halftone-yellow">
+        <h1 id="hero-title" class="hero-headline">
+          <span data-lang="es">Entiende los LLMs,<br />viñeta a viñeta.</span>
+          <span data-lang="en">Understand LLMs,<br />panel by panel.</span>
+        </h1>
+        <p class="hero-subline">
+          <span data-lang="es">Teoría clara. Experimentos. Preguntas para pensar.</span>
+          <span data-lang="en">Clear theory. Experiments. Questions to make you think.</span>
+        </p>
+        <div class="hero-meta-strip">
+          <span class="hero-badge">Stanford CME295 • Lecture 02</span>
+          <span class="hero-badge">Afshine &amp; Shervine Amidi</span>
+          <span class="hero-badge">
+            <a href="https://www.youtube.com/watch?v=GaIeu3npx04" target="_blank" rel="noopener noreferrer" style="color:inherit;">YouTube (00:00:05 – 01:43:05) ↗</a>
+          </span>
+        </div>
+      </div>
+
+      <div class="hero-right halftone-coral">
+        <div class="stamp-clase">
+          <span data-lang="es">CLASE 02</span>
+          <span data-lang="en">LECTURE 02</span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:center; z-index:2;">
+          <div class="speech-bubble" style="transform: rotate(-3deg);">
+            <span data-lang="es">¡Vamos<br />paso a paso!</span>
+            <span data-lang="en">Let's go<br />step by step!</span>
+          </div>
+
+          <!-- Robot Mascot Inline SVG -->
+          <svg width="118" height="126" viewBox="0 0 120 130" aria-hidden="true">
+            <!-- Antena -->
+            <line x1="60" y1="6" x2="60" y2="22" stroke="#141414" stroke-width="5" />
+            <circle cx="60" cy="6" r="5" fill="#fbd023" stroke="#141414" stroke-width="3" />
+            <!-- Cabeza Robot -->
+            <rect x="22" y="22" width="76" height="58" rx="8" fill="#ffffff" stroke="#141414" stroke-width="4" />
+            <!-- Orejas/Auriculares azules -->
+            <rect x="12" y="36" width="10" height="28" fill="#3b82f6" stroke="#141414" stroke-width="3" />
+            <rect x="98" y="36" width="10" height="28" fill="#3b82f6" stroke="#141414" stroke-width="3" />
+            <!-- Pantalla Visor Negra -->
+            <rect x="32" y="34" width="56" height="34" rx="4" fill="#141414" />
+            <!-- Ojos felices blancos -->
+            <path d="M 40 52 Q 46 42 52 52" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+            <path d="M 68 52 Q 74 42 80 52" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+            <!-- Cuerpo -->
+            <rect x="30" y="84" width="60" height="40" fill="#ffffff" stroke="#141414" stroke-width="4" />
+            <rect x="44" y="94" width="32" height="18" fill="#3b82f6" stroke="#141414" stroke-width="3" />
+          </svg>
+
+          <!-- Tarjetas flotantes de tokens -->
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="background:#fff; border:3px solid #141414; padding:4px 10px; font-family:var(--font-display); font-weight:900; transform:rotate(-5deg); box-shadow:3px 3px 0 #141414;">
+              <span data-lang="es">Hola</span><span data-lang="en">Hello</span> →
+            </div>
+            <div style="background:#fff; border:3px solid #141414; padding:4px 10px; font-family:var(--font-display); font-weight:900; transform:rotate(3deg); box-shadow:3px 3px 0 #141414;">
+              <span data-lang="es">mundo</span><span data-lang="en">world</span> →
+            </div>
+            <div style="background:#fbd023; border:3px solid #141414; padding:3px 10px; font-family:var(--font-mono); font-weight:900; text-align:center; box-shadow:3px 3px 0 #141414;">
+              [ ! ]
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         5 PESTAÑAS NUMERADAS DE NAVEGACIÓN (01 INICIO A 05 REFERENCIAS)
+         =================================================================== -->
+    <nav class="comic-tabs-row" aria-label="Secciones de los apuntes">
+      <a href="#inicio" class="comic-tab tab-01">
+        <span class="tab-num">01</span>
+        <span data-lang="es">Inicio</span>
+        <span data-lang="en">Start</span>
+      </a>
+      <a href="#teoria" class="comic-tab tab-02">
+        <span class="tab-num">02</span>
+        <span data-lang="es">Teoría</span>
+        <span data-lang="en">Theory</span>
+      </a>
+      <a href="#practica" class="comic-tab tab-03">
+        <span class="tab-num">03</span>
+        <span data-lang="es">Laboratorio</span>
+        <span data-lang="en">Laboratory</span>
+      </a>
+      <a href="#cuestionario" class="comic-tab tab-04">
+        <span class="tab-num">04</span>
+        <span>Quiz</span>
+      </a>
+      <a href="#referencias" class="comic-tab tab-05">
+        <span class="tab-num">05</span>
+        <span data-lang="es">Referencias</span>
+        <span data-lang="en">References</span>
+      </a>
+    </nav>
+
+    <!-- ===================================================================
+         SECCIÓN 01: INICIO Y FLUJO BASE DEL MODELO (#inicio)
+         =================================================================== -->
+    <section id="inicio" style="scroll-margin-top:84px;">
+      <div class="comic-spread">
+
+        <!-- VIÑETA IZQUIERDA 01: ¿Cómo aprende un modelo? -->
+        <article class="comic-panel">
+          <div>
+            <div class="panel-header">
+              <span class="num-tag">01</span>
+              <h2 class="panel-title">
+                <span data-lang="es">/ ¿Cómo aprende y genera un modelo?</span>
+                <span data-lang="en">/ How does a language model learn and generate?</span>
+              </h2>
+              <span class="timestamp-badge">00:00:31 – 00:03:11</span>
+            </div>
+
+            <div class="panel-body-with-char">
+              <div>
+                <p style="margin-top:0;">
+                  <span data-lang="es">
+                    Un <strong>modelo extenso de lenguaje (LLM)</strong> aprende a <strong>predecir el siguiente token</strong> a partir del contexto previo. Durante el preentrenamiento procesa billones de palabras y ajusta sus parámetros para estimar la distribución de probabilidad $P(w_t \mid w_1, \dots, w_{t-1})$ sobre todo el vocabulario $|\mathcal{V}|$.
+                  </span>
+                  <span data-lang="en">
+                    A <strong>Large Language Model (LLM)</strong> learns to <strong>predict the next token</strong> given preceding context. During pre-training it processes trillions of words and adjusts its parameters to estimate the probability distribution $P(w_t \mid w_1, \dots, w_{t-1})$ over the vocabulary $|\mathcal{V}|$.
+                  </span>
+                </p>
+                <p style="margin-bottom:0;">
+                  <span data-lang="es">
+                    <strong>Prerrequisito clave (Clase 1):</strong> la <strong>tokenización por subpalabras</strong> (<span lang="en">subword tokenization</span>) divide palabras poco frecuentes en fragmentos con sentido y convierte cada token en un vector (<span lang="en">embedding</span>) que se contextualiza mediante autoatención ($Q, K, V$).
+                  </span>
+                  <span data-lang="en">
+                    <strong>Key prerequisite (Lecture 1):</strong> <strong>subword tokenization</strong> splits rarer words into meaningful sub-units and maps each token to an <strong>embedding</strong> vector contextualized via self-attention ($Q, K, V$).
+                  </span>
+                </p>
+              </div>
+
+              <!-- Personaje Ilustrado SVG + Bocadillo Lavanda -->
+              <div class="char-box">
+                <div class="speech-bubble lavender" style="font-size:0.84rem; transform:rotate(-2deg);">
+                  <span data-lang="es">¡Un token no siempre es una palabra completa!</span>
+                  <span data-lang="en">A token isn't always a full word!</span>
+                </div>
+                <svg width="110" height="110" viewBox="0 0 120 120" aria-hidden="true">
+                  <!-- Cabello estilo cómic -->
+                  <path d="M 25 65 C 20 25, 95 20, 95 65 C 100 85, 90 105, 85 110 L 30 110 Z" fill="#1e293b" stroke="#141414" stroke-width="3.5" />
+                  <!-- Rostro -->
+                  <ellipse cx="60" cy="64" rx="24" ry="27" fill="#fde68a" stroke="#141414" stroke-width="3.5" />
+                  <!-- Ojos y cejas -->
+                  <circle cx="51" cy="60" r="3" fill="#141414" />
+                  <circle cx="69" cy="60" r="3" fill="#141414" />
+                  <path d="M 45 52 Q 51 49 56 53" fill="none" stroke="#141414" stroke-width="2.5" />
+                  <path d="M 64 53 Q 69 49 75 52" fill="none" stroke="#141414" stroke-width="2.5" />
+                  <!-- Sonrisa -->
+                  <path d="M 53 74 Q 60 80 67 74" fill="none" stroke="#141414" stroke-width="3" stroke-linecap="round" />
+                  <!-- Chaqueta azul y mano apuntando -->
+                  <path d="M 32 115 L 42 92 L 78 92 L 88 115 Z" fill="#3b82f6" stroke="#141414" stroke-width="3.5" />
+                  <rect x="16" y="72" width="12" height="26" rx="5" fill="#fde68a" stroke="#141414" stroke-width="3" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Diagrama Inferior: TEXTO -> TOKENS -> PREDICCIÓN -->
+          <div>
+            <div class="flow-diagram-box">
+              <div>
+                <div class="flow-card">
+                  <span data-lang="es">El gato duerme en la...</span>
+                  <span data-lang="en">The cat sleeps on the...</span>
+                </div>
+                <div class="flow-caption">
+                  <span data-lang="es">TEXTO</span>
+                  <span data-lang="en">TEXT</span>
+                </div>
+              </div>
+
+              <div class="flow-arrow" style="font-weight:900; font-size:1.3rem;">→</div>
+
+              <div>
+                <div class="flow-card">
+                  <div class="tokens-strip" data-lang="es">
+                    <span class="token-chip">El</span>
+                    <span class="token-chip">gato</span>
+                    <span class="token-chip subword">duer</span>
+                    <span class="token-chip subword">me</span>
+                    <span class="token-chip">en</span>
+                    <span class="token-chip">la</span>
+                  </div>
+                  <div class="tokens-strip" data-lang="en">
+                    <span class="token-chip">The</span>
+                    <span class="token-chip">cat</span>
+                    <span class="token-chip subword">sleep</span>
+                    <span class="token-chip subword">s</span>
+                    <span class="token-chip">on</span>
+                    <span class="token-chip">the</span>
+                  </div>
+                </div>
+                <div class="flow-caption">TOKENS (SUBWORDS)</div>
+              </div>
+
+              <div class="flow-arrow" style="font-weight:900; font-size:1.3rem;">→</div>
+
+              <div>
+                <div class="flow-card" style="padding:8px 10px;">
+                  <div class="mini-prob-row" style="grid-template-columns:58px 1fr 36px; margin-bottom:4px;">
+                    <span><span data-lang="es">ventana</span><span data-lang="en">window</span></span>
+                    <div class="mini-bar-track"><div class="mini-bar-fill fill-blue" style="width:42%"></div></div>
+                    <span>0.42</span>
+                  </div>
+                  <div class="mini-prob-row" style="grid-template-columns:58px 1fr 36px; margin-bottom:4px;">
+                    <span><span data-lang="es">cama</span><span data-lang="en">bed</span></span>
+                    <div class="mini-bar-track"><div class="mini-bar-fill fill-coral" style="width:31%"></div></div>
+                    <span>0.31</span>
+                  </div>
+                  <div class="mini-prob-row" style="grid-template-columns:58px 1fr 36px; margin-bottom:4px;">
+                    <span><span data-lang="es">jardín</span><span data-lang="en">garden</span></span>
+                    <div class="mini-bar-track"><div class="mini-bar-fill fill-lavender" style="width:18%"></div></div>
+                    <span>0.18</span>
+                  </div>
+                  <div class="mini-prob-row" style="grid-template-columns:58px 1fr 36px;">
+                    <span><span data-lang="es">suelo</span><span data-lang="en">floor</span></span>
+                    <div class="mini-bar-track"><div class="mini-bar-fill fill-gray" style="width:9%"></div></div>
+                    <span>0.09</span>
+                  </div>
+                </div>
+                <div class="flow-caption">
+                  <span data-lang="es">PREDICCIÓN</span>
+                  <span data-lang="en">PREDICTION</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- VIÑETA DERECHA 01: PRUEBA / Temperatura (Interactiva en vivo) -->
+        <aside class="prueba-panel" aria-label="Mini-laboratorio de temperatura">
+          <div class="prueba-header halftone-yellow">
+            <span>
+              <span data-lang="es">PRUEBA / Temperatura</span>
+              <span data-lang="en">TRY IT / Temperature</span>
+            </span>
+            <span style="font-family:var(--font-mono); font-size:0.8rem;">[01:28:50]</span>
+          </div>
+
+          <div class="prueba-body">
+            <p style="margin:0; font-size:0.93rem;">
+              <span data-lang="es">
+                La temperatura $T$ escala los <span lang="en">logits</span> antes del $\text{softmax}$: $P_i = \frac{\exp(z_i/T)}{\sum_j \exp(z_j/T)}$. Con valores altos ($T > 1$), el modelo explora opciones menos probables.
+              </span>
+              <span data-lang="en">
+                Temperature $T$ scales logits before $\text{softmax}$: $P_i = \frac{\exp(z_i/T)}{\sum_j \exp(z_j/T)}$. With higher values ($T > 1$), the model explores less likely options.
+              </span>
+            </p>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-family:var(--font-display); font-weight:900; margin-bottom:6px;">
+                <span>
+                  <span data-lang="es">Temperatura:</span>
+                  <span data-lang="en">Temperature:</span>
+                  <span id="hero-temp-val" style="color:var(--comic-blue-dark);">0.8</span>
+                </span>
+              </div>
+              <input type="range" id="hero-temp-slider" class="comic-slider" min="0.1" max="2.2" step="0.1" value="0.8" oninput="updateHeroTempWidget()" aria-label="Temperatura" />
+              <div style="display:flex; justify-content:space-between; font-size:0.76rem; font-weight:700; color:var(--text-muted); margin-top:4px;">
+                <span>
+                  <span data-lang="es">Más conservador ($T \to 0$)</span>
+                  <span data-lang="en">More conservative ($T \to 0$)</span>
+                </span>
+                <span>
+                  <span data-lang="es">Más creativo ($T > 1$)</span>
+                  <span data-lang="en">More creative ($T > 1$)</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="mini-prob-box">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <strong style="font-size:0.84rem;">
+                  <span data-lang="es">Próximo token (ejemplo calculado)</span>
+                  <span data-lang="en">Next token (computed example)</span>
+                </strong>
+                <span class="stamp-callout">
+                  <span data-lang="es">¡PRUEBA<br />DISTINTOS VALORES!</span>
+                  <span data-lang="en">TRY DIFFERENT<br />VALUES!</span>
+                </span>
+              </div>
+
+              <div id="hero-temp-bars"></div>
+            </div>
+
+            <a href="#practica" class="btn-comic-primary">
+              <span data-lang="es">Experimentar en el Laboratorio →</span>
+              <span data-lang="en">Experiment in the Lab →</span>
+            </a>
+          </div>
+        </aside>
+      </div>
+
+      <!-- TIRA CÓMICA DE COMPROBACIÓN 01 -->
+      <div class="comprueba-strip halftone-mint" id="strip-check-01">
+        <div class="comprueba-left">
+          <div class="comprueba-banner-title">
+            <span data-lang="es">COMPRUEBA<br />LO APRENDIDO</span>
+            <span data-lang="en">CHECK YOUR<br />UNDERSTANDING</span>
+          </div>
+          <!-- Pensador SVG con bocadillo "?" -->
+          <svg width="86" height="86" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="44" cy="44" r="24" fill="#fde68a" stroke="#141414" stroke-width="3.5" />
+            <path d="M 20 40 C 18 16, 70 16, 68 40" fill="#141414" />
+            <circle cx="37" cy="42" r="2.8" fill="#141414" />
+            <circle cx="52" cy="42" r="2.8" fill="#141414" />
+            <path d="M 38 54 L 50 53" stroke="#141414" stroke-width="3" stroke-linecap="round" />
+            <path d="M 16 95 L 26 70 L 62 70 L 72 95 Z" fill="#1e3a8a" stroke="#141414" stroke-width="3.5" />
+            <circle cx="80" cy="26" r="14" fill="#ffffff" stroke="#141414" stroke-width="3" />
+            <text x="80" y="32" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="900" font-size="18" fill="#141414">?</text>
+          </svg>
+        </div>
+
+        <div class="comprueba-card">
+          <p class="comprueba-question">
+            <span data-lang="es">¿Qué cambia en la distribución de probabilidades al subir la temperatura $T$?</span>
+            <span data-lang="en">What changes in the probability distribution when you increase temperature $T$?</span>
+          </p>
+          <div class="comprueba-options-grid">
+            <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s1', 0, false)">
+              <span class="opt-letter">A</span>
+              <span>
+                <span data-lang="es">El modelo se vuelve determinista y elige siempre el mismo token.</span>
+                <span data-lang="en">The model becomes deterministic and always picks the same token.</span>
+              </span>
+            </button>
+            <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s1', 1, false)">
+              <span class="opt-letter">B</span>
+              <span>
+                <span data-lang="es">Se reduce el tamaño del vocabulario a una sola palabra.</span>
+                <span data-lang="en">The vocabulary size shrinks to a single word.</span>
+              </span>
+            </button>
+            <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s1', 2, true)">
+              <span class="opt-letter">C</span>
+              <span>
+                <span data-lang="es">La distribución se vuelve más plana (uniforme), dando más oportunidad a tokens menos probables.</span>
+                <span data-lang="en">The distribution becomes flatter (more uniform), giving lower-probability tokens a higher chance.</span>
+              </span>
+            </button>
+          </div>
+          <div id="s1-feedback" class="comprueba-feedback-box" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SECCIÓN 02: TEORÍA EN VIÑETAS (#teoria)
+         =================================================================== -->
+    <div id="teoria" class="section-divider-banner">
+      <h2>
+        <span data-lang="es">02 / Teoría en Viñetas — De BERT y GPT a los LLMs Modernos</span>
+        <span data-lang="en">02 / Theory in Panels — From BERT &amp; GPT to Modern LLMs</span>
+      </h2>
+      <span style="font-family:var(--font-mono); font-size:0.82rem; color:var(--comic-yellow);">
+        Stanford CME295 • 00:03:12 – 01:43:05
+      </span>
+    </div>
+
+    <!-- ===================================================================
+         VIÑETA TEORÍA 02: SOLO CODIFICADOR (BERT) VS. SOLO DECODIFICADOR (GPT)
+         =================================================================== -->
+    <div class="comic-spread">
+      <article class="comic-panel">
+        <div>
+          <div class="panel-header">
+            <span class="num-tag blue">02</span>
+            <h3 class="panel-title">
+              <span data-lang="es">/ Solo Codificador (BERT) vs. Solo Decodificador (GPT)</span>
+              <span data-lang="en">/ Encoder-Only (BERT) vs. Decoder-Only (GPT)</span>
+            </h3>
+            <span class="timestamp-badge">00:03:12 – 00:19:17</span>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-blue); color:#fff; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.78rem;">BERT (2018)</span>
+              <span data-lang="es">Solo Codificador: Atención Bidireccional + Ajuste Fino</span>
+              <span data-lang="en">Encoder-Only: Bidirectional Attention + Fine-Tuning</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>Idea principal (00:04:45):</strong> Cada token atiende a tokens a su izquierda y derecha. Añade el token especial <code>[CLS]</code> al inicio para resumir toda la secuencia.</span>
+                <span data-lang="en"><strong>Main idea (00:04:45):</strong> Every token attends to both left and right context. Prepends a special <code>[CLS]</code> token to aggregate sequence-level representation.</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>1. Preentrenamiento (costoso, no supervisado):</strong> Usa dos tareas sustitutas (<span lang="en">proxy tasks</span>): <strong>MLM</strong> (<span lang="en">Masked Language Modeling</span>: ocultar tokens como <code>"A [MASK] teddy bear is [MASK]"</code> y predecirlos) y <strong>NSP</strong> (<span lang="en">Next Sentence Prediction</span>: predecir si la oración B sigue a la A).</span>
+                <span data-lang="en"><strong>1. Pre-training (expensive, self-supervised):</strong> Uses two proxy tasks: <strong>MLM</strong> (Masked Language Modeling: masking tokens like <code>"A [MASK] teddy bear is [MASK]"</code> and predicting them) and <strong>NSP</strong> (Next Sentence Prediction: classifying if sentence B follows A).</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>2. Ajuste fino (<span lang="en">Fine-tuning</span>, económico):</strong> Añade una capa lineal sobre <code>[CLS]</code> para clasificar sentimiento o sobre cada token para entidades (NER). Excelente para <span lang="en">embeddings</span>, pero no genera texto fluido.</span>
+                <span data-lang="en"><strong>2. Fine-tuning (inexpensive):</strong> Adds a linear head on <code>[CLS]</code> for sentiment classification or on tokens for NER. Great for embeddings, but cannot naturally generate free text.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="comic-subcard" style="margin-bottom:0;">
+            <h4>
+              <span style="background:var(--comic-coral); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.78rem;">GPT (2018+)</span>
+              <span data-lang="es">Solo Decodificador: Atención Causal y Paradigma Texto-a-Texto</span>
+              <span data-lang="en">Decoder-Only: Causal Attention &amp; Text-to-Text Paradigm</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>Arquitectura simplificada (00:14:05 y 00:27:55):</strong> Conserva solo el decodificador y <strong>elimina la atención cruzada</strong> (<span lang="en">cross-attention</span>). Usa <strong>máscara causal</strong> ($n \le m$) en toda la secuencia para no filtrar información futura.</span>
+                <span data-lang="en"><strong>Simplified architecture (00:14:05 &amp; 00:27:55):</strong> Keeps only the decoder and <strong>removes cross-attention</strong>. Applies a <strong>causal mask</strong> ($n \le m$) across the entire sequence to prevent future leakage.</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>Unificación texto-a-texto sin ajuste fino obligatorio:</strong> Cualquier tarea (clasificación, resumen, traducción) se formula como predecir el siguiente token a partir de una instrucción (<span lang="en">prompt</span>).</span>
+                <span data-lang="en"><strong>Text-to-text unification without mandatory fine-tuning:</strong> Any task (classification, summarization, translation) is framed as autoregressive next-token prediction from a prompt.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="math-strip">
+          $$\text{Attention}(Q,K,V) = \text{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}} + M\right)V, \qquad M_{m,n}^{\text{GPT}} = \begin{cases} 0 & \text{si } n \le m \\ -\infty & \text{si } n > m \end{cases}$$
+        </div>
+
+        <div class="warning-badge-box">
+          <span data-lang="es"><strong>Error frecuente (00:16:31):</strong> Creer que GPT procesa el <span lang="en">prompt</span> bidireccionalmente como el codificador de un modelo secuencia-a-secuencia. En un modelo <span lang="en">decoder-only</span> estándar, <strong>también los tokens del prompt llevan máscara causal</strong>.</span>
+          <span data-lang="en"><strong>Common mistake (00:16:31):</strong> Assuming GPT processes the input prompt bidirectionally like an encoder. In a standard decoder-only model, <strong>prompt tokens are also causally masked</strong>.</span>
+        </div>
+      </article>
+
+      <!-- PANEL INTERACTIVO DERECHO 02: PRUEBA / Máscara Bidireccional vs. Causal -->
+      <aside class="prueba-panel">
+        <div class="prueba-header halftone-yellow">
+          <span>
+            <span data-lang="es">PRUEBA / Máscara de Atención</span>
+            <span data-lang="en">TRY IT / Attention Mask</span>
+          </span>
+          <span style="font-family:var(--font-mono); font-size:0.8rem;">T = 3 tokens</span>
+        </div>
+
+        <div class="prueba-body">
+          <p style="margin:0; font-size:0.9rem;">
+            <span data-lang="es">Compara la matriz de pesos $\text{softmax}(QK^\top/\sqrt{d_k} + M)$ cuando las puntuaciones base son $0$. Alterna entre <strong>BERT</strong> y <strong>GPT</strong>:</span>
+            <span data-lang="en">Compare the attention weight matrix $\text{softmax}(QK^\top/\sqrt{d_k} + M)$ when base scores are $0$. Toggle between <strong>BERT</strong> and <strong>GPT</strong>:</span>
+          </p>
+
+          <div style="display:flex; gap:8px;">
+            <button type="button" id="btn-mask-gpt" class="btn-comic-secondary" style="flex:1; background:var(--comic-yellow);" onclick="setMaskMode('gpt')">
+              GPT (Causal $n \le m$)
+            </button>
+            <button type="button" id="btn-mask-bert" class="btn-comic-secondary" style="flex:1;" onclick="setMaskMode('bert')">
+              BERT (Bidireccional)
+            </button>
+          </div>
+
+          <div class="mini-prob-box">
+            <div style="font-family:var(--font-mono); font-size:0.76rem; font-weight:800; margin-bottom:6px; text-align:center;">
+              <span data-lang="es">Filas = Token consulta ($m$) | Columnas = Token clave ($n$)</span>
+              <span data-lang="en">Rows = Query token ($m$) | Columns = Key token ($n$)</span>
+            </div>
+            <div id="mask-matrix-grid" class="attn-grid-3x3"></div>
+            <p id="mask-matrix-desc" style="margin:8px 0 0 0; font-size:0.84rem; font-weight:700;"></p>
+          </div>
+
+          <div class="speech-bubble lavender" style="font-size:0.84rem;">
+            <span data-lang="es">En GPT, $e^{-\infty} = 0$ tras el $\text{softmax}$: ¡el token 1 jamás espía al token 2 ni al 3!</span>
+            <span data-lang="en">In GPT, $e^{-\infty} = 0$ after $\text{softmax}$: token 1 never peeks at token 2 or 3!</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- TIRA CÓMICA DE COMPROBACIÓN 02 -->
+    <div class="comprueba-strip halftone-mint" id="strip-check-02">
+      <div class="comprueba-left">
+        <div class="comprueba-banner-title">
+          <span data-lang="es">COMPRUEBA<br />VIÑETA 02</span>
+          <span data-lang="en">CHECK<br />PANEL 02</span>
+        </div>
+      </div>
+      <div class="comprueba-card">
+        <p class="comprueba-question">
+          <span data-lang="es">¿Por qué los bloques del decodificador en GPT tienen 2 subcapas en lugar de las 3 del decodificador original de 2017?</span>
+          <span data-lang="en">Why do GPT decoder blocks have 2 sublayers instead of the 3 sublayers in the original 2017 Transformer decoder?</span>
+        </p>
+        <div class="comprueba-options-grid">
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s2', 0, false)">
+            <span class="opt-letter">A</span>
+            <span>
+              <span data-lang="es">Porque GPT elimina la red prealimentada (FFN).</span>
+              <span data-lang="en">Because GPT removes the Feed-Forward Network (FFN).</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s2', 1, true)">
+            <span class="opt-letter">B</span>
+            <span>
+              <span data-lang="es">Porque al no existir un codificador separado, se elimina la subcapa intermedia de atención cruzada (<span lang="en">cross-attention</span>).</span>
+              <span data-lang="en">Because without a separate encoder stack, the intermediate cross-attention sublayer is removed.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s2', 2, false)">
+            <span class="opt-letter">C</span>
+            <span>
+              <span data-lang="es">Porque GPT no utiliza conexiones residuales.</span>
+              <span data-lang="en">Because GPT does not use residual connections.</span>
+            </span>
+          </button>
+        </div>
+        <div id="s2-feedback" class="comprueba-feedback-box" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         VIÑETA TEORÍA 03: LEYES DE ESCALADO (CHINCHILLA) Y SPARSE MOE
+         =================================================================== -->
+    <div class="comic-spread">
+      <article class="comic-panel">
+        <div>
+          <div class="panel-header">
+            <span class="num-tag yellow">03</span>
+            <h3 class="panel-title">
+              <span data-lang="es">/ Leyes de Escalado (Chinchilla) y Mezcla de Expertos (MoE)</span>
+              <span data-lang="en">/ Scaling Laws (Chinchilla) &amp; Sparse Mixture of Experts (MoE)</span>
+            </h3>
+            <span class="timestamp-badge">00:19:22 – 00:44:15</span>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-yellow); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.78rem;">CHINCHILLA (2022)</span>
+              <span data-lang="es">FLOPs vs. FLOP/s y la Regla de 20 Tokens por Parámetro</span>
+              <span data-lang="en">FLOPs vs. FLOP/s and the 20 Tokens per Parameter Rule</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>Notación (00:22:15):</strong> <code>FLOPs</code> (<code>s</code> minúscula) = cantidad total de operaciones de coma flotante realizadas ($\sim 10^{25}\text{ FLOPs}$ en un LLM de frontera). <code>FLOP/s</code> (o <code>FLOPS</code>) = operaciones por segundo (velocidad del hardware).</span>
+                <span data-lang="en"><strong>Notation (00:22:15):</strong> <code>FLOPs</code> (lowercase <code>s</code>) = total floating-point operations executed ($\sim 10^{25}\text{ FLOPs}$ for a frontier LLM). <code>FLOP/s</code> (or <code>FLOPS</code>) = operations per second (hardware throughput).</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>Optimalidad de Chinchilla (00:23:37):</strong> Los modelos gigantes previos ($>200\text{B}$) estaban <strong>infraentrenados</strong>. Con el mismo cómputo $C \approx 6ND$, <strong>Chinchilla</strong> ($N = 70\,000\text{ millones}$ de parámetros entrenado con $D = 1{,}4\text{ billones}$ [$1{,}4 \times 10^{12}$] de tokens) superó a Gopher ($280\text{B}$). Regla óptima de entrenamiento denso: <strong>$D \approx 20N$</strong>.</span>
+                <span data-lang="en"><strong>Chinchilla optimality (00:23:37):</strong> Prior giant models ($>200\text{B}$) were <strong>undertrained</strong>. For the same compute $C \approx 6ND$, <strong>Chinchilla</strong> ($N = 70\text{B}$ parameters trained on $D = 1.4\text{ trillion}$ [$1.4 \times 10^{12}$] tokens) beat Gopher ($280\text{B}$). Compute-optimal dense rule: <strong>$D \approx 20N$</strong>.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="comic-subcard" style="margin-bottom:0;">
+            <h4>
+              <span style="background:var(--comic-mint); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.78rem;">SPARSE MoE</span>
+              <span data-lang="es">Expertos Dispersos en la FFN, Colapso y Tendencias 2024–2026</span>
+              <span data-lang="en">Sparse Experts in FFN, Routing Collapse &amp; 2024–2026 Trends</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>¿Dónde se ubica? (00:34:13):</strong> Sustituye la capa <strong>FFN</strong> por $N$ subredes expertas y un <strong>enrutador (<span lang="en">router</span>) lineal por token</strong> que evalúa solo el <strong>Top-$k$</strong> ($k \ll N$), desacoplando capacidad total de parámetros y FLOPs por token.</span>
+                <span data-lang="en"><strong>Where is it placed? (00:34:13):</strong> Replaces the <strong>FFN</strong> layer with $N$ expert subnetworks and a <strong>per-token linear router</strong> that evaluates only the <strong>Top-$k$</strong> ($k \ll N$), decoupling total parameter capacity from per-token FLOPs.</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>Colapso de enrutamiento (<span lang="en">Routing collapse</span>, 00:36:25):</strong> Los expertos elegidos al principio mejoran más rápido y acaparan todos los tokens («los ricos se vuelven más ricos»). Se corrige sumando una pérdida auxiliar $\mathcal{L}_{\text{aux}}$ con el operador <code>stop_grad</code> sobre la fracción discreta $f_i$.</span>
+                <span data-lang="en"><strong>Routing collapse (00:36:25):</strong> Early-favored experts improve faster and monopolize all tokens ("rich get richer"). Fixed by adding a load-balancing loss $\mathcal{L}_{\text{aux}}$ using <code>stop_grad</code> on the discrete token fraction $f_i$.</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>Tendencia 2024–2026 (00:40:20):</strong> Combinar <strong>expertos compartidos</strong> (siempre activos) + <strong>expertos de grano fino</strong> ($N = 256\text{ a }384$ expertos pequeños, activando $k=8$).</span>
+                <span data-lang="en"><strong>2024–2026 trend (00:40:20):</strong> Combining always-active <strong>shared experts</strong> + <strong>fine-grained routed experts</strong> ($N = 256\text{ to }384$ smaller experts, activating $k=8$).</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="math-strip">
+          $$\hat{y}_{\text{MoE}}(x) = \sum_{i \in \mathcal{T}_k(x)} g_i(x) E_i(x), \qquad \mathcal{L}_{\text{aux}} = \alpha \cdot N \sum_{i=1}^{N} \text{stop\_grad}(f_i) \cdot P_i$$
+        </div>
+      </article>
+
+      <!-- PANEL INTERACTIVO DERECHO 03: PRUEBA / Simulador Enrutador Sparse MoE -->
+      <aside class="prueba-panel">
+        <div class="prueba-header halftone-yellow">
+          <span>
+            <span data-lang="es">PRUEBA / Enrutador Sparse MoE</span>
+            <span data-lang="en">TRY IT / Sparse MoE Router</span>
+          </span>
+          <span style="font-family:var(--font-mono); font-size:0.8rem;">[00:34:13]</span>
+        </div>
+
+        <div class="prueba-body">
+          <p style="margin:0; font-size:0.88rem;">
+            <span data-lang="es">Haz clic en distintos tokens de entrada para ver cómo el enrutador activa siempre el <strong>Experto Compartido (S1)</strong> más los <strong>Top-$k = 2$ expertos enrutados</strong> de un total de $N = 8$:</span>
+            <span data-lang="en">Click different input tokens to see how the router always activates the <strong>Shared Expert (S1)</strong> plus the <strong>Top-$k = 2$ routed experts</strong> out of $N = 8$:</span>
+          </p>
+
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <button type="button" class="btn-comic-secondary" onclick="selectMoEToken(0)">"def"</button>
+            <button type="button" class="btn-comic-secondary" onclick="selectMoEToken(1)">"calcular"</button>
+            <button type="button" class="btn-comic-secondary" onclick="selectMoEToken(2)">"3.1416"</button>
+            <button type="button" class="btn-comic-secondary" onclick="selectMoEToken(3)">"return"</button>
+          </div>
+
+          <div class="mini-prob-box">
+            <div style="font-family:var(--font-mono); font-size:0.76rem; font-weight:800; margin-bottom:6px;">
+              <span id="moe-token-label">Token actual: "def" → Activa S1 + E2, E7</span>
+            </div>
+            <div id="moe-grid-visual" class="experts-grid"></div>
+            <div style="font-size:0.78rem; margin-top:8px; display:flex; justify-content:space-between; font-family:var(--font-mono); font-weight:700;">
+              <span><span style="background:var(--comic-yellow); padding:1px 5px; border:1px solid #141414;">S1</span> = Shared</span>
+              <span><span style="background:var(--comic-mint); padding:1px 5px; border:1px solid #141414;">E#</span> = Top-2 Activos</span>
+              <span>3 / 9 FFN (33%)</span>
+            </div>
+          </div>
+
+          <div class="warning-badge-box" style="margin-top:0;">
+            <span data-lang="es"><strong>Nota de inferencia:</strong> Aunque solo se calculan $3$ expertos por token (bajos FLOPs), los $9$ expertos deben estar cargados en memoria RAM/VRAM.</span>
+            <span data-lang="en"><strong>Inference note:</strong> Even though only $3$ experts run per token (low FLOPs), all $9$ experts must reside in GPU VRAM.</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- TIRA CÓMICA DE COMPROBACIÓN 03 -->
+    <div class="comprueba-strip halftone-mint" id="strip-check-03">
+      <div class="comprueba-left">
+        <div class="comprueba-banner-title">
+          <span data-lang="es">COMPRUEBA<br />VIÑETA 03</span>
+          <span data-lang="en">CHECK<br />PANEL 03</span>
+        </div>
+      </div>
+      <div class="comprueba-card">
+        <p class="comprueba-question">
+          <span data-lang="es">¿Por qué se incluye el factor $N$ (número de expertos) multiplicando la suma en $\mathcal{L}_{\text{aux}} = \alpha N \sum_{i=1}^N \text{stop\_grad}(f_i) P_i$?</span>
+          <span data-lang="en">Why is the factor $N$ (number of experts) multiplied in front of the sum in $\mathcal{L}_{\text{aux}} = \alpha N \sum_{i=1}^N \text{stop\_grad}(f_i) P_i$?</span>
+        </p>
+        <div class="comprueba-options-grid">
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s3', 0, true)">
+            <span class="opt-letter">A</span>
+            <span>
+              <span data-lang="es">Porque en equilibrio tanto $f_i \approx 1/N$ como $P_i \approx 1/N$, por lo que $\sum f_i P_i \approx 1/N$; multiplicar por $N$ normaliza la pérdida a $\approx 1$ sin importar cuántos expertos haya.</span>
+              <span data-lang="en">Because at equilibrium both $f_i \approx 1/N$ and $P_i \approx 1/N$, making $\sum f_i P_i \approx 1/N$; multiplying by $N$ normalizes the loss to $\approx 1$ regardless of expert count.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s3', 1, false)">
+            <span class="opt-letter">B</span>
+            <span>
+              <span data-lang="es">Para forzar a que todos los tokens vayan exclusivamente al último experto $N$.</span>
+              <span data-lang="en">To force all tokens to route exclusively to the final expert $N$.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s3', 2, false)">
+            <span class="opt-letter">C</span>
+            <span>
+              <span data-lang="es">Para anular el gradiente de las probabilidades $P_i$.</span>
+              <span data-lang="en">To zero out the gradient of the router probabilities $P_i$.</span>
+            </span>
+          </button>
+        </div>
+        <div id="s3-feedback" class="comprueba-feedback-box" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         VIÑETA TEORÍA 04: RECETA DE CAPAS (RoPE, SWA, GQA, PRE-NORM, RMSNORM)
+         =================================================================== -->
+    <div class="comic-spread">
+      <article class="comic-panel">
+        <div>
+          <div class="panel-header">
+            <span class="num-tag mint">04</span>
+            <h3 class="panel-title">
+              <span data-lang="es">/ Receta Moderna: RoPE, SWA, GQA, Pre-Norm y RMSNorm</span>
+              <span data-lang="en">/ Modern Layer Recipe: RoPE, SWA, GQA, Pre-Norm &amp; RMSNorm</span>
+            </h3>
+            <span class="timestamp-badge">00:45:15 – 01:21:05</span>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-coral); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.78rem;">POSICIÓN</span>
+              <span data-lang="es">De las Agujas del Reloj Sinusoidales a RoPE (00:45:37 – 01:09:20)</span>
+              <span data-lang="en">From Sinusoidal Watch Hands to RoPE (00:45:37 – 01:09:20)</span>
+            </h4>
+            <p>
+              <span data-lang="es">
+                Los vectores sinusoidales codifican la posición usando frecuencias $\omega_i$ como las agujas de un reloj (segundero rápido, horario lento), pero al sumarse al <span lang="en">embedding</span> inicial contaminan las capas FFN. <strong>RoPE (<span lang="en">Rotary Position Embedding</span>)</strong> actúa quirúrgicamente dentro de la atención: divide $q_m$ y $k_n$ en pares 2D y los rota un ángulo $m\theta_i$ y $n\theta_i$. Así, el producto escalar $(R_{m\theta} q_m)^\top (R_{n\theta} k_n) = q_m^\top R_{(n-m)\theta} k_n$ depende solo de la <strong>distancia relativa $n - m$</strong>.
+              </span>
+              <span data-lang="en">
+                Sinusoidal vectors encode position using frequencies $\omega_i$ like watch hands (fast second hand, slow hour hand), but adding them to input embeddings pollutes FFN layers. <strong>RoPE (Rotary Position Embedding)</strong> acts surgically inside attention: splitting $q_m$ and $k_n$ into 2D pairs and rotating them by $m\theta_i$ and $n\theta_i$. Their dot product $(R_{m\theta} q_m)^\top (R_{n\theta} k_n) = q_m^\top R_{(n-m)\theta} k_n$ depends purely on <strong>relative distance $n - m$</strong>.
+              </span>
+            </p>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-blue); color:#fff; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.78rem;">ATENCIÓN</span>
+              <span data-lang="es">Ventana Deslizante (SWA) y Caché KV con GQA (01:09:22 – 01:18:10)</span>
+              <span data-lang="en">Sliding Window (SWA) &amp; KV Cache with GQA (01:09:22 – 01:18:10)</span>
+            </h4>
+            <p>
+              <span data-lang="es">
+                • <strong>SWA:</strong> Cada token atiende solo a $W$ tokens previos ($O(T \cdot W)$), pero al apilar $L$ capas el campo receptivo efectivo crece hasta $L \times W$.<br />
+                • <strong>GQA (<span lang="en">Grouped-Query Attention</span>):</strong> Para no recalcular $K$ y $V$ de tokens pasados, se guardan en la <strong>caché KV</strong> (la consulta $Q$ solo sirve en el paso actual y no se guarda). GQA agrupa las $H_q$ cabezas de consulta en $G$ grupos que comparten una sola proyección $K$ y $V$, reduciendo drásticamente la memoria frente a MHA sin perder la calidad que sacrificaba MQA ($G=1$).
+              </span>
+              <span data-lang="en">
+                • <strong>SWA:</strong> Each token attends only to $W$ prior tokens ($O(T \cdot W)$), while stacking $L$ layers expands the effective receptive field to $L \times W$.<br />
+                • <strong>GQA (Grouped-Query Attention):</strong> To avoid recomputing past $K$ and $V$ tensors, they are stored in the <strong>KV cache</strong> (query $Q$ is used only at the current step and never cached). GQA groups $H_q$ query heads into $G$ groups sharing one $K, V$ head each, slashing KV memory vs. MHA while preserving accuracy better than MQA ($G=1$).
+              </span>
+            </p>
+          </div>
+
+          <div class="comic-subcard" style="margin-bottom:0;">
+            <h4>
+              <span style="background:var(--comic-lavender); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.78rem;">NORM</span>
+              <span data-lang="es">Pre-Norm y RMSNorm (01:18:11 – 01:21:05)</span>
+              <span data-lang="en">Pre-Norm &amp; RMSNorm (01:18:11 – 01:21:05)</span>
+            </h4>
+            <p>
+              <span data-lang="es">
+                <strong>Pre-Norm</strong> ($y = x + \text{Subcapa}(\text{Norm}(x))$) deja el camino residual libre de obstáculos para el gradiente. <strong>RMSNorm</strong> elimina la resta de la media $\mu$ y el sesgo $\beta$ de LayerNorm, reduciendo operaciones con la misma estabilidad.
+              </span>
+              <span data-lang="en">
+                <strong>Pre-Norm</strong> ($y = x + \text{Sublayer}(\text{Norm}(x))$) keeps the residual stream unobstructed for gradient flow. <strong>RMSNorm</strong> drops mean $\mu$ subtraction and bias $\beta$ from LayerNorm, cutting compute with equal stability.
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="math-strip">
+          $$R_{\Theta, m}^{2\text{D}} = \begin{pmatrix} \cos m\theta_i & -\sin m\theta_i \\ \sin m\theta_i & \cos m\theta_i \end{pmatrix}, \qquad \text{RMSNorm}(x)_j = \frac{x_j}{\sqrt{\frac{1}{d}\sum_{i=1}^{d} x_i^2 + \epsilon}} \cdot \gamma_j$$
+        </div>
+      </article>
+
+      <!-- PANEL INTERACTIVO DERECHO 04: PRUEBA / Rotación 2D RoPE -->
+      <aside class="prueba-panel">
+        <div class="prueba-header halftone-yellow">
+          <span>
+            <span data-lang="es">PRUEBA / Rotación RoPE 2D</span>
+            <span data-lang="en">TRY IT / RoPE 2D Rotation</span>
+          </span>
+          <span style="font-family:var(--font-mono); font-size:0.8rem;">[01:02:15]</span>
+        </div>
+
+        <div class="prueba-body">
+          <p style="margin:0; font-size:0.88rem;">
+            <span data-lang="es">Mueve la posición $m$ de la consulta $q_m$ (azul) y la posición $n$ de la clave $k_n$ (coral) con $\theta = 30^\circ$. Comprueba que el producto escalar solo depende de $m - n$:</span>
+            <span data-lang="en">Move query position $m$ (blue) and key position $n$ (coral) with base angle $\theta = 30^\circ$. Verify that their dot product depends only on $m - n$:</span>
+          </p>
+
+          <div>
+            <label for="rope-m" style="font-weight:800; font-size:0.84rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Posición consulta $m$:</span><span data-lang="en">Query position $m$:</span></span>
+              <span id="rope-m-val" style="font-family:var(--font-mono);">3</span>
+            </label>
+            <input type="range" id="rope-m" class="comic-slider" min="0" max="8" step="1" value="3" oninput="updateRoPEWidget()" />
+          </div>
+
+          <div>
+            <label for="rope-n" style="font-weight:800; font-size:0.84rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Posición clave $n$:</span><span data-lang="en">Key position $n$:</span></span>
+              <span id="rope-n-val" style="font-family:var(--font-mono);">1</span>
+            </label>
+            <input type="range" id="rope-n" class="comic-slider" min="0" max="8" step="1" value="1" oninput="updateRoPEWidget()" />
+          </div>
+
+          <div class="mini-prob-box" style="display:flex; align-items:center; justify-content:space-around; gap:10px;">
+            <svg id="rope-svg" width="115" height="115" viewBox="-60 -60 120 120" aria-label="Círculo unitario RoPE">
+              <circle cx="0" cy="0" r="46" fill="#ffffff" stroke="#141414" stroke-width="2.5" stroke-dasharray="4 3" />
+              <line x1="-52" y1="0" x2="52" y2="0" stroke="#cbd5e1" stroke-width="1.5" />
+              <line x1="0" y1="-52" x2="0" y2="52" stroke="#cbd5e1" stroke-width="1.5" />
+              <line id="rope-line-q" x1="0" y1="0" x2="0" y2="-44" stroke="#2563eb" stroke-width="4" stroke-linecap="round" />
+              <line id="rope-line-k" x1="0" y1="0" x2="38" y2="-22" stroke="#ef5d53" stroke-width="4" stroke-linecap="round" />
+              <circle cx="0" cy="0" r="4" fill="#141414" />
+            </svg>
+            <div style="font-family:var(--font-mono); font-size:0.78rem; font-weight:800;">
+              <div>|m − n| = <span id="rope-diff">2</span></div>
+              <div>Δθ = <span id="rope-angle">60°</span></div>
+              <div style="margin-top:6px; background:var(--comic-yellow); padding:4px 6px; border:2px solid #141414;">
+                ⟨q_m, k_n⟩ = <span id="rope-dot">0.50</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ===================================================================
+         VIÑETA TEORÍA 05: DECODIFICACIÓN, NO-DETERMINISMO GPU, JSON Y PROMPTING
+         =================================================================== -->
+    <div class="comic-spread">
+      <article class="comic-panel">
+        <div>
+          <div class="panel-header">
+            <span class="num-tag lavender">05</span>
+            <h3 class="panel-title">
+              <span data-lang="es">/ Decodificación, GPU a $T=0$, JSON Guiado y Prompting</span>
+              <span data-lang="en">/ Decoding, GPU at $T=0$, Guided JSON &amp; Prompting</span>
+            </h3>
+            <span class="timestamp-badge">01:21:10 – 01:43:05</span>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-yellow); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.78rem;">DECODIFICACIÓN</span>
+              <span data-lang="es">Greedy, Beam Search, Top-$K$, Top-$P$ e Invarianza al Lote a $T=0$</span>
+              <span data-lang="en">Greedy, Beam Search, Top-$K$, Top-$P$ &amp; Batch Invariance at $T=0$</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>Deterministas vs. Estocásticos (01:22:20):</strong> <em>Greedy</em> (elegir el máximo local) y <em>Beam Search</em> (mantener $k$ haces) son reproducibles (útiles en resúmenes y <span lang="en">LLM-as-a-Judge</span>), pero robóticos en chat. El muestreo con <strong>Temperatura $T$</strong> + truncamiento <strong>Top-$K$</strong> o <strong>Top-$P$</strong> (<span lang="en">nucleus sampling</span>) aporta fluidez.</span>
+                <span data-lang="en"><strong>Deterministic vs. Stochastic (01:22:20):</strong> <em>Greedy</em> and <em>Beam Search</em> are reproducible (useful in summarization and LLM-as-a-Judge) but robotic in chat. Sampling with <strong>Temperature $T$</strong> + <strong>Top-$K$</strong> or <strong>Top-$P$</strong> truncation brings natural fluency.</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>¿Por qué $T=0$ no es $100\%$ determinista en producción? (01:31:00):</strong> La suma en coma flotante <strong>no es asociativa</strong>: $(a+b)+c \neq a+(b+c)$. Cuando un servidor agrupa dinámicamente peticiones de distintos usuarios en lotes (<span lang="en">batches</span>), los <span lang="en">kernels</span> de GPU cambian el orden de reducción (falta de <strong>invarianza al lote</strong> o <span lang="en">batch invariance</span>), alterando ligeramente los <span lang="en">logits</span>.</span>
+                <span data-lang="en"><strong>Why is $T=0$ not $100\%$ deterministic in production? (01:31:00):</strong> Floating-point addition is <strong>non-associative</strong>: $(a+b)+c \neq a+(b+c)$. When an inference server dynamically batches user requests, GPU kernels alter reduction orders (lack of <strong>batch invariance</strong>), slightly shifting logits.</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>Decodificación guiada (<span lang="en">Guided decoding</span>, 01:33:45):</strong> Para garantizar un <strong>JSON $100\%$ válido</strong>, se aplica una máscara gramatical en cada paso que fija en $-\infty$ cualquier token que viole el esquema sintáctico (ej. forzar que el primer token empiece por <code>{</code>).</span>
+                <span data-lang="en"><strong>Guided decoding (01:33:45):</strong> To guarantee <strong>$100\%$ valid JSON</strong>, a grammar mask sets to $-\infty$ any vocabulary token that violates syntax rules at each step (e.g., forcing the first token to start with <code>{</code>).</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="comic-subcard" style="margin-bottom:0;">
+            <h4>
+              <span style="background:var(--comic-mint); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.78rem;">CONTEXTO</span>
+              <span data-lang="es">Ventana de Contexto, Context Rot, CoT y Autoconsistencia (01:35:16 – 01:43:05)</span>
+              <span data-lang="en">Context Window, Context Rot, CoT &amp; Self-Consistency (01:35:16 – 01:43:05)</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>Ventana de contexto y <span lang="en">Context Rot</span>:</strong> Suma <strong>entrada + salida generada</strong> ($1\text{ token} \approx 3/4\text{ palabra}$, $1\text{ página} \approx 500\text{ tokens}$, $100\text{k} \approx 1\text{ libro}$). En contextos muy largos llenos de ruido se degrada la recuperación de datos («aguja en un pajar» / <span lang="en">context rot</span>).</span>
+                <span data-lang="en"><strong>Context window &amp; Context Rot:</strong> Includes <strong>input + generated output</strong> ($1\text{ token} \approx 3/4\text{ word}$, $1\text{ page} \approx 500\text{ tokens}$, $100\text{k} \approx 1\text{ book}$). Long, noisy contexts degrade fact retrieval ("needle in a haystack" / context rot).</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>Sin tocar los pesos:</strong> <em>Aprendizaje en contexto (<span lang="en">few-shot</span>)</em>, <em>Cadena de Pensamiento (<span lang="en">Chain-of-Thought</span>, CoT)</em> para generar pasos intermedios de razonamiento, y <em>Autoconsistencia (<span lang="en">Self-consistency</span>)</em> muestreando múltiples rutas CoT y eligiendo por <strong>votación mayoritaria</strong>.</span>
+                <span data-lang="en"><strong>Weight-free gains:</strong> <em>In-context learning (few-shot)</em>, <em>Chain-of-Thought (CoT)</em> for intermediate reasoning tokens, and <em>Self-consistency</em> by sampling multiple CoT paths and selecting via <strong>majority voting</strong>.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <!-- PANEL INTERACTIVO DERECHO 05: PRUEBA / Decodificación Guiada JSON -->
+      <aside class="prueba-panel">
+        <div class="prueba-header halftone-yellow">
+          <span>
+            <span data-lang="es">PRUEBA / JSON Guiado</span>
+            <span data-lang="en">TRY IT / Guided JSON</span>
+          </span>
+          <span style="font-family:var(--font-mono); font-size:0.8rem;">[01:34:38]</span>
+        </div>
+
+        <div class="prueba-body">
+          <p style="margin:0; font-size:0.88rem;">
+            <span data-lang="es">El modelo debe responder con un objeto JSON válido. Activa la <strong>Máscara de Gramática JSON</strong> para ver cómo se anulan los tokens conversacionales inválidos en el paso 1:</span>
+            <span data-lang="en">The model must reply with a valid JSON object. Toggle the <strong>JSON Grammar Mask</strong> to see invalid conversational tokens masked out at step 1:</span>
+          </p>
+
+          <div style="display:flex; gap:8px;">
+            <button type="button" id="btn-json-off" class="btn-comic-secondary" style="flex:1; background:var(--comic-yellow);" onclick="setGuidedJSON(false)">
+              <span data-lang="es">Sin guía (Libre)</span>
+              <span data-lang="en">Unguided (Free)</span>
+            </button>
+            <button type="button" id="btn-json-on" class="btn-comic-secondary" style="flex:1;" onclick="setGuidedJSON(true)">
+              <span data-lang="es">Con Guía JSON {</span>
+              <span data-lang="en">Guided JSON {</span>
+            </button>
+          </div>
+
+          <div class="mini-prob-box" id="json-guided-bars"></div>
+
+          <div class="speech-bubble yellow" style="font-size:0.83rem;">
+            <span data-lang="es">¡Sin guía, el token <code>"Claro,"</code> gana ($0.45$) y rompe el parser JSON! Con guía, se fuerza <code>"{"</code> ($1.00$).</span>
+            <span data-lang="en">Unguided, token <code>"Sure,"</code> wins ($0.45$) and breaks the JSON parser! Guided mode forces <code>"{"</code> ($1.00$).</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ===================================================================
+         SECCIÓN 03: LABORATORIO DE PRÁCTICA COMPLETO (#practica)
+         =================================================================== -->
+    <div id="practica" class="section-divider-banner">
+      <h2>
+        <span data-lang="es">03 / Laboratorio Interactivo — Experimenta con Escala, Memoria y Muestreo</span>
+        <span data-lang="en">03 / Interactive Laboratory — Experiment with Scale, Memory &amp; Sampling</span>
+      </h2>
+      <span style="font-family:var(--font-mono); font-size:0.82rem; color:var(--comic-yellow);">
+        <span data-lang="es">Predicción → Controles → Interpretación → Límites</span>
+        <span data-lang="en">Prediction → Controls → Interpretation → Limitations</span>
+      </span>
+    </div>
+
+    <!-- LABORATORIO COMPLETO A (CHINCHILLA + SPARSE MOE + KV CACHE GQA) -->
+    <div class="comic-spread">
+      <!-- Lab A: Chinchilla + MoE -->
+      <div class="comic-panel">
+        <div class="panel-header">
+          <span class="num-tag yellow">LAB A</span>
+          <h3 class="panel-title">
+            <span data-lang="es">/ Calculadora Chinchilla ($D=20N$) y Sparse MoE</span>
+            <span data-lang="en">/ Chinchilla ($D=20N$) &amp; Sparse MoE Calculator</span>
+          </h3>
+        </div>
+
+        <div class="comic-subcard" style="background:var(--comic-blue-light);">
+          <strong>
+            <span data-lang="es">1. Predicción antes de mover los controles:</span>
+            <span data-lang="en">1. Prediction before adjusting controls:</span>
+          </strong>
+          <span data-lang="es"> Si duplicas los parámetros óptimos $N$ manteniendo $D=20N$, ¿por cuánto se multiplica el presupuesto de cómputo $C \approx 6ND$? (Pista: compruébalo subiendo $\log_{10}(C)$ en $+0{,}6$).</span>
+          <span data-lang="en"> If you double optimal parameters $N$ while keeping $D=20N$, by what factor does compute $C \approx 6ND$ multiply? (Hint: test by raising $\log_{10}(C)$ by $+0.6$).</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div>
+            <label for="labA-c" style="font-weight:800; font-size:0.85rem; display:flex; justify-content:space-between;">
+              <span>$\log_{10}(C)$ (FLOPs):</span>
+              <span id="labA-c-val" style="font-family:var(--font-mono);">23.76</span>
+            </label>
+            <input type="range" id="labA-c" class="comic-slider" min="21.0" max="25.5" step="0.02" value="23.76" oninput="updateFullLabA()" />
+          </div>
+          <div>
+            <label for="labA-moe" style="font-weight:800; font-size:0.85rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Configuración FFN:</span><span data-lang="en">FFN Configuration:</span></span>
+            </label>
+            <select id="labA-moe" onchange="updateFullLabA()" style="width:100%; min-height:38px; border:2px solid #141414; font-family:var(--font-mono); font-weight:700; padding:4px 8px; background:#fff;">
+              <option value="1,1,0">Denso (1/1 FFN activa)</option>
+              <option value="8,2,0" selected>Mixtral MoE (N=8, k=2, S=0)</option>
+              <option value="64,4,2">MoE Compartido (N=64, k=4, S=2)</option>
+              <option value="256,8,1">Grano Fino (N=256, k=8, S=1)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:12px; font-family:var(--font-mono);">
+          <div style="background:var(--bg-paper); border:2px solid #141414; padding:8px; text-align:center;">
+            <div style="font-size:0.72rem; color:var(--text-muted);"><span data-lang="es">PARÁMETROS ($N$)</span><span data-lang="en">PARAMETERS ($N$)</span></div>
+            <div id="labA-out-n" style="font-weight:900; font-size:1rem;">70,0 mil M</div>
+          </div>
+          <div style="background:var(--bg-paper); border:2px solid #141414; padding:8px; text-align:center;">
+            <div style="font-size:0.72rem; color:var(--text-muted);"><span data-lang="es">TOKENS ($D=20N$)</span><span data-lang="en">TOKENS ($D=20N$)</span></div>
+            <div id="labA-out-d" style="font-weight:900; font-size:1rem;">1,40 billones</div>
+          </div>
+          <div style="background:var(--comic-yellow-light); border:2px solid #141414; padding:8px; text-align:center;">
+            <div style="font-size:0.72rem; color:var(--text-muted);">FFN ACTIVA / TOKEN</div>
+            <div id="labA-out-ffn" style="font-weight:900; font-size:1rem;">25.0% (2/8)</div>
+          </div>
+        </div>
+
+        <p id="labA-interp" style="margin:0 0 10px 0; font-size:0.88rem;"></p>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span style="font-family:var(--font-mono); font-size:0.74rem; background:var(--comic-yellow-light); border:1px solid #141414; padding:3px 7px;">
+            <span data-lang="es"><strong>Calculado:</strong> $N=\sqrt{C/120}, D=20N$ | <strong>Límite:</strong> ley ajustada en modelos densos.</span>
+            <span data-lang="en"><strong>Computed:</strong> $N=\sqrt{C/120}, D=20N$ | <strong>Limit:</strong> law fitted on dense models.</span>
+          </span>
+          <button type="button" class="btn-comic-secondary" onclick="resetFullLabA()">
+            <span data-lang="es">Restablecer</span><span data-lang="en">Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Lab B: KV Cache (MHA/GQA/MQA) + Sliding Window + Top-K/Top-P -->
+      <div class="comic-panel">
+        <div class="panel-header">
+          <span class="num-tag blue">LAB B</span>
+          <h3 class="panel-title">
+            <span data-lang="es">/ Memoria Caché KV (GQA) y Truncamiento Top-$K$ / Top-$P$</span>
+            <span data-lang="en">/ KV Cache Memory (GQA) &amp; Top-$K$ / Top-$P$ Truncation</span>
+          </h3>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div>
+            <label for="labB-gqa" style="font-weight:800; font-size:0.8rem; display:block; margin-bottom:4px;">
+              <span data-lang="es">Cabezas KV ($H_q=32$):</span><span data-lang="en">KV Heads ($H_q=32$):</span>
+            </label>
+            <select id="labB-gqa" onchange="updateFullLabB()" style="width:100%; min-height:38px; border:2px solid #141414; font-family:var(--font-mono); font-weight:700; background:#fff;">
+              <option value="32">32 (MHA - 100%)</option>
+              <option value="8" selected>8 (GQA - 25%)</option>
+              <option value="4">4 (GQA - 12.5%)</option>
+              <option value="1">1 (MQA - 3.1%)</option>
+            </select>
+          </div>
+          <div>
+            <label for="labB-topk" style="font-weight:800; font-size:0.8rem; display:flex; justify-content:space-between;">
+              <span>Top-$K$:</span><span id="labB-topk-val" style="font-family:var(--font-mono);">4</span>
+            </label>
+            <input type="range" id="labB-topk" class="comic-slider" min="1" max="4" step="1" value="4" oninput="updateFullLabB()" />
+          </div>
+          <div>
+            <label for="labB-topp" style="font-weight:800; font-size:0.8rem; display:flex; justify-content:space-between;">
+              <span>Top-$P$:</span><span id="labB-topp-val" style="font-family:var(--font-mono);">0.85</span>
+            </label>
+            <input type="range" id="labB-topp" class="comic-slider" min="0.40" max="1.00" step="0.05" value="0.85" oninput="updateFullLabB()" />
+          </div>
+        </div>
+
+        <div class="mini-prob-box" id="labB-bars" style="margin-bottom:10px;"></div>
+
+        <p id="labB-interp" style="margin:0 0 10px 0; font-size:0.88rem;"></p>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span style="font-family:var(--font-mono); font-size:0.74rem; background:var(--comic-yellow-light); border:1px solid #141414; padding:3px 7px;">
+            <span data-lang="es"><strong>Calculado:</strong> Ahorro KV $= 1 - H_{kv}/H_q$ y masa acumulada $\le P$.</span>
+            <span data-lang="en"><strong>Computed:</strong> KV savings $= 1 - H_{kv}/H_q$ and cumulative mass $\le P$.</span>
+          </span>
+          <button type="button" class="btn-comic-secondary" onclick="resetFullLabB()">
+            <span data-lang="es">Restablecer</span><span data-lang="en">Reset</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SECCIÓN 04: QUIZ DE INTEGRACIÓN EN VIÑETAS (#cuestionario)
+         =================================================================== -->
+    <div id="cuestionario" class="section-divider-banner">
+      <h2>
+        <span data-lang="es">04 / Comprueba lo aprendido — Quiz de Integración (6 Retos)</span>
+        <span data-lang="en">04 / Check Your Understanding — Integration Quiz (6 Challenges)</span>
+      </h2>
+      <span id="quiz-score-badge" style="font-family:var(--font-mono); font-size:0.88rem; background:var(--comic-mint); color:#141414; padding:4px 12px; border:2px solid #fff; font-weight:900;">
+        0 / 6
+      </span>
+    </div>
+
+    <div id="comic-quiz-list"></div>
+
+    <!-- ===================================================================
+         SECCIÓN 05: RESUMEN Y REFERENCIAS VERIFICADAS (#referencias)
+         =================================================================== -->
+    <div id="referencias" class="section-divider-banner">
+      <h2>
+        <span data-lang="es">05 / Resumen, Checklist y Marcas de Tiempo Verificadas</span>
+        <span data-lang="en">05 / Summary, Checklist &amp; Verified Timestamps</span>
+      </h2>
+      <span style="font-family:var(--font-mono); font-size:0.82rem; color:var(--comic-yellow);">
+        Stanford CME295 • Lecture 02
+      </span>
+    </div>
+
+    <div class="comic-spread">
+      <div class="comic-panel">
+        <div class="panel-header">
+          <span class="num-tag lavender">05</span>
+          <h3 class="panel-title">
+            <span data-lang="es">/ Lo que debes poder explicar sin mirar apuntes</span>
+            <span data-lang="en">/ What you should be able to explain without notes</span>
+          </h3>
+        </div>
+        <ul style="margin:0; padding-left:20px; font-size:0.94rem;">
+          <li style="margin-bottom:8px;">
+            <span data-lang="es"><strong>BERT vs. GPT:</strong> Por qué BERT usa atención bidireccional + tareas MLM/NSP + ajuste fino, mientras que GPT usa atención causal (incluso en el <span lang="en">prompt</span>), elimina la atención cruzada y unifica todo como texto-a-texto.</span>
+            <span data-lang="en"><strong>BERT vs. GPT:</strong> Why BERT uses bidirectional attention + MLM/NSP + fine-tuning, whereas GPT uses causal masking (even on the prompt), drops cross-attention, and unifies tasks as text-to-text.</span>
+          </li>
+          <li style="margin-bottom:8px;">
+            <span data-lang="es"><strong>Chinchilla y Sparse MoE:</strong> La diferencia entre <code>FLOPs</code> y <code>FLOP/s</code>, la regla $D \approx 20N$ en entrenamiento denso, cómo el MoE disperso activa solo $k$ expertos en la FFN y cómo se evita el colapso con $\mathcal{L}_{\text{aux}}$ y <code>stop_grad</code>.</span>
+            <span data-lang="en"><strong>Chinchilla &amp; Sparse MoE:</strong> The difference between <code>FLOPs</code> and <code>FLOP/s</code>, the $D \approx 20N$ dense training rule, how Sparse MoE activates only $k$ FFN experts per token, and how routing collapse is prevented via $\mathcal{L}_{\text{aux}}$ and <code>stop_grad</code>.</span>
+          </li>
+          <li style="margin-bottom:8px;">
+            <span data-lang="es"><strong>RoPE, GQA y RMSNorm:</strong> Cómo RoPE inyecta posición relativa rotando $Q$ y $K$ en 2D, cómo GQA comprime la caché KV compartiendo $K,V$ por grupos, y por qué Pre-Norm + RMSNorm estabilizan y aceleran el entrenamiento.</span>
+            <span data-lang="en"><strong>RoPE, GQA &amp; RMSNorm:</strong> How RoPE injects relative position by rotating 2D pairs of $Q$ and $K$, how GQA shrinks KV cache by sharing $K,V$ across groups, and why Pre-Norm + RMSNorm stabilize and speed up training.</span>
+          </li>
+          <li>
+            <span data-lang="es"><strong>Decodificación y Contexto:</strong> Por qué $T=0$ puede variar en producción por la no asociatividad en coma flotante al cambiar el lote (<span lang="en">batch invariance</span>), cómo funciona la decodificación guiada para JSON y cómo mitigar el <span lang="en">context rot</span>.</span>
+            <span data-lang="en"><strong>Decoding &amp; Context:</strong> Why $T=0$ can vary in production due to floating-point non-associativity under dynamic batching, how guided decoding guarantees valid JSON, and how to mitigate context rot.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="comic-panel halftone-yellow" style="justify-content:center; align-items:center; text-align:center;">
+        <div class="speech-bubble" style="margin-bottom:14px;">
+          <span data-lang="es">¡Listo para subir a tu repositorio de GitHub!</span>
+          <span data-lang="en">Ready to push to your GitHub repository!</span>
+        </div>
+        <p style="font-size:0.9rem; font-weight:700; margin:0 0 14px 0;">
+          <span data-lang="es">Este archivo es un único HTML autónomo sin dependencias externas rotas. Aviso de independencia: elaboración pedagógica propia basada en la clase pública de Stanford CME295.</span>
+          <span data-lang="en">This file is a single self-contained HTML document. Independence notice: independent educational elaboration based on the public Stanford CME295 lecture.</span>
+        </p>
+        <button type="button" class="btn-comic-primary" onclick="downloadComicHTML()">
+          <span data-lang="es">Descargar index.html para GitHub Pages ↓</span>
+          <span data-lang="en">Download index.html for GitHub Pages ↓</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="table-scroll" style="margin-top:16px;">
+      <table>
+        <thead>
+          <tr>
+            <th><span data-lang="es">Marca de tiempo</span><span data-lang="en">Timestamp</span></th>
+            <th><span data-lang="es">Viñeta / Concepto en clase</span><span data-lang="en">Panel / Lecture Concept</span></th>
+            <th><span data-lang="es">Referencia clave</span><span data-lang="en">Key Reference</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">00:00:05 – 00:04:44</td>
+            <td><span data-lang="es">Viñeta 01: Repaso de tokenización por subpalabras, embeddings y atención $Q,K,V$</span><span data-lang="en">Panel 01: Subword tokenization, embeddings, and $Q,K,V$ attention recap</span></td>
+            <td>Vaswani et al. (2017), <em>Attention Is All You Need</em></td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">00:04:45 – 00:19:17</td>
+            <td><span data-lang="es">Viñeta 02: Solo codificador (BERT: MLM, NSP, <code>[CLS]</code>) vs. Solo decodificador (GPT: atención causal)</span><span data-lang="en">Panel 02: Encoder-only (BERT: MLM, NSP, <code>[CLS]</code>) vs. Decoder-only (GPT: causal mask)</span></td>
+            <td>Devlin et al. (2018) <em>BERT</em>; Radford et al. (2018/2019) <em>GPT</em></td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">00:19:22 – 00:44:15</td>
+            <td><span data-lang="es">Viñeta 03: Leyes de escalado, Chinchilla ($D \approx 20N$), Sparse MoE, colapso y <code>stop_grad</code></span><span data-lang="en">Panel 03: Scaling laws, Chinchilla ($D \approx 20N$), Sparse MoE, routing collapse &amp; <code>stop_grad</code></span></td>
+            <td>Hoffmann et al. (2022) <em>Chinchilla</em>; Fedus et al. (2021); Mixtral (2024)</td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">00:45:15 – 01:21:05</td>
+            <td><span data-lang="es">Viñeta 04: RoPE 2D, Ventana Deslizante (SWA), Caché KV con GQA, Pre-Norm y RMSNorm</span><span data-lang="en">Panel 04: 2D RoPE, Sliding Window (SWA), GQA KV Cache, Pre-Norm &amp; RMSNorm</span></td>
+            <td>Su et al. (2021) <em>RoFormer</em>; Ainslie et al. (2023) <em>GQA</em>; Zhang &amp; Sennrich (2019)</td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">01:21:10 – 01:43:05</td>
+            <td><span data-lang="es">Viñeta 05: Temperatura, Top-$K$/$P$, invarianza al lote en GPU, JSON guiado, Context Rot, CoT y Self-Consistency</span><span data-lang="en">Panel 05: Temperature, Top-$K$/$P$, GPU batch invariance, guided JSON, Context Rot, CoT &amp; Self-Consistency</span></td>
+            <td>Holtzman et al. (2019); Wei et al. (2022) <em>CoT</em>; Wang et al. (2022)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    // =========================================================================
+    // ESTADO GLOBAL BILINGÜE (CONSERVA RESPUESTAS Y CONTROLES AL CAMBIAR IDIOMA)
+    // =========================================================================
+    let currentLang = 'es';
+    let currentMaskMode = 'gpt';
+    let currentMoETokenIdx = 0;
+    let isGuidedJSONActive = false;
+
+    const inlineStripsState = {
+      s1: { answered: false, idx: null, correct: false },
+      s2: { answered: false, idx: null, correct: false },
+      s3: { answered: false, idx: null, correct: false }
+    };
+
+    const inlineStripExplanations = {
+      s1: {
+        okEs: '¡Bien! Al subir T, los logits z_i / T se acercan entre sí y la distribución se vuelve más uniforme.',
+        okEn: 'Nice! Raising T brings scaled logits z_i / T closer together, making the distribution more uniform.',
+        errEs: 'Pista: Al dividir entre un T grande, las diferencias entre logits disminuyen y la distribución se aplana.',
+        errEn: 'Hint: Dividing by a large T shrinks differences between logits, flattening the distribution.'
+      },
+      s2: {
+        okEs: '¡Bien! Como un modelo de solo decodificador no tiene codificador externo, elimina la atención cruzada.',
+        okEn: 'Correct! Because a decoder-only model has no external encoder, it drops the cross-attention sublayer.',
+        errEs: 'Revisa la Viñeta 02: GPT conserva la FFN y las conexiones residuales, pero elimina la atención cruzada.',
+        errEn: 'Check Panel 02: GPT keeps the FFN and residuals, but removes the cross-attention sublayer.'
+      },
+      s3: {
+        okEs: '¡Exacto! Como Σ f_i P_i escala con 1/N en equilibrio, multiplicar por N mantiene la magnitud constante.',
+        okEn: 'Exactly! Since Σ f_i P_i scales as 1/N at equilibrium, multiplying by N keeps the loss scale invariant.',
+        errEs: 'Pista (00:43:42): Si hay N expertos, f_i ≈ 1/N y P_i ≈ 1/N. El factor N compensa esa escala.',
+        errEn: 'Hint (00:43:42): With N experts, f_i ≈ 1/N and P_i ≈ 1/N. The factor N compensates for that scaling.'
+      }
+    };
+
+    const finalQuizData = [
+      {
+        id: 'fq1',
+        qEs: '01 / ¿Qué ocurre durante el preentrenamiento de BERT frente al de GPT?',
+        qEn: '01 / How does BERT pre-training differ from GPT pre-training?',
+        optsEs: [
+          'BERT se entrena con tareas sustitutas bidireccionales (MLM y NSP), mientras que GPT predice el siguiente token con máscara causal.',
+          'BERT usa máscara causal y GPT usa Masked Language Modeling.',
+          'Ambos requieren obligatoriamente datos etiquetados manualmente en el preentrenamiento.'
+        ],
+        optsEn: [
+          'BERT pre-trains on bidirectional proxy tasks (MLM and NSP), whereas GPT predicts the next token under a causal mask.',
+          'BERT uses a causal mask while GPT uses Masked Language Modeling.',
+          'Both strictly require manually labeled data during pre-training.'
+        ],
+        correct: 0,
+        expEs: '¡Bien! (00:08:05 y 00:15:10). BERT reconstruye tokens ocultos viendo ambos lados; GPT predice el siguiente token viendo solo el pasado.',
+        expEn: 'Spot on! (00:08:05 & 00:15:10). BERT reconstructs masked tokens using bidirectional context; GPT predicts the next token attending only to the past.'
+      },
+      {
+        id: 'fq2',
+        qEs: '02 / Según Chinchilla (2022), ¿por qué un modelo de 70B superó a uno de 280B con el mismo cómputo?',
+        qEn: '02 / According to Chinchilla (2022), why did a 70B model outperform a 280B model under the same compute budget?',
+        optsEs: [
+          'Porque el modelo de 280B estaba infraentrenado (vio pocos tokens) y Chinchilla equilibró ~20 tokens por parámetro (1,4 billones de tokens).',
+          'Porque Chinchilla eliminó todas las capas de atención.',
+          'Porque los modelos de más de 100B de parámetros tienen peor capacidad de representación.'
+        ],
+        optsEn: [
+          'Because the 280B model was undertrained (saw too few tokens), while Chinchilla balanced ~20 tokens per parameter (1.4 trillion tokens).',
+          'Because Chinchilla removed all attention layers.',
+          'Because models above 100B parameters have lower representation capacity.'
+        ],
+        correct: 0,
+        expEs: '¡Correcto! (00:23:45). Con presupuesto de cómputo fijo, escalar parámetros sin escalar proporcionalmente los tokens deja al modelo infraentrenado.',
+        expEn: 'Correct! (00:23:45). Under a fixed compute budget, scaling parameters without proportionally scaling training tokens leaves the model undertrained.'
+      },
+      {
+        id: 'fq3',
+        qEs: '03 / En un modelo Sparse MoE, ¿qué componente reemplazan los expertos y para qué sirve stop_grad?',
+        qEn: '03 / In a Sparse MoE model, which component do experts replace, and what is stop_grad used for?',
+        optsEs: [
+          'Reemplazan la capa FFN; stop_grad permite usar la fracción discreta de tokens f_i como constante para que el gradiente fluya por las probabilidades P_i del enrutador.',
+          'Reemplazan RoPE; stop_grad congela todo el modelo durante la inferencia.',
+          'Reemplazan el token [CLS]; stop_grad apaga la GPU.'
+        ],
+        optsEn: [
+          'They replace the FFN layer; stop_grad treats the discrete token fraction f_i as a constant so gradients flow through router probabilities P_i.',
+          'They replace RoPE; stop_grad freezes the entire model during inference.',
+          'They replace the [CLS] token; stop_grad shuts down the GPU.'
+        ],
+        correct: 0,
+        expEs: '¡Bien! (00:34:13 y 00:38:28). El conteo discreto f_i tiene derivada nula; stop_grad permite entrenar el enrutador mediante P_i para evitar el colapso.',
+        expEn: 'Great! (00:34:13 & 00:38:28). Discrete count f_i has zero gradient; stop_grad enables training the router via P_i to prevent routing collapse.'
+      },
+      {
+        id: 'fq4',
+        qEs: '04 / ¿Por qué GQA comparte las cabezas de Clave (K) y Valor (V), pero mantiene todas las de Consulta (Q)?',
+        qEn: '04 / Why does GQA share Key (K) and Value (V) heads while keeping all Query (Q) heads independent?',
+        optsEs: [
+          'Porque en la generación autorregresiva solo se guardan en la caché de memoria los vectores K y V de los tokens pasados; Q solo se usa en el paso actual.',
+          'Porque Q no interviene en el cálculo de atención.',
+          'Porque K y V tienen dimensión cero.'
+        ],
+        optsEn: [
+          'Because autoregressive decoding only caches past K and V vectors in memory; Q is only used at the current step and never cached.',
+          'Because Q is not used in attention computation.',
+          'Because K and V have zero dimension.'
+        ],
+        correct: 0,
+        expEs: '¡Exacto! (01:17:45). El cuello de botella de memoria durante la decodificación es la caché KV acumulada token tras token.',
+        expEn: 'Exactly! (01:17:45). The memory bottleneck during decoding is the KV cache accumulated across all past tokens.'
+      },
+      {
+        id: 'fq5',
+        qEs: '05 / ¿Por qué fijar Temperatura T = 0 en un servidor en producción no garantiza determinismo al 100%?',
+        qEn: '05 / Why does setting Temperature T = 0 on a production server not guarantee 100% determinism?',
+        optsEs: [
+          'Por la falta de invarianza al lote (batch invariance): al agrupar peticiones en lotes dinámicos cambia el orden de suma en GPU y la suma en coma flotante no es asociativa.',
+          'Porque con T = 0 el modelo elige tokens completamente al azar.',
+          'Porque RoPE cambia los pesos en cada llamada.'
+        ],
+        optsEn: [
+          'Due to lack of batch invariance: dynamic server batching changes GPU reduction order, and floating-point addition is non-associative.',
+          'Because at T = 0 the model samples tokens uniformly at random.',
+          'Because RoPE mutates weights on every call.'
+        ],
+        correct: 0,
+        expEs: '¡Bien! (01:31:35). En coma flotante (a + b) + c ≠ a + (b + c); cambiar el tamaño del lote altera el orden de reducción paralelo en la GPU.',
+        expEn: 'Correct! (01:31:35). In floating point, (a + b) + c ≠ a + (b + c); varying batch sizes changes parallel reduction order on the GPU.'
+      },
+      {
+        id: 'fq6',
+        qEs: '06 / ¿Qué incluye la ventana de contexto y cómo ayuda la Autoconsistencia (Self-Consistency)?',
+        qEn: '06 / What is included in the context window, and how does Self-Consistency help?',
+        optsEs: [
+          'Incluye tanto los tokens de entrada como los generados en la salida; la Autoconsistencia muestrea varias rutas de Cadena de Pensamiento (CoT) y elige por votación mayoritaria.',
+          'Incluye solo los tokens del prompt inicial; la Autoconsistencia borra el prompt.',
+          'Incluye solo 10 palabras; la Autoconsistencia ajusta los pesos con gradiente.'
+        ],
+        optsEn: [
+          'It includes both input tokens and generated output tokens; Self-Consistency samples multiple Chain-of-Thought (CoT) paths and picks the majority-vote answer.',
+          'It includes only initial prompt tokens; Self-Consistency deletes the prompt.',
+          'It includes only 10 words; Self-Consistency updates weights via gradients.'
+        ],
+        correct: 0,
+        expEs: '¡Perfecto! (01:36:01 y 01:42:29). Todo token generado se reintroduce como entrada consumiendo ventana, y votar entre múltiples rutas CoT estabiliza el razonamiento.',
+        expEn: 'Perfect! (01:36:01 & 01:42:29). Every generated token is fed back as input consuming context capacity, and majority voting across CoT paths stabilizes reasoning.'
+      }
+    ];
+
+    const finalQuizState = {};
+    finalQuizData.forEach(q => {
+      finalQuizState[q.id] = { answered: false, idx: null };
+    });
+
+    // =========================================================================
+    // RENDERIZADO DE FÓRMULAS CON KATEX
+    // =========================================================================
+    function renderMath(container) {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(container || document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    // =========================================================================
+    // SELECTOR DE IDIOMA (ES / EN)
+    // =========================================================================
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+
+      const btnEs = document.getElementById('btn-es');
+      const btnEn = document.getElementById('btn-en');
+      if (lang === 'es') {
+        btnEs.classList.add('active');
+        btnEs.setAttribute('aria-pressed', 'true');
+        btnEn.classList.remove('active');
+        btnEn.setAttribute('aria-pressed', 'false');
+      } else {
+        btnEn.classList.add('active');
+        btnEn.setAttribute('aria-pressed', 'true');
+        btnEs.classList.remove('active');
+        btnEs.setAttribute('aria-pressed', 'false');
+      }
+
+      updateHeroTempWidget();
+      renderMaskWidget();
+      selectMoEToken(currentMoETokenIdx);
+      updateRoPEWidget();
+      setGuidedJSON(isGuidedJSONActive);
+      updateFullLabA();
+      updateFullLabB();
+      renderAllInlineStrips();
+      renderFinalQuiz();
+      renderMath(document.body);
+    }
+
+    // =========================================================================
+    // WIDGET 01 (PORTADA): PRUEBA / TEMPERATURA
+    // =========================================================================
+    const heroBaseCandidates = [
+      { es: 'ventana', en: 'window', logit: 2.1, cls: 'fill-blue' },
+      { es: 'cama', en: 'bed', logit: 1.8, cls: 'fill-coral' },
+      { es: 'jardín', en: 'garden', logit: 1.5, cls: 'fill-lavender' },
+      { es: 'suelo', en: 'floor', logit: 0.9, cls: 'fill-gray' }
+    ];
+
+    function updateHeroTempWidget() {
+      const T = parseFloat(document.getElementById('hero-temp-slider').value);
+      document.getElementById('hero-temp-val').textContent = T.toFixed(1);
+
+      const exps = heroBaseCandidates.map(c => Math.exp(c.logit / T));
+      const sum = exps.reduce((a, b) => a + b, 0);
+      const probs = exps.map(e => e / sum);
+
+      const container = document.getElementById('hero-temp-bars');
+      container.innerHTML = heroBaseCandidates.map((c, i) => {
+        const label = currentLang === 'es' ? c.es : c.en;
+        const p = probs[i];
+        return `
+          <div class="mini-prob-row">
+            <span>${label}</span>
+            <div class="mini-bar-track">
+              <div class="mini-bar-fill ${c.cls}" style="width:${(p * 100).toFixed(1)}%"></div>
+            </div>
+            <span>${p.toFixed(2)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // WIDGET 02: MATRIZ DE ATENCIÓN BERT VS GPT
+    // =========================================================================
+    function setMaskMode(mode) {
+      currentMaskMode = mode;
+      document.getElementById('btn-mask-gpt').style.background = mode === 'gpt' ? 'var(--comic-yellow)' : 'var(--bg-paper)';
+      document.getElementById('btn-mask-bert').style.background = mode === 'bert' ? 'var(--comic-yellow)' : 'var(--bg-paper)';
+      renderMaskWidget();
+    }
+
+    function renderMaskWidget() {
+      const grid = document.getElementById('mask-matrix-grid');
+      const desc = document.getElementById('mask-matrix-desc');
+
+      const cells = currentMaskMode === 'gpt'
+        ? [
+            { txt: '1.00', masked: false }, { txt: '0 (−∞)', masked: true }, { txt: '0 (−∞)', masked: true },
+            { txt: '0.50', masked: false }, { txt: '0.50', masked: false }, { txt: '0 (−∞)', masked: true },
+            { txt: '0.33', masked: false }, { txt: '0.33', masked: false }, { txt: '0.33', masked: false }
+          ]
+        : [
+            { txt: '0.33', masked: false }, { txt: '0.33', masked: false }, { txt: '0.33', masked: false },
+            { txt: '0.33', masked: false }, { txt: '0.33', masked: false }, { txt: '0.33', masked: false },
+            { txt: '0.33', masked: false }, { txt: '0.33', masked: false }, { txt: '0.33', masked: false }
+          ];
+
+      grid.innerHTML = cells.map(c => `
+        <div class="attn-cell ${c.masked ? 'masked-cell' : 'active-cell'}">${c.txt}</div>
+      `).join('');
+
+      if (currentMaskMode === 'gpt') {
+        desc.textContent = currentLang === 'es'
+          ? 'Modo GPT (Causal): El triángulo superior derecho se anula a 0 para impedir ver el futuro.'
+          : 'GPT Mode (Causal): The upper-right triangle is masked to 0 so future tokens cannot be seen.';
+      } else {
+        desc.textContent = currentLang === 'es'
+          ? 'Modo BERT (Bidireccional): Todos los tokens atienden a todos (1/3 en cada celda).'
+          : 'BERT Mode (Bidirectional): Every token attends to all positions equally (1/3 in every cell).';
+      }
+    }
+
+    // =========================================================================
+    // WIDGET 03: ENRUTADOR SPARSE MOE
+    // =========================================================================
+    const moeTokens = [
+      { tok: '"def"', active: [2, 7] },
+      { tok: '"calcular"', active: [1, 4] },
+      { tok: '"3.1416"', active: [3, 6] },
+      { tok: '"return"', active: [2, 8] }
+    ];
+
+    function selectMoEToken(idx) {
+      currentMoETokenIdx = idx;
+      const item = moeTokens[idx];
+      const labelEl = document.getElementById('moe-token-label');
+      labelEl.textContent = currentLang === 'es'
+        ? `Token actual: ${item.tok} → Activa S1 (compartido) + E${item.active[0]}, E${item.active[1]}`
+        : `Current token: ${item.tok} → Activates S1 (shared) + E${item.active[0]}, E${item.active[1]}`;
+
+      const grid = document.getElementById('moe-grid-visual');
+      let html = `<div class="expert-chip shared-active">S1 (Shared)</div>`;
+      for (let i = 1; i <= 8; i++) {
+        const isHit = item.active.includes(i);
+        html += `<div class="expert-chip ${isHit ? 'routed-active' : ''}">E${i} ${isHit ? '✓' : ''}</div>`;
+      }
+      grid.innerHTML = html;
+    }
+
+    // =========================================================================
+    // WIDGET 04: ROTACIÓN 2D ROPE
+    // =========================================================================
+    function updateRoPEWidget() {
+      const m = parseInt(document.getElementById('rope-m').value, 10);
+      const n = parseInt(document.getElementById('rope-n').value, 10);
+      document.getElementById('rope-m-val').textContent = String(m);
+      document.getElementById('rope-n-val').textContent = String(n);
+
+      const thetaDeg = 30;
+      const mRad = (m * thetaDeg * Math.PI) / 180;
+      const nRad = (n * thetaDeg * Math.PI) / 180;
+
+      const R = 42;
+      const qx = (R * Math.cos(mRad)).toFixed(1);
+      const qy = (-R * Math.sin(mRad)).toFixed(1);
+      const kx = (R * Math.cos(nRad)).toFixed(1);
+      const ky = (-R * Math.sin(nRad)).toFixed(1);
+
+      const lineQ = document.getElementById('rope-line-q');
+      const lineK = document.getElementById('rope-line-k');
+      lineQ.setAttribute('x2', qx);
+      lineQ.setAttribute('y2', qy);
+      lineK.setAttribute('x2', kx);
+      lineK.setAttribute('y2', ky);
+
+      const diff = Math.abs(m - n);
+      const relAngle = diff * thetaDeg;
+      const dot = Math.cos((relAngle * Math.PI) / 180).toFixed(2);
+
+      document.getElementById('rope-diff').textContent = String(diff);
+      document.getElementById('rope-angle').textContent = `${relAngle}°`;
+      document.getElementById('rope-dot').textContent = dot;
+    }
+
+    // =========================================================================
+    // WIDGET 05: DECODIFICACIÓN GUIADA JSON
+    // =========================================================================
+    function setGuidedJSON(active) {
+      isGuidedJSONActive = active;
+      document.getElementById('btn-json-off').style.background = !active ? 'var(--comic-yellow)' : 'var(--bg-paper)';
+      document.getElementById('btn-json-on').style.background = active ? 'var(--comic-yellow)' : 'var(--bg-paper)';
+
+      const rows = active
+        ? [
+            { tok: '"{ "', p: 1.00, status: 'OK JSON', cls: 'fill-mint' },
+            { tok: '"Claro,"', p: 0.00, status: '−∞ MASK', cls: 'fill-gray' },
+            { tok: '"Aquí"', p: 0.00, status: '−∞ MASK', cls: 'fill-gray' }
+          ]
+        : [
+            { tok: '"Claro,"', p: 0.45, status: 'ROMPE JSON', cls: 'fill-coral' },
+            { tok: '"{ "', p: 0.35, status: 'VÁLIDO', cls: 'fill-blue' },
+            { tok: '"Aquí"', p: 0.20, status: 'ROMPE JSON', cls: 'fill-gray' }
+          ];
+
+      const container = document.getElementById('json-guided-bars');
+      container.innerHTML = rows.map(r => `
+        <div class="mini-prob-row" style="grid-template-columns:70px 1fr 90px;">
+          <span><code>${r.tok}</code></span>
+          <div class="mini-bar-track">
+            <div class="mini-bar-fill ${r.cls}" style="width:${r.p * 100}%"></div>
+          </div>
+          <span style="font-size:0.72rem;">${r.p.toFixed(2)} [${r.status}]</span>
+        </div>
+      `).join('');
+    }
+
+    // =========================================================================
+    // LABORATORIO COMPLETO A & B (#practica)
+    // =========================================================================
+    function formatNum(val, lang) {
+      if (val >= 1e12) {
+        const t = (val / 1e12).toFixed(2);
+        return lang === 'es' ? `${t.replace('.', ',')} billones` : `${t} trillion`;
+      }
+      const b = (val / 1e9).toFixed(1);
+      return lang === 'es' ? `${b.replace('.', ',')} mil M` : `${b}B`;
+    }
+
+    function updateFullLabA() {
+      const expC = parseFloat(document.getElementById('labA-c').value);
+      document.getElementById('labA-c-val').textContent = expC.toFixed(2);
+
+      const moeParts = document.getElementById('labA-moe').value.split(',').map(Number);
+      const Nexp = moeParts[0];
+      const Kexp = moeParts[1];
+      const Sexp = moeParts[2];
+
+      const C = Math.pow(10, expC);
+      const N = Math.sqrt(C / 120);
+      const D = 20 * N;
+
+      const activeFFN = Kexp + Sexp;
+      const totalFFN = Nexp + Sexp;
+      const pctFFN = ((activeFFN / totalFFN) * 100).toFixed(1);
+
+      document.getElementById('labA-out-n').textContent = formatNum(N, currentLang);
+      document.getElementById('labA-out-d').textContent = formatNum(D, currentLang);
+      document.getElementById('labA-out-ffn').textContent = `${pctFFN}% (${activeFFN}/${totalFFN})`;
+
+      const interp = document.getElementById('labA-interp');
+      interp.innerHTML = currentLang === 'es'
+        ? `<strong>Interpretación:</strong> Con $C = 10^{${expC.toFixed(2)}}\\text{ FLOPs}$, el punto óptimo de entrenamiento asigna <strong>${formatNum(N, 'es')}</strong> de parámetros y <strong>${formatNum(D, 'es')}</strong> de tokens ($\approx ${(D / 500 / 1e9).toFixed(1).replace('.', ',')}\\text{ mil millones}$ de páginas).`
+        : `<strong>Interpretation:</strong> At $C = 10^{${expC.toFixed(2)}}\\text{ FLOPs}$, the compute-optimal point allocates <strong>${formatNum(N, 'en')}</strong> parameters and <strong>${formatNum(D, 'en')}</strong> tokens ($\approx ${(D / 500 / 1e9).toFixed(1)}\\text{ billion}$ pages).`;
+      renderMath(interp);
+    }
+
+    function resetFullLabA() {
+      document.getElementById('labA-c').value = '23.76';
+      document.getElementById('labA-moe').value = '8,2,0';
+      updateFullLabA();
+    }
+
+    const labBProbs = [
+      { tok: '"reading"', p: 0.48 },
+      { tok: '"sleeping"', p: 0.27 },
+      { tok: '"playing"', p: 0.16 },
+      { tok: '"flying"', p: 0.09 }
+    ];
+
+    function updateFullLabB() {
+      const Hkv = parseInt(document.getElementById('labB-gqa').value, 10);
+      const topK = parseInt(document.getElementById('labB-topk').value, 10);
+      const topP = parseFloat(document.getElementById('labB-topp').value);
+
+      document.getElementById('labB-topk-val').textContent = String(topK);
+      document.getElementById('labB-topp-val').textContent = topP.toFixed(2);
+
+      let cum = 0;
+      let keptCount = 0;
+      const barsEl = document.getElementById('labB-bars');
+
+      barsEl.innerHTML = labBProbs.map((item, i) => {
+        const keep = (i < topK) && (cum < topP || i === 0);
+        cum += item.p;
+        if (keep) keptCount++;
+        const tag = keep
+          ? (currentLang === 'es' ? 'ACTIVO' : 'KEPT')
+          : (currentLang === 'es' ? 'CORTADO' : 'CUT');
+        return `
+          <div class="mini-prob-row" style="grid-template-columns:80px 1fr 92px;">
+            <span><code>${item.tok}</code></span>
+            <div class="mini-bar-track">
+              <div class="mini-bar-fill ${keep ? 'fill-blue' : 'fill-gray'}" style="width:${item.p * 100}%"></div>
+            </div>
+            <span style="font-size:0.74rem;">${(item.p * 100).toFixed(0)}% [${tag}]</span>
+          </div>
+        `;
+      }).join('');
+
+      const savingPct = ((1 - Hkv / 32) * 100).toFixed(1);
+      const interp = document.getElementById('labB-interp');
+      interp.innerHTML = currentLang === 'es'
+        ? `<strong>Interpretación:</strong> Con $H_{kv} = ${Hkv}$ cabezas KV para $H_q = 32$ consultas, ahorras un <strong>${savingPct}%</strong> de memoria en la caché KV. Además, los umbrales Top-$K=${topK}$ y Top-$P=${topP.toFixed(2)}$ conservan <strong>${keptCount}</strong> candidatos activos.`
+        : `<strong>Interpretation:</strong> With $H_{kv} = ${Hkv}$ KV heads for $H_q = 32$ queries, you save <strong>${savingPct}%</strong> of KV cache memory. Meanwhile, Top-$K=${topK}$ and Top-$P=${topP.toFixed(2)}$ retain <strong>${keptCount}</strong> active candidates.`;
+      renderMath(interp);
+    }
+
+    function resetFullLabB() {
+      document.getElementById('labB-gqa').value = '8';
+      document.getElementById('labB-topk').value = '4';
+      document.getElementById('labB-topp').value = '0.85';
+      updateFullLabB();
+    }
+
+    // =========================================================================
+    // TIRAS CÓMICAS INLINE ("COMPRUEBA LO APRENDIDO")
+    // =========================================================================
+    function gradeInlineStrip(stripId, optIdx, isCorrect) {
+      inlineStripsState[stripId] = { answered: true, idx: optIdx, correct: isCorrect };
+      renderSingleInlineStrip(stripId);
+    }
+
+    function resetInlineStrip(stripId) {
+      inlineStripsState[stripId] = { answered: false, idx: null, correct: false };
+      renderSingleInlineStrip(stripId);
+    }
+
+    function renderSingleInlineStrip(stripId) {
+      const numMap = { s1: '01', s2: '02', s3: '03' };
+      const container = document.getElementById(`strip-check-${numMap[stripId]}`);
+      if (!container) return;
+
+      const state = inlineStripsState[stripId];
+      const buttons = container.querySelectorAll('.comic-opt-btn');
+      buttons.forEach((btn, i) => {
+        btn.classList.remove('is-correct', 'is-wrong');
+        btn.disabled = state.answered;
+        if (state.answered && i === state.idx) {
+          btn.classList.add(state.correct ? 'is-correct' : 'is-wrong');
+        }
+      });
+
+      const fb = document.getElementById(`${stripId}-feedback`);
+      if (!state.answered) {
+        fb.className = 'comprueba-feedback-box';
+        fb.innerHTML = '';
+        return;
+      }
+
+      const copy = inlineStripExplanations[stripId];
+      const msg = state.correct
+        ? (currentLang === 'es' ? copy.okEs : copy.okEn)
+        : (currentLang === 'es' ? copy.errEs : copy.errEn);
+      const retryTxt = currentLang === 'es' ? 'Reintentar ↺' : 'Retry ↺';
+
+      fb.className = `comprueba-feedback-box visible ${state.correct ? '' : 'wrong'}`;
+      fb.innerHTML = `
+        <span><strong>${state.correct ? '✓ ' : '⚠ '}</strong>${msg}</span>
+        <button type="button" class="btn-comic-secondary" onclick="resetInlineStrip('${stripId}')">${retryTxt}</button>
+      `;
+    }
+
+    function renderAllInlineStrips() {
+      ['s1', 's2', 's3'].forEach(renderSingleInlineStrip);
+    }
+
+    // =========================================================================
+    // SECCIÓN 04: QUIZ DE INTEGRACIÓN EN TIRAS CÓMICAS
+    // =========================================================================
+    function answerFinalQuiz(qId, optIdx) {
+      finalQuizState[qId] = { answered: true, idx: optIdx };
+      renderFinalQuiz();
+    }
+
+    function retryFinalQuiz(qId) {
+      finalQuizState[qId] = { answered: false, idx: null };
+      renderFinalQuiz();
+    }
+
+    function renderFinalQuiz() {
+      const list = document.getElementById('comic-quiz-list');
+      let correctTotal = 0;
+
+      list.innerHTML = finalQuizData.map((q) => {
+        const st = finalQuizState[q.id];
+        const isOk = st.answered && st.idx === q.correct;
+        if (isOk) correctTotal++;
+
+        const questionText = currentLang === 'es' ? q.qEs : q.qEn;
+        const options = currentLang === 'es' ? q.optsEs : q.optsEn;
+        const expText = currentLang === 'es' ? q.expEs : q.expEn;
+        const retryLabel = currentLang === 'es' ? 'Reintentar viñeta ↺' : 'Retry panel ↺';
+
+        const letters = ['A', 'B', 'C'];
+        const optsHtml = options.map((opt, i) => {
+          let cls = 'comic-opt-btn';
+          if (st.answered && st.idx === i) {
+            cls += isOk ? ' is-correct' : ' is-wrong';
+          }
+          return `
+            <button type="button" class="${cls}" ${st.answered ? 'disabled' : ''} onclick="answerFinalQuiz('${q.id}', ${i})">
+              <span class="opt-letter">${letters[i]}</span>
+              <span>${opt}</span>
+            </button>
+          `;
+        }).join('');
+
+        return `
+          <div class="comprueba-card" style="margin-bottom:14px; border:var(--border-thick); box-shadow:var(--shadow-comic);">
+            <p class="comprueba-question">${questionText}</p>
+            <div class="comprueba-options-grid">
+              ${optsHtml}
+            </div>
+            <div class="comprueba-feedback-box ${st.answered ? 'visible ' + (isOk ? '' : 'wrong') : ''}" aria-live="polite">
+              ${st.answered ? `
+                <span><strong>${isOk ? '✓ ' : '✗ '}</strong>${expText}</span>
+                <button type="button" class="btn-comic-secondary" onclick="retryFinalQuiz('${q.id}')">${retryLabel}</button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('quiz-score-badge').textContent = `${correctTotal} / ${finalQuizData.length}`;
+      renderMath(list);
+    }
+
+    // =========================================================================
+    // DESCARGA DIRECTA DEL ARCHIVO HTML PARA GITHUB PAGES
+    // =========================================================================
+    function downloadComicHTML() {
+      const content = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Inicialización al cargar la página
+    window.addEventListener('DOMContentLoaded', () => {
+      updateHeroTempWidget();
+      renderMaskWidget();
+      selectMoEToken(0);
+      updateRoPEWidget();
+      setGuidedJSON(false);
+      updateFullLabA();
+      updateFullLabB();
+      renderAllInlineStrips();
+      renderFinalQuiz();
+      renderMath(document.body);
+    });
+  </script>
+</body>
+</html>

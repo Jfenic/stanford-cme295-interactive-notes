@@ -4,7 +4,7 @@ Este documento define el estándar para crear y revisar todas las clases. La ide
 
 ## Identidad visual: brutalismo con cómic
 
-El estilo aprobado combina viñetas de cómic y estructura editorial profesional. Referencia implementada: `clase-02-diseno-comic.html`. Mantener superficies limpias para texto largo y fórmulas; los recursos de cómic ayudan a orientar y explicar.
+El estilo aprobado combina viñetas de cómic y estructura editorial profesional. Referencia implementada: `clases/clase-02.html`. Mantener superficies limpias para texto largo y fórmulas; los recursos de cómic ayudan a orientar y explicar.
 
 - Papel cálido `#f3f0e8`, paneles blancos y tinta carbón `#171717`. Cabecera negra y portada amarilla.
 - Paleta: azul cobalto `#2546d3`, coral `#ff806e`, amarillo `#ffe36e`, menta `#a9e5c7`, lila `#d8b7f2`. Asignación fija: inicio azul, teoría coral, práctica amarillo, cuestionario menta, referencias lila. Enlaces azules y feedback verde oscuro; estados acompañados de texto.

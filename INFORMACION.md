@@ -12,9 +12,9 @@ La documentación está disponible en español e inglés. La clase 1 incluye apu
 
 ## Estado y alcance
 
-Actualmente está disponible la primera clase, que recorre tokenización, embeddings, RNN/LSTM, autoatención, QKV, posiciones y arquitectura Transformer. Incluye siete laboratorios pedagógicos.
+Actualmente están disponibles las clases 1 y 2. La primera clase recorre tokenización, embeddings, RNN/LSTM, autoatención, QKV, posiciones y arquitectura Transformer. Incluye siete laboratorios pedagógicos.
 
-El índice reserva posiciones para las clases 2–10. Son marcadores de contenido pendiente, no clases ya preparadas ni un compromiso de fechas de publicación.
+El índice reserva posiciones para las clases 3–10. Son marcadores de contenido pendiente, no clases ya preparadas ni un compromiso de fechas de publicación.
 
 Los apuntes se han elaborado con asistencia de IA y todavía no se han contrastado línea por línea con los vídeos originales. Se revisarán progresivamente; las correcciones justificadas ayudan a mejorar su precisión.
 
@@ -49,3 +49,6 @@ Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para proponer correcciones o añadir
 La pestaña de apuntes incluye doce explicaciones desde cero en español e inglés, ejemplos de atención QKV y dimensiones matriciales, y doce preguntas con respuestas razonadas. Cada uno de los siete laboratorios incorpora una pregunta interactiva y una aclaración sobre qué se calcula y qué utiliza datos ilustrativos.
 
 El simulador BPE calcula frecuencias y fusiona un par por paso, conserva los símbolos anteriores del vocabulario y respeta los límites de palabra. Utiliza caracteres y un corpus pequeño; no equivale a un tokenizador de producción basado en bytes.
+
+
+La clase 2 trata arquitecturas BERT/GPT, escalado, MoE, RoPE, GQA, normalización y decodificación. Incluye teoría, práctica y cuestionarios bilingües con el estilo brutalista de cómic. La publicación no implica una verificación completa de todas las referencias y marcas de tiempo.

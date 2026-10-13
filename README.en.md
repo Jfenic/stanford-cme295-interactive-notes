@@ -24,7 +24,8 @@ Visit the [study notes website](https://Jfenic.github.io/stanford-cme295-interac
 | Content | Status |
 | --- | --- |
 | Lecture 1: tokenization, embeddings, RNN/LSTM, QKV attention, positions, and Transformer architecture | Available, with seven educational labs |
-| Lectures 2–10 | Reserved entries in the index; no notes yet |
+| Lecture 2: LLMs, architectures, scaling, and inference | Available in Spanish and English with labs and quizzes |
+| Lectures 3–10 | Reserved entries in the index; no notes yet |
 | Homepage with lecture and topic search | Available |
 | Template for new lecture notes | Available |
 

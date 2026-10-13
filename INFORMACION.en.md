@@ -12,9 +12,9 @@ Repository documentation is available in Spanish and English. Lecture 1 provides
 
 ## Status and scope
 
-The first lecture is currently available, covering tokenization, embeddings, RNN/LSTM, self-attention, QKV, positions, and Transformer architecture. It includes seven educational labs.
+Lectures 1 and 2 are available. The first lecture covering tokenization, embeddings, RNN/LSTM, self-attention, QKV, positions, and Transformer architecture. It includes seven educational labs.
 
-The index reserves entries for lectures 2–10. These are placeholders for pending content, not completed lectures or a commitment to publication dates.
+The index reserves entries for lectures 3–10. These are placeholders for pending content, not completed lectures or a commitment to publication dates.
 
 The notes were created with AI assistance and have not yet been checked line by line against the original videos. They will be reviewed gradually; well-supported corrections help improve their accuracy.
 
@@ -49,3 +49,6 @@ Read [CONTRIBUTING.en.md](CONTRIBUTING.en.md) to propose corrections or add cont
 The notes tab includes twelve beginner explanations in Spanish and English, worked QKV and matrix-shape examples, and twelve questions with explained answers. Each of the seven labs adds an interactive question and distinguishes computations from illustrative data.
 
 The BPE simulator computes frequencies and merges one pair per step, retains earlier vocabulary symbols, and respects word boundaries. It uses characters and a small corpus rather than a production byte-level tokenizer.
+
+
+Lecture 2 covers BERT/GPT architectures, scaling, MoE, RoPE, GQA, normalization, and decoding. It includes bilingual theory, practice, and quizzes in the comic brutalist style. Publication does not imply complete verification of every reference or timestamp.
