@@ -1,17 +1,22 @@
 # Estilo y formato de los apuntes
 
-Este documento define el estándar para crear y revisar todas las clases. La clase 1 sirve de referencia visual; esta especificación y la plantilla común guían las nuevas clases. Las clases existentes se adaptarán progresivamente, sin dar por hecho que ya cumplen todo el estándar.
+Este documento define el estándar para crear y revisar todas las clases. La identidad visual es brutalismo profesional; esta especificación y la plantilla común guían las nuevas clases. Las clases existentes se adaptarán progresivamente, sin dar por hecho que ya cumplen todo el estándar.
 
-## Identidad visual
+## Identidad visual: brutalismo profesional
 
-- Tema oscuro fijo, coherente con la portada. No introducir temas nuevos por clase.
-- Fondo `#090e1b`, paneles `#111a2c`, bordes `#2a3a56`, texto principal `#edf2ff`, secundario `#a2b3cf`.
-- Azul `#86b8ff` para navegación, teoría y acciones; verde `#7ce0c8` para respuestas correctas; ámbar `#f3c77b` para pistas y límites. Rojo reservado para errores o advertencias concretas.
-- Tipografía Inter cuando esté disponible, con fuentes de sistema como respaldo. Monoespaciada solo para código, dimensiones y datos; no para párrafos completos.
-- Texto de teoría de 16 px como mínimo, interlineado 1.7 y ancho de lectura máximo de 78 caracteres. Evitar teoría en columnas estrechas.
-- Contenedor máximo de 1100 px; margen lateral mínimo de 18 px. Paneles con radio de 16 px y 20–28 px de espacio interior. Tablas y ecuaciones anchas tienen desplazamiento interno, nunca desbordan la página.
-- Un único acento visual por componente. Evitar degradados decorativos, tarjetas con giro 3D y un color diferente para cada módulo.
-- Utilizar `assets/lesson.css` para nuevas clases. No copiar un sistema de estilos completo distinto dentro de cada HTML.
+El diseño combina estructura editorial sobria con bordes visibles y geometría contundente. La legibilidad tiene prioridad sobre el efecto visual.
+
+- Tema claro fijo: fondo papel `#f3f0e8`, paneles blancos `#ffffff`, texto y bordes carbón `#171717`, texto secundario `#52524d`. No introducir temas distintos por clase.
+- Azul cobalto `#2546d3` para enlaces, foco y teoría; verde oscuro `#185b36` para aciertos; ámbar oscuro `#704600` para pistas y límites. El estado siempre incluye texto, nunca solo color.
+- Bordes de 2 px en tarjetas y controles, 3 px en divisores principales. Esquinas rectas. Sombras sólidas de 3–5 px, sin desenfoque, reservadas para paneles principales y botones.
+- Títulos grandes, peso 850, espaciado compacto y jerarquía editorial. Mayúsculas solo en etiquetas breves. No usar mayúsculas en párrafos ni distorsionar tipografía.
+- Tipografía Inter cuando esté disponible, con fuentes de sistema como respaldo. Monoespaciada solo para metadatos, código, dimensiones y datos.
+- Texto de teoría de 17 px en escritorio y 16 px en móvil, interlineado 1.75 y ancho máximo de 75 caracteres. Evitar teoría en columnas estrechas.
+- Contenedor máximo de 1100 px; margen lateral mínimo de 18 px. Paneles con 20–28 px de espacio interior. Tablas y ecuaciones anchas se desplazan internamente.
+- Navegación en botones rectangulares; idioma activo con fondo carbón y texto blanco. Controles de al menos 44 px de altura, foco azul visible y estados reconocibles con teclado.
+- Preguntas en bloque azul muy claro con borde negro y acento lateral. Límites en bloque ámbar claro; respuestas correctas con texto explicativo verde oscuro.
+- Sin degradados, glassmorphism, sombras suaves, tarjetas 3D ni animaciones decorativas. No añadir neones ni un color diferente por módulo.
+- Utilizar `assets/lesson.css` y la plantilla común. La clase 1 aporta referencias didácticas, pero su tema oscuro anterior no define la nueva identidad. Portada y clases existentes se adaptarán progresivamente.
 
 ## Navegación común
 
