@@ -1047,10 +1047,6 @@
           <span data-lang="es">Referencias</span>
           <span data-lang="en">References</span>
         </a>
-        <button type="button" class="btn-download-top" onclick="downloadComicHTML()">
-          <span data-lang="es">↓ HTML GitHub</span>
-          <span data-lang="en">↓ GitHub HTML</span>
-        </button>
       </nav>
     </header>
 
@@ -2123,20 +2119,7 @@
         </ul>
       </div>
 
-      <div class="comic-panel halftone-yellow" style="justify-content:center; align-items:center; text-align:center;">
-        <div class="speech-bubble" style="margin-bottom:14px;">
-          <span data-lang="es">¡Listo para subir a tu repositorio de GitHub!</span>
-          <span data-lang="en">Ready to push to your GitHub repository!</span>
-        </div>
-        <p style="font-size:0.9rem; font-weight:700; margin:0 0 14px 0;">
-          <span data-lang="es">Este archivo es un único HTML autónomo sin dependencias externas rotas. Aviso de independencia: elaboración pedagógica propia basada en la clase pública de Stanford CME295.</span>
-          <span data-lang="en">This file is a single self-contained HTML document. Independence notice: independent educational elaboration based on the public Stanford CME295 lecture.</span>
-        </p>
-        <button type="button" class="btn-comic-primary" onclick="downloadComicHTML()">
-          <span data-lang="es">Descargar index.html para GitHub Pages ↓</span>
-          <span data-lang="en">Download index.html for GitHub Pages ↓</span>
-        </button>
-      </div>
+
     </div>
 
     <div class="table-scroll" style="margin-top:16px;">
@@ -2761,21 +2744,6 @@
     }
 
     // =========================================================================
-    // DESCARGA DIRECTA DEL ARCHIVO HTML PARA GITHUB PAGES
-    // =========================================================================
-    function downloadComicHTML() {
-      const content = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-      const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'index.html';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
     // Inicialización al cargar la página
     window.addEventListener('DOMContentLoaded', () => {
       updateHeroTempWidget();
