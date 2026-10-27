@@ -1,0 +1,2856 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CME295 Clase 04 — Aprendizaje por Refuerzo en LLMs (RL with LLMs)</title>
+
+  <!-- Hoja de estilos compartida del repositorio -->
+  <link rel="stylesheet" href="../assets/lesson.css" />
+
+  <!-- Tipografías: Inter, Space Grotesk, Bangers y JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- KaTeX para renderizado matemático sin delimitadores crudos visibles -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    :root {
+      --bg-paper: #f3f0e8;
+      --bg-panel: #ffffff;
+      --bg-muted: #e7e2d5;
+      --ink: #171717;
+      --text-secondary: #52524d;
+      --cobalt: #2546d3;
+      --cobalt-tint: #edf1ff;
+      --green-dark: #185b36;
+      --green-tint: #eaf5ee;
+      --amber-dark: #704600;
+      --amber-tint: #fff6e5;
+      --red-dark: #8a1c1c;
+      --red-tint: #fdeeee;
+      --comic-yellow: #fbd023;
+      --comic-yellow-tint: #fff8d6;
+      --comic-coral: #f26b5b;
+      --comic-coral-tint: #ffe6e2;
+      --comic-mint: #7bdcb5;
+      --comic-mint-tint: #e4fbf1;
+      --comic-lavender: #c4a7e7;
+      --comic-lavender-tint: #f3ecfc;
+      --border-2: 2px solid #171717;
+      --border-3: 3px solid #171717;
+      --shadow-solid: 4px 4px 0px #171717;
+      --shadow-solid-sm: 3px 3px 0px #171717;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-paper);
+      color: var(--ink);
+      font-family: var(--font-sans);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-paper);
+      background-image: radial-gradient(rgba(23, 23, 23, 0.065) 1px, transparent 1px);
+      background-size: 16px 16px;
+      color: var(--ink);
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        font-size: 16px;
+      }
+    }
+
+    /* Control estricto de idioma único visible */
+    html[lang="es"] [data-lang="en"] {
+      display: none !important;
+    }
+    html[lang="en"] [data-lang="es"] {
+      display: none !important;
+    }
+
+    /* Estados de foco visibles para teclado */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid var(--cobalt);
+      outline-offset: 2px;
+    }
+
+    a {
+      color: var(--cobalt);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 700;
+    }
+
+    a:hover {
+      background-color: var(--cobalt-tint);
+    }
+
+    /* Tramas de semitono tipo cómic */
+    .halftone-yellow {
+      background-color: var(--comic-yellow);
+      background-image: radial-gradient(rgba(23, 23, 23, 0.15) 1.25px, transparent 1.25px);
+      background-size: 10px 10px;
+    }
+
+    .halftone-coral {
+      background-color: var(--comic-coral);
+      background-image: radial-gradient(rgba(23, 23, 23, 0.18) 1.25px, transparent 1.25px);
+      background-size: 10px 10px;
+    }
+
+    .halftone-mint {
+      background-color: var(--comic-mint);
+      background-image: radial-gradient(rgba(23, 23, 23, 0.13) 1.25px, transparent 1.25px);
+      background-size: 10px 10px;
+    }
+
+    .halftone-lavender {
+      background-color: var(--comic-lavender);
+      background-image: radial-gradient(rgba(23, 23, 23, 0.14) 1.25px, transparent 1.25px);
+      background-size: 10px 10px;
+    }
+
+    /* Cabecera común conforme a ESTILO.md */
+    .site-header {
+      background-color: var(--ink);
+      color: #ffffff;
+      border-bottom: var(--border-3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 10px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 8px 16px;
+      border: 2px solid #ffffff;
+      background-color: var(--ink);
+      color: #ffffff;
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn-nav:hover {
+      background-color: var(--comic-yellow);
+      color: var(--ink);
+      border-color: var(--comic-yellow);
+    }
+
+    .class-badge {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 8px 12px;
+      background-color: var(--comic-yellow);
+      color: var(--ink);
+      border: 2px solid #ffffff;
+    }
+
+    .lang-switcher {
+      display: inline-flex;
+      gap: 6px;
+    }
+
+    .lang-btn {
+      min-height: 44px;
+      padding: 8px 16px;
+      border: 2px solid #ffffff;
+      background-color: var(--ink);
+      color: #ffffff;
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .lang-btn.active,
+    .lang-btn[aria-pressed="true"] {
+      background-color: #ffffff;
+      color: var(--ink);
+      box-shadow: 3px 3px 0px var(--comic-yellow);
+    }
+
+    .page-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 18px 64px;
+    }
+
+    /* Banner Hero Brutalismo + Cómic */
+    .hero-comic {
+      border: var(--border-3);
+      box-shadow: var(--shadow-solid);
+      background-color: var(--bg-panel);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+
+    .hero-top-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      border-bottom: var(--border-3);
+    }
+
+    @media (max-width: 860px) {
+      .hero-top-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hero-left {
+      padding: 26px 28px;
+      border-right: var(--border-3);
+    }
+
+    @media (max-width: 860px) {
+      .hero-left {
+        border-right: none;
+        border-bottom: var(--border-3);
+      }
+    }
+
+    .eyebrow-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background-color: var(--bg-panel);
+      border: var(--border-2);
+      padding: 3px 9px;
+      display: inline-block;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-solid-sm);
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.95rem, 3.6vw, 2.85rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      margin: 0 0 12px 0;
+    }
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+      font-weight: 850;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin: 0 0 16px 0;
+      padding-bottom: 10px;
+      border-bottom: var(--border-3);
+    }
+
+    h3 {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 850;
+      letter-spacing: -0.015em;
+      line-height: 1.28;
+      margin: 0 0 12px 0;
+    }
+
+    h4 {
+      font-family: var(--font-display);
+      font-size: 1.06rem;
+      font-weight: 800;
+      margin: 18px 0 8px 0;
+    }
+
+    .hero-summary {
+      max-width: 68ch;
+      margin: 0;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .hero-right {
+      padding: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 230px;
+    }
+
+    .stamp-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background-color: #ffffff;
+      border: var(--border-3);
+      box-shadow: var(--shadow-solid-sm);
+      padding: 4px 10px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      transform: rotate(4deg);
+    }
+
+    .speech-bubble {
+      background-color: #ffffff;
+      border: var(--border-3);
+      box-shadow: var(--shadow-solid-sm);
+      padding: 10px 14px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.9rem;
+      line-height: 1.28;
+      position: relative;
+    }
+
+    .speech-bubble.lavender {
+      background-color: var(--comic-lavender-tint);
+    }
+
+    .speech-bubble.yellow {
+      background-color: var(--comic-yellow-tint);
+    }
+
+    .meta-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      padding: 16px 24px;
+      background-color: var(--bg-panel);
+    }
+
+    .meta-cell {
+      background-color: var(--bg-paper);
+      border: var(--border-2);
+      padding: 10px 14px;
+      font-size: 0.88rem;
+    }
+
+    .meta-cell strong {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+
+    .notice-amber {
+      margin: 0 24px 20px;
+      padding: 12px 16px;
+      background-color: var(--amber-tint);
+      border: var(--border-2);
+      border-left: 6px solid var(--amber-dark);
+      font-size: 0.9rem;
+    }
+
+    .notice-amber strong {
+      color: var(--amber-dark);
+    }
+
+    /* Pestañas Bento de navegación por anclas estables */
+    .bento-nav {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 820px) {
+      .bento-nav {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .bento-tab {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 52px;
+      padding: 10px 14px;
+      border: var(--border-3);
+      box-shadow: var(--shadow-solid);
+      text-decoration: none;
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-weight: 850;
+      font-size: 0.98rem;
+      transition: transform 0.08s ease;
+    }
+
+    .bento-tab:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px var(--ink);
+    }
+
+    .bento-tab .tab-num {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 1.05rem;
+    }
+
+    .tab-1 { background-color: var(--cobalt); color: #ffffff; }
+    .tab-1:hover { background-color: #1c39b5; color: #ffffff; }
+    .tab-2 { background-color: var(--comic-coral); }
+    .tab-3 { background-color: var(--comic-yellow); }
+    .tab-4 { background-color: var(--comic-mint); }
+    .tab-5 { background-color: var(--comic-lavender); }
+
+    /* Paneles principales y cuadrículas estilo viñeta */
+    .section-block {
+      scroll-margin-top: 80px;
+      margin-bottom: 36px;
+    }
+
+    .section-banner {
+      background-color: var(--ink);
+      color: #ffffff;
+      border: var(--border-3);
+      box-shadow: var(--shadow-solid);
+      padding: 12px 20px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .section-banner h2 {
+      margin: 0;
+      padding: 0;
+      border: none;
+      color: #ffffff;
+      font-size: 1.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .comic-spread {
+      display: grid;
+      grid-template-columns: 1.52fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 920px) {
+      .comic-spread {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel-card {
+      background-color: var(--bg-panel);
+      border: var(--border-3);
+      box-shadow: var(--shadow-solid);
+      padding: 24px 26px;
+    }
+
+    @media (max-width: 640px) {
+      .panel-card {
+        padding: 18px 20px;
+      }
+    }
+
+    .prose {
+      max-width: 75ch;
+    }
+
+    .prose p,
+    .prose ul,
+    .prose ol {
+      margin-top: 0;
+      margin-bottom: 14px;
+    }
+
+    .prose li {
+      margin-bottom: 6px;
+    }
+
+    code,
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 0.89em;
+      background-color: var(--bg-paper);
+      padding: 2px 5px;
+      border: 1px solid var(--ink);
+    }
+
+    .panel-head-strip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: var(--border-3);
+    }
+
+    .num-badge {
+      background-color: var(--comic-coral);
+      color: var(--ink);
+      border: var(--border-2);
+      box-shadow: var(--shadow-solid-sm);
+      padding: 4px 12px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.2rem;
+      transform: skewX(-8deg);
+      display: inline-block;
+    }
+
+    .num-badge.blue { background-color: var(--cobalt); color: #ffffff; }
+    .num-badge.yellow { background-color: var(--comic-yellow); }
+    .num-badge.mint { background-color: var(--comic-mint); }
+    .num-badge.lavender { background-color: var(--comic-lavender); }
+
+    .timestamp-tag {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 800;
+      background-color: var(--bg-paper);
+      border: var(--border-2);
+      padding: 3px 8px;
+      margin-left: auto;
+    }
+
+    /* Cajas semánticas de teoría, límite, error y comprobación */
+    .callout-cobalt {
+      background-color: var(--cobalt-tint);
+      border: var(--border-2);
+      border-left: 6px solid var(--cobalt);
+      padding: 14px 18px;
+      margin: 14px 0;
+      max-width: 75ch;
+    }
+
+    .callout-amber {
+      background-color: var(--amber-tint);
+      border: var(--border-2);
+      border-left: 6px solid var(--amber-dark);
+      padding: 14px 18px;
+      margin: 14px 0;
+      max-width: 75ch;
+    }
+
+    .callout-green {
+      background-color: var(--green-tint);
+      border: var(--border-2);
+      border-left: 6px solid var(--green-dark);
+      padding: 14px 18px;
+      margin: 14px 0;
+      max-width: 75ch;
+    }
+
+    .status-tag {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .status-cobalt { color: var(--cobalt); }
+    .status-amber { color: var(--amber-dark); }
+    .status-green { color: var(--green-dark); }
+    .status-red { color: var(--red-dark); }
+
+    .math-block {
+      overflow-x: auto;
+      padding: 12px 16px;
+      margin: 14px 0;
+      background-color: var(--bg-paper);
+      border: var(--border-2);
+      box-shadow: var(--shadow-solid-sm);
+      max-width: 75ch;
+    }
+
+    /* Desplegable Comprueba en cada concepto de Teoría */
+    details.check-box {
+      background-color: var(--cobalt-tint);
+      border: var(--border-2);
+      border-left: 6px solid var(--cobalt);
+      padding: 12px 16px;
+      margin: 16px 0 6px 0;
+      max-width: 75ch;
+    }
+
+    details.check-box summary {
+      cursor: pointer;
+      font-weight: 800;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      color: var(--cobalt);
+    }
+
+    details.check-box .check-solution {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-top: var(--border-2);
+      background-color: var(--green-tint);
+      color: var(--ink);
+    }
+
+    /* Tiras secuenciales de tokens tipo cómic */
+    .token-comic-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      padding: 12px;
+      background-color: var(--bg-paper);
+      border: var(--border-2);
+      margin: 12px 0;
+    }
+
+    .tok-box {
+      border: var(--border-2);
+      background-color: #ffffff;
+      padding: 4px 9px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      box-shadow: 2px 2px 0px var(--ink);
+    }
+
+    .tok-box.bad {
+      background-color: var(--comic-coral-tint);
+      border-color: var(--red-dark);
+      color: var(--red-dark);
+    }
+
+    .tok-box.good {
+      background-color: var(--comic-mint-tint);
+      border-color: var(--green-dark);
+      color: var(--green-dark);
+    }
+
+    /* Paneles interactivos laterales PRUEBA / ... */
+    .prueba-panel {
+      background-color: var(--bg-panel);
+      border: var(--border-3);
+      box-shadow: var(--shadow-solid);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .prueba-header {
+      border-bottom: var(--border-3);
+      padding: 12px 16px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.12rem;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .prueba-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .control-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .control-field label {
+      font-weight: 800;
+      font-size: 0.88rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    input[type="range"].comic-range {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 12px;
+      background: var(--cobalt);
+      border: 2px solid var(--ink);
+      cursor: pointer;
+    }
+
+    input[type="range"].comic-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      background: var(--comic-yellow);
+      border: 3px solid var(--ink);
+      box-shadow: 2px 2px 0px var(--ink);
+      cursor: pointer;
+    }
+
+    select.comic-select,
+    input[type="number"].comic-num {
+      min-height: 44px;
+      border: var(--border-2);
+      background-color: #ffffff;
+      padding: 6px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .btn-rect {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 8px 16px;
+      border: var(--border-2);
+      background-color: var(--bg-panel);
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: var(--shadow-solid-sm);
+      text-decoration: none;
+    }
+
+    .btn-rect:hover {
+      background-color: var(--comic-yellow);
+    }
+
+    .btn-rect:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px var(--ink);
+    }
+
+    .btn-rect.primary {
+      background-color: var(--cobalt);
+      color: #ffffff;
+      width: 100%;
+    }
+
+    .btn-rect.primary:hover {
+      background-color: #1c39b5;
+    }
+
+    /* Barras de probabilidad y métricas */
+    .output-card {
+      background-color: var(--bg-paper);
+      border: var(--border-2);
+      padding: 14px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .metric-box {
+      background-color: #ffffff;
+      border: var(--border-2);
+      padding: 10px 12px;
+      box-shadow: 2px 2px 0px var(--ink);
+    }
+
+    .metric-box .m-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      display: block;
+    }
+
+    .metric-box .m-val {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 75px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .bar-track {
+      height: 18px;
+      background-color: #dcd7c9;
+      border: 2px solid var(--ink);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background-color: var(--cobalt);
+    }
+
+    .bar-fill.coral { background-color: var(--comic-coral); }
+    .bar-fill.mint { background-color: var(--green-dark); }
+    .bar-fill.yellow { background-color: var(--comic-yellow); }
+
+    /* Tiras COMPRUEBA LO APRENDIDO y tarjetas de cuestionario */
+    .comprueba-strip {
+      border: var(--border-3);
+      box-shadow: var(--shadow-solid);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    @media (max-width: 820px) {
+      .comprueba-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comprueba-title {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.22rem;
+      line-height: 1.08;
+      text-transform: uppercase;
+      transform: rotate(-3deg);
+    }
+
+    .quiz-card {
+      background-color: var(--bg-panel);
+      border: var(--border-3);
+      box-shadow: var(--shadow-solid-sm);
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+
+    .quiz-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .quiz-opt-btn {
+      min-height: 48px;
+      padding: 10px 12px;
+      border: var(--border-2);
+      background-color: var(--bg-paper);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .quiz-opt-btn:hover:not(:disabled) {
+      background-color: var(--cobalt-tint);
+      box-shadow: var(--shadow-solid-sm);
+    }
+
+    .opt-badge {
+      background-color: #ffffff;
+      border: 2px solid var(--ink);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.85rem;
+      padding: 1px 7px;
+      flex-shrink: 0;
+    }
+
+    .quiz-opt-btn.selected-correct {
+      background-color: var(--green-tint);
+      border: 3px solid var(--green-dark);
+    }
+
+    .quiz-opt-btn.selected-correct .opt-badge {
+      background-color: var(--green-dark);
+      color: #ffffff;
+    }
+
+    .quiz-opt-btn.selected-wrong {
+      background-color: var(--red-tint);
+      border: 3px solid var(--red-dark);
+    }
+
+    .quiz-opt-btn.selected-wrong .opt-badge {
+      background-color: var(--red-dark);
+      color: #ffffff;
+    }
+
+    .quiz-feedback {
+      margin-top: 12px;
+      padding: 12px 16px;
+      border: var(--border-2);
+      display: none;
+      font-size: 0.92rem;
+    }
+
+    .quiz-feedback.visible {
+      display: block;
+    }
+
+    .quiz-feedback.correct {
+      background-color: var(--green-tint);
+      border-left: 6px solid var(--green-dark);
+    }
+
+    .quiz-feedback.wrong {
+      background-color: var(--amber-tint);
+      border-left: 6px solid var(--amber-dark);
+    }
+
+    /* Tablas con desplazamiento interno */
+    .table-scroll {
+      overflow-x: auto;
+      border: var(--border-3);
+      box-shadow: var(--shadow-solid);
+      background-color: var(--bg-panel);
+      margin: 16px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    th,
+    td {
+      border: var(--border-2);
+      padding: 10px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: var(--comic-yellow);
+      font-family: var(--font-display);
+      font-weight: 900;
+    }
+    /* Keep long bilingual controls and mathematical panels inside small screens. */
+    .output-card,.control-field,.controls-grid,.metrics-grid,.metric-box,.lab-panel,.prose{min-width:0;max-width:100%}
+    .comic-select,.comic-range{min-width:0;max-width:100%;width:100%}
+    p,li,label,summary,.quiz-opt-btn,.m-label{overflow-wrap:anywhere}
+    @media(max-width:700px){.metrics-grid,.controls-grid{grid-template-columns:minmax(0,1fr)!important}.output-card{overflow-x:auto}.section-panel{min-width:0}}
+  </style>
+</head>
+<body>
+
+  <!-- CABECERA COMÚN (ESTILO.md: «← Índice», número de clase, selector «Español / English») -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <a href="../index.html" class="btn-nav">
+          <span data-lang="es">← Índice</span>
+          <span data-lang="en">← Index</span>
+        </a>
+        <span class="class-badge">
+          <span data-lang="es">Clase 04 / CME295</span>
+          <span data-lang="en">Lecture 04 / CME295</span>
+        </span>
+      </div>
+
+      <div class="lang-switcher" role="group" aria-label="Selector de idioma / Language selector">
+        <button type="button" id="btn-lang-es" class="lang-btn active" aria-pressed="true" onclick="setLanguage('es')">
+          Español
+        </button>
+        <button type="button" id="btn-lang-en" class="lang-btn" aria-pressed="false" onclick="setLanguage('en')">
+          English
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-container">
+
+    <!-- PORTADA HERO ESTILO BRUTALISMO + CÓMIC -->
+    <div class="callout-cobalt"><span data-lang="es"><strong>Revisión:</strong> corregidos recompensa cero, límites de PPO, variantes GRPO y KL. Las marcas de tiempo están pendientes de comprobación con el vídeo; los laboratorios no ejecutan entrenamientos.</span><span data-lang="en"><strong>Review:</strong> corrected zero reward, PPO limits, GRPO variants and KL. Timestamps await video verification; labs do not run training.</span><p><a href="https://arxiv.org/abs/1707.06347">PPO</a> · <a href="https://arxiv.org/abs/2503.14476">DAPO</a> · <a href="https://arxiv.org/abs/2503.20783">Dr. GRPO</a></p></div><section class="hero-comic" aria-labelledby="lesson-title">
+      <div class="hero-top-grid">
+        <div class="hero-left halftone-yellow">
+          <span class="eyebrow-tag">Stanford CME295 • Transformers &amp; LLMs (Autumn 2026)</span>
+          <h1 id="lesson-title">
+            <span data-lang="es">Aprendizaje por Refuerzo en LLMs, viñeta a viñeta.</span>
+            <span data-lang="en">Reinforcement Learning with LLMs, panel by panel.</span>
+          </h1>
+          <p class="hero-summary">
+            <span data-lang="es">
+              Gradiente de política (REINFORCE), muestreo por importancia, PPO con recorte y función de valor, GRPO sin red crítica, sesgo de longitud (DAPO / Dr. GRPO) y destilación <span lang="en">on-policy</span> con divergencia KL inversa.
+            </span>
+            <span data-lang="en">
+              Policy gradient (REINFORCE), importance sampling, clipped PPO with a value function, critic-free GRPO, length bias mitigation (DAPO / Dr. GRPO), and on-policy distillation with reverse KL divergence.
+            </span>
+          </p>
+        </div>
+
+        <div class="hero-right halftone-coral">
+          <div class="stamp-badge">
+            <span data-lang="es">CLASE 04</span>
+            <span data-lang="en">LECTURE 04</span>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:center;">
+            <div class="speech-bubble" style="transform: rotate(-3deg);">
+              <span data-lang="es">¡Maximizamos la<br />recompensa paso a paso!</span>
+              <span data-lang="en">We maximize<br />reward step by step!</span>
+            </div>
+
+            <!-- Personaje Robot Agente RL (Inline SVG) -->
+            <svg width="116" height="126" viewBox="0 0 120 130" aria-hidden="true">
+              <!-- Antena de señal de recompensa -->
+              <line x1="60" y1="6" x2="60" y2="24" stroke="#171717" stroke-width="4" />
+              <circle cx="60" cy="8" r="6" fill="#7bdcb5" stroke="#171717" stroke-width="3" />
+              <!-- Cabeza Robot -->
+              <rect x="22" y="24" width="76" height="54" fill="#ffffff" stroke="#171717" stroke-width="4" />
+              <rect x="12" y="38" width="10" height="26" fill="#2546d3" stroke="#171717" stroke-width="3" />
+              <rect x="98" y="38" width="10" height="26" fill="#2546d3" stroke="#171717" stroke-width="3" />
+              <!-- Pantalla visor -->
+              <rect x="32" y="34" width="56" height="32" fill="#171717" />
+              <path d="M 40 50 Q 46 40 52 50" fill="none" stroke="#fbd023" stroke-width="4" stroke-linecap="round" />
+              <path d="M 68 50 Q 74 40 80 50" fill="none" stroke="#fbd023" stroke-width="4" stroke-linecap="round" />
+              <!-- Torso con insignia PPO / GRPO -->
+              <rect x="28" y="82" width="64" height="40" fill="#ffffff" stroke="#171717" stroke-width="4" />
+              <rect x="38" y="90" width="44" height="24" fill="#7bdcb5" stroke="#171717" stroke-width="3" />
+              <text x="60" y="106" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11" fill="#171717">A_t &gt; 0</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="meta-bar">
+        <div class="meta-cell">
+          <strong>
+            <span data-lang="es">Fuente y tramo cubierto</span>
+            <span data-lang="en">Source and covered span</span>
+          </strong>
+          <span>
+            <a href="https://www.youtube.com/watch?v=3Vaj0Oka_t4" target="_blank" rel="noopener noreferrer">YouTube (Stanford Online)</a>
+            — <span class="mono">00:00:06 – 01:43:18</span>
+          </span>
+        </div>
+        <div class="meta-cell">
+          <strong>
+            <span data-lang="es">Docentes en el video</span>
+            <span data-lang="en">Instructors in video</span>
+          </strong>
+          <span>Afshine Amidi &amp; Shervine Amidi</span>
+        </div>
+        <div class="meta-cell">
+          <strong>
+            <span data-lang="es">Estado de revisión</span>
+            <span data-lang="en">Review status</span>
+          </strong>
+          <span>
+            <span data-lang="es">Revisión conceptual y cálculos comprobados; marcas de tiempo pendientes</span>
+            <span data-lang="en">Conceptual review and numerical checks completed; timestamps pending</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="notice-amber">
+        <span data-lang="es">
+          <strong>Aviso de independencia:</strong> Estos apuntes constituyen material de estudio independiente basado en la grabación pública de Stanford CME295. Los ejemplos numéricos paso a paso y los simuladores interactivos son elaboración propia para facilitar la práctica y no están afiliados ni respaldados por Stanford University.
+        </span>
+        <span data-lang="en">
+          <strong>Independence notice:</strong> These notes are independent study material based on the public recording of Stanford CME295. Step-by-step numerical examples and interactive simulators are original elaborations for practice and are neither affiliated with nor endorsed by Stanford University.
+        </span>
+      </div>
+    </section>
+
+    <!-- NAVEGACIÓN COMÚN POR ANCLAS ESTABLES -->
+    <nav class="bento-nav" aria-label="Apartados de la clase / Lesson sections">
+      <a href="#inicio" class="bento-tab tab-1">
+        <span class="tab-num">01</span>
+        <span data-lang="es">Antes de empezar</span>
+        <span data-lang="en">Before you start</span>
+      </a>
+      <a href="#teoria" class="bento-tab tab-2">
+        <span class="tab-num">02</span>
+        <span data-lang="es">Teoría</span>
+        <span data-lang="en">Theory</span>
+      </a>
+      <a href="#practica" class="bento-tab tab-3">
+        <span class="tab-num">03</span>
+        <span data-lang="es">Práctica</span>
+        <span data-lang="en">Practice</span>
+      </a>
+      <a href="#cuestionario" class="bento-tab tab-4">
+        <span class="tab-num">04</span>
+        <span data-lang="es">Comprueba</span>
+        <span data-lang="en">Check</span>
+      </a>
+      <a href="#referencias" class="bento-tab tab-5">
+        <span class="tab-num">05</span>
+        <span data-lang="es">Referencias</span>
+        <span data-lang="en">References</span>
+      </a>
+    </nav>
+
+    <!-- ===================================================================
+         1. ANTES DE EMPEZAR / BEFORE YOU START (#inicio)
+         =================================================================== -->
+    <section id="inicio" class="section-block">
+      <div class="section-banner">
+        <h2>
+          <span data-lang="es">1. Antes de empezar — Objetivos, Notación y Viñeta Introductoria</span>
+          <span data-lang="en">1. Before you start — Objectives, Notation &amp; Opening Panel</span>
+        </h2>
+        <span class="mono" style="background:#fbd023; color:#171717;">00:00:06 – 00:05:14</span>
+      </div>
+
+      <div class="comic-spread">
+        <!-- Viñeta Izquierda 01 -->
+        <article class="panel-card">
+          <div class="panel-head-strip">
+            <span class="num-badge blue">01</span>
+            <h3>
+              <span data-lang="es">/ ¿Por qué necesitamos RL después del Ajuste Fino Supervisado (SFT)?</span>
+              <span data-lang="en">/ Why do we need RL after Supervised Fine-Tuning (SFT)?</span>
+            </h3>
+          </div>
+
+          <div class="prose">
+            <p>
+              <span data-lang="es">
+                <strong>Prerrequisitos (conexión con la Clase 3):</strong> En la Clase 3 vimos que el pre-entrenamiento enseña a autocompletar documentos web y el <strong>Ajuste Fino Supervisado (SFT)</strong> enseña el formato de asistente imitando demostraciones token a token (<span lang="en">off-policy</span>). Sin embargo, en SFT el modelo nunca experimenta las consecuencias de sus propios errores al encadenar tokens ni puede superar fácilmente la calidad de los datos de demostración.
+              </span>
+              <span data-lang="en">
+                <strong>Prerequisites (Lecture 3 connection):</strong> In Lecture 3 we saw that pre-training teaches web document continuation and <strong>Supervised Fine-Tuning (SFT)</strong> teaches assistant formatting by imitating demonstrations token by token (<span lang="en">off-policy</span>). However, under SFT the model never experiences the consequences of its own autoregressive errors and struggles to surpass demonstration quality.
+              </span>
+            </p>
+
+            <h4>
+              <span data-lang="es">Objetivos de aprendizaje de la Clase 4</span>
+              <span data-lang="en">Learning objectives for Lecture 4</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es">Formular la generación autorregresiva de un LLM como un proceso de decisión secuencial y derivar el <strong>Gradiente de Política (REINFORCE)</strong> junto con el <strong>Muestreo por Importancia</strong>.</span>
+                <span data-lang="en">Formulate autoregressive LLM generation as a sequential decision process and derive <strong>Policy Gradient (REINFORCE)</strong> along with <strong>Importance Sampling</strong>.</span>
+              </li>
+              <li>
+                <span data-lang="es">Explicar cómo <strong>PPO</strong> resuelve la alta varianza, la asignación de crédito por token y el <span lang="en">reward hacking</span> mediante la función de valor $V_\psi(s_t)$, la ventaja $A_t$, el recorte $\text{clip}(\rho_t, 1-\epsilon, 1+\epsilon)$ y la penalización KL.</span>
+                <span data-lang="en">Explain how <strong>PPO</strong> addresses high variance, token-level credit assignment, and reward hacking via the value function $V_\psi(s_t)$, advantage $A_t$, $\text{clip}(\rho_t, 1-\epsilon, 1+\epsilon)$, and KL penalty.</span>
+              </li>
+              <li>
+                <span data-lang="es">Analizar cómo <strong>GRPO</strong> elimina la red de valor muestreando grupos de $G$ respuestas, demostrar matemáticamente por qué dividir entre $|o_i|$ induce <strong>sesgo de longitud</strong> en respuestas erróneas y cómo lo corrigen <strong>DAPO</strong> y <strong>Dr. GRPO</strong>.</span>
+                <span data-lang="en">Analyze how <strong>GRPO</strong> eliminates the value network by sampling groups of $G$ outputs, mathematically prove why dividing by $|o_i|$ induces <strong>length bias</strong> on incorrect outputs, and show how <strong>DAPO</strong> and <strong>Dr. GRPO</strong> fix it.</span>
+              </li>
+              <li>
+                <span data-lang="es">Distinguir entre <strong>KL Directa</strong> (<span lang="en">mean-seeking</span>) y <strong>KL Inversa</strong> (<span lang="en">mode-seeking</span>) en la <strong>Destilación On-Policy</strong>, incluyendo la autodestilación y la destilación multi-maestro.</span>
+                <span data-lang="en">Distinguish between <strong>Forward KL</strong> (<span lang="en">mean-seeking</span>) and <strong>Reverse KL</strong> (<span lang="en">mode-seeking</span>) in <strong>On-Policy Distillation</strong>, including self-distillation and multi-teacher distillation.</span>
+              </li>
+            </ul>
+
+            <div class="callout-amber">
+              <span class="status-tag status-amber">
+                <span data-lang="es">Advertencia de notación crítica para toda la clase</span>
+                <span data-lang="en">Critical notation warning for the entire lecture</span>
+              </span>
+              <span data-lang="es">
+                1. <strong>Maximización:</strong> En RL <strong>maximizamos</strong> el retorno esperado $J(\theta)$ mediante <strong>ascenso de gradiente</strong> ($\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$), en lugar de minimizar una función de pérdida.<br />
+                2. <strong>$R$ frente a $\rho_t(\theta)$:</strong> $R(x,y)$ es la recompensa escalar de la respuesta, mientras que $\rho_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\text{old}}(a_t \mid s_t)}$ es el ratio de probabilidades en muestreo por importancia.<br />
+                3. <strong>Tres políticas distintas:</strong> $\pi_\theta$ es el LLM actual que estamos actualizando; $\pi_{\text{old}}$ es la instantánea de hace unas pocas iteraciones que generó las muestras; y $\pi_{\text{ref}}$ es el modelo SFT congelado que sirve de ancla KL.
+              </span>
+              <span data-lang="en">
+                1. <strong>Maximization:</strong> In RL we <strong>maximize</strong> expected return $J(\theta)$ via <strong>gradient ascent</strong> ($\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$), rather than minimizing a loss.<br />
+                2. <strong>$R$ vs. $\rho_t(\theta)$:</strong> $R(x,y)$ is the scalar sequence reward, whereas $\rho_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\text{old}}(a_t \mid s_t)}$ is the importance sampling probability ratio.<br />
+                3. <strong>Three distinct policies:</strong> $\pi_\theta$ is the active LLM being updated; $\pi_{\text{old}}$ is the recent snapshot that generated the rollouts; and $\pi_{\text{ref}}$ is the frozen SFT model anchoring the KL penalty.
+              </span>
+            </div>
+          </div>
+
+          <!-- Tira cómica comparativa: RLHF vs RLVR -->
+          <div class="token-comic-strip" aria-label="Comparación entre RLHF y RLVR">
+            <span class="tok-box" style="background:var(--comic-yellow);">
+              <span data-lang="es">RLHF (Preferencias)</span>
+              <span data-lang="en">RLHF (Preferences)</span>
+            </span>
+            <span>→</span>
+            <span class="tok-box">
+              <span data-lang="es">Modelo Bradley-Terry $r_\phi(x,y)$</span>
+              <span data-lang="en">Bradley-Terry Model $r_\phi(x,y)$</span>
+            </span>
+            <span style="margin:0 6px;">|</span>
+            <span class="tok-box" style="background:var(--comic-mint);">
+              <span data-lang="es">RLVR (Razonamiento)</span>
+              <span data-lang="en">RLVR (Reasoning)</span>
+            </span>
+            <span>→</span>
+            <span class="tok-box good">
+              <span data-lang="es">Verificador exacto ($0/1$) + &lt;think&gt;</span>
+              <span data-lang="en">Exact verifier ($0/1$) + &lt;think&gt;</span>
+            </span>
+          </div>
+        </article>
+
+        <!-- Micro-simulador derecho 01: PRUEBA / Gradiente e Importancia -->
+        <aside class="prueba-panel" aria-label="Simulador introductorio de gradiente de política">
+          <div class="prueba-header halftone-yellow">
+            <span>
+              <span data-lang="es">PRUEBA / Empuje del Gradiente</span>
+              <span data-lang="en">TRY IT / Gradient Push</span>
+            </span>
+            <span class="mono">[00:14:20]</span>
+          </div>
+
+          <div class="prueba-body">
+            <p style="margin:0; font-size:0.88rem;">
+              <span data-lang="es">Observa cómo el término de actualización $\rho_t(\theta) \cdot A_t$ empuja la probabilidad del token elegido según si la ventaja $A_t$ es positiva o negativa:</span>
+              <span data-lang="en">Observe how the update term $\rho_t(\theta) \cdot A_t$ pushes the chosen token's probability depending on whether advantage $A_t$ is positive or negative:</span>
+            </p>
+
+            <div class="control-field">
+              <label for="intro-pi-old">
+                <span>
+                  <span data-lang="es">Probabilidad muestreada $\pi_{\text{old}}(a_t\mid s_t)$</span>
+                  <span data-lang="en">Sampled probability $\pi_{\text{old}}(a_t\mid s_t)$</span>
+                </span>
+                <span class="mono" id="intro-pi-old-val">0.25</span>
+              </label>
+              <input type="range" id="intro-pi-old" class="comic-range" min="0.10" max="0.80" step="0.05" value="0.25" oninput="updateIntroWidget()" />
+            </div>
+
+            <div class="control-field">
+              <label for="intro-pi-new">
+                <span>
+                  <span data-lang="es">Probabilidad actual $\pi_\theta(a_t\mid s_t)$</span>
+                  <span data-lang="en">Current probability $\pi_\theta(a_t\mid s_t)$</span>
+                </span>
+                <span class="mono" id="intro-pi-new-val">0.30</span>
+              </label>
+              <input type="range" id="intro-pi-new" class="comic-range" min="0.05" max="0.90" step="0.05" value="0.30" oninput="updateIntroWidget()" />
+            </div>
+
+            <div class="control-field">
+              <label for="intro-adv">
+                <span>
+                  <span data-lang="es">Ventaja del token ($A_t$)</span>
+                  <span data-lang="en">Token advantage ($A_t$)</span>
+                </span>
+                <span class="mono" id="intro-adv-val">+1.50</span>
+              </label>
+              <input type="range" id="intro-adv" class="comic-range" min="-2.0" max="2.0" step="0.25" value="1.5" oninput="updateIntroWidget()" />
+            </div>
+
+            <div class="output-card" id="intro-widget-out" aria-live="polite"></div>
+
+            <div class="speech-bubble lavender" style="font-size:0.82rem;">
+              <span data-lang="es">¡Si $A_t &gt; 0$ subimos la probabilidad del token; si $A_t &lt; 0$ la hundimos!</span>
+              <span data-lang="en">If $A_t &gt; 0$ we boost the token's probability; if $A_t &lt; 0$ we suppress it!</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         2. TEORÍA / THEORY (#teoria)
+         =================================================================== -->
+    <section id="teoria" class="section-block">
+      <div class="section-banner">
+        <h2>
+          <span data-lang="es">2. Teoría — De REINFORCE y PPO a GRPO y Destilación On-Policy</span>
+          <span data-lang="en">2. Theory — From REINFORCE &amp; PPO to GRPO &amp; On-Policy Distillation</span>
+        </h2>
+        <span class="mono" style="background:#f26b5b; color:#171717;">00:05:15 – 01:43:18</span>
+      </div>
+
+      <!-- SUBAPARTADO 2.1 -->
+      <article class="panel-card" style="margin-bottom:24px;">
+        <div class="panel-head-strip">
+          <span class="num-badge">2.1</span>
+          <h3>
+            <span data-lang="es">Formulación de RL en LLMs, Gradiente de Política (REINFORCE) y Muestreo por Importancia</span>
+            <span data-lang="en">RL Formulation in LLMs, Policy Gradient (REINFORCE) &amp; Importance Sampling</span>
+          </h3>
+          <span class="timestamp-tag">00:05:15 – 00:31:40</span>
+        </div>
+
+        <div class="prose">
+          <p>
+            <span data-lang="es">
+              <strong>Idea principal:</strong> Un LLM que genera texto de forma autorregresiva puede modelarse como un agente de aprendizaje por refuerzo donde elegir cada token $a_t \in \mathcal{V}$ es una acción condicionada por el estado $s_t$ (el prompt $x$ más los tokens generados hasta ese instante $y_{<t}$). Como la recompensa $R(x,y)$ suele calcularse sobre la secuencia terminada (y puede provenir de un verificador no diferenciable como un compilador), necesitamos el <strong>truco de la derivada logarítmica</strong> para poder propagar gradientes hacia los pesos $\theta$ del modelo.
+            </span>
+            <span data-lang="en">
+              <strong>Main idea:</strong> An autoregressively generating LLM can be framed as a reinforcement learning agent where selecting each token $a_t \in \mathcal{V}$ is an action conditioned on the state $s_t$ (the prompt $x$ concatenated with previously generated tokens $y_{<t}$). Because the reward $R(x,y)$ is evaluated on the completed sequence (and may come from a non-differentiable verifier such as a unit test runner), we use the <strong>log-derivative trick</strong> to propagate gradients into model weights $\theta$.
+            </span>
+          </p>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th><span data-lang="es">Concepto en RL</span><span data-lang="en">RL Concept</span></th>
+                  <th><span data-lang="es">Equivalente en un LLM Autorregresivo</span><span data-lang="en">Autoregressive LLM Equivalent</span></th>
+                  <th><span data-lang="es">Notación y Dimensiones</span><span data-lang="en">Notation &amp; Dimensions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong><span data-lang="es">Estado ($s_t$)</span><span data-lang="en">State ($s_t$)</span></strong></td>
+                  <td><span data-lang="es">Prompt de entrada $x$ concatenado con los tokens generados previos $y_{<t}$</span><span data-lang="en">Input prompt $x$ concatenated with previously generated tokens $y_{<t}$</span></td>
+                  <td class="mono">$s_t = (x, y_1, \dots, y_{t-1})$</td>
+                </tr>
+                <tr>
+                  <td><strong><span data-lang="es">Acción ($a_t$)</span><span data-lang="en">Action ($a_t$)</span></strong></td>
+                  <td><span data-lang="es">Siguiente token seleccionado del vocabulario</span><span data-lang="en">Next token sampled from the vocabulary</span></td>
+                  <td class="mono">$a_t = y_t \in \mathcal{V}$</td>
+                </tr>
+                <tr>
+                  <td><strong><span data-lang="es">Política ($\pi_\theta$)</span><span data-lang="en">Policy ($\pi_\theta$)</span></strong></td>
+                  <td><span data-lang="es">Distribución $\text{softmax}$ del LLM sobre el vocabulario en el paso $t$</span><span data-lang="en">LLM $\text{softmax}$ distribution over the vocabulary at step $t$</span></td>
+                  <td class="mono">$\pi_\theta(a_t \mid s_t) \in (0, 1)$</td>
+                </tr>
+                <tr>
+                  <td><strong><span data-lang="es">Trayectoria / Rollout ($\tau$)</span><span data-lang="en">Trajectory / Rollout ($\tau$)</span></strong></td>
+                  <td><span data-lang="es">Secuencia completa generada hasta el token de fin <code>[EOS]</code></span><span data-lang="en">Complete generated sequence up to the <code>[EOS]</code> token</span></td>
+                  <td class="mono">$y = (y_1, \dots, y_T), \; \pi_\theta(y\mid x) = \prod_{t=1}^T \pi_\theta(y_t\mid s_t)$</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h4>
+            <span data-lang="es">Derivación de REINFORCE y Muestreo por Importancia (<span lang="en">Importance Sampling</span>)</span>
+            <span data-lang="en">Deriving REINFORCE and Importance Sampling</span>
+          </h4>
+          <p>
+            <span data-lang="es">
+              Queremos maximizar la recompensa esperada $J(\theta) = \mathbb{E}_{y \sim \pi_\theta(\cdot\mid x)}[R(x,y)] = \sum_y \pi_\theta(y\mid x) R(x,y)$. Aplicando la identidad $\nabla_\theta \pi_\theta(y\mid x) = \pi_\theta(y\mid x) \nabla_\theta \log \pi_\theta(y\mid x)$ y recordando que la probabilidad de la secuencia es el producto de las probabilidades de cada token, el logaritmo convierte el producto en una suma sobre los $T$ pasos:
+            </span>
+            <span data-lang="en">
+              We aim to maximize expected reward $J(\theta) = \mathbb{E}_{y \sim \pi_\theta(\cdot\mid x)}[R(x,y)] = \sum_y \pi_\theta(y\mid x) R(x,y)$. Applying the identity $\nabla_\theta \pi_\theta(y\mid x) = \pi_\theta(y\mid x) \nabla_\theta \log \pi_\theta(y\mid x)$ and expanding the sequence probability across $T$ tokens turns the log-product into a sum over steps:
+            </span>
+          </p>
+
+          <div class="math-block">
+            $$\nabla_\theta J(\theta) = \mathbb{E}_{y \sim \pi_\theta}\!\left[ R(x,y) \sum_{t=1}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \right]$$
+          </div>
+
+          <p>
+            <span data-lang="es">
+              <strong>El cuello de botella del <span lang="en">rollout</span> y el Muestreo por Importancia (`00:24:10 – 00:31:15`):</strong> Generar una respuesta $y \sim \pi_\theta$ es un proceso autorregresivo secuencial token a token (muy lento), mientras que evaluar probabilidades de una secuencia ya existente se hace en un solo pase paralelo en GPU. Si descartáramos las trayectorias tras 1 solo paso de gradiente (porque al cambiar $\theta$, las muestras dejan de pertenecer exactamente a $\pi_\theta$), el entrenamiento sería ineficiente. El <strong>muestreo por importancia</strong> permite recolectar un lote de trayectorias con una política congelada temporalmente $\pi_{\text{old}}$ y realizar múltiples pasos de actualización sobre $\pi_\theta$ reponderando por el ratio $\rho_t(\theta)$:
+            </span>
+            <span data-lang="en">
+              <strong>The rollout bottleneck and Importance Sampling (`00:24:10 – 00:31:15`):</strong> Generating a completion $y \sim \pi_\theta$ is sequential token by token (slow), whereas scoring an existing sequence runs in a single parallel GPU forward pass. Discarding rollouts after a single gradient update (because updating $\theta$ makes the samples slightly off-policy) wastes compute. <strong>Importance sampling</strong> lets us collect rollouts under a snapshot $\pi_{\text{old}}$ and perform multiple gradient updates on $\pi_\theta$ by reweighting with the ratio $\rho_t(\theta)$:
+            </span>
+          </p>
+
+          <div class="math-block">
+            $$J_{\text{IS}}(\theta) = \mathbb{E}_{y \sim \pi_{\text{old}}}\!\left[ \frac{1}{T}\sum_{t=1}^{T} \underbrace{\frac{\pi_\theta(a_t \mid s_t)}{\pi_{\text{old}}(a_t \mid s_t)}}_{\rho_t(\theta)} R(x,y) \right]$$
+          </div>
+
+          <h4>
+            <span data-lang="es">Ejemplo paso a paso</span>
+            <span data-lang="en">Step-by-step example</span>
+          </h4>
+          <p>
+            <span data-lang="es">
+              Supongamos que $\pi_{\text{old}}$ generó el token $a_t = \text{"4"}$ con probabilidad $\pi_{\text{old}}(a_t\mid s_t) = 0{,}20$ y la respuesta completa obtuvo una recompensa centrada $R = +2{,}0$. Tras una primera actualización de pesos, la nueva política asigna $\pi_\theta(a_t\mid s_t) = 0{,}25$. Entonces el ratio de importancia es $\rho_t(\theta) = \frac{0{,}25}{0{,}20} = 1{,}25$, y la contribución ponderada de ese token al objetivo es $\rho_t(\theta) \cdot R = 1{,}25 \times 2{,}0 = +2{,}50$.
+            </span>
+            <span data-lang="en">
+              Suppose $\pi_{\text{old}}$ sampled token $a_t = \text{"4"}$ with probability $\pi_{\text{old}}(a_t\mid s_t) = 0.20$ and the full completion achieved a centered reward $R = +2.0$. After one weight update, the current policy assigns $\pi_\theta(a_t\mid s_t) = 0.25$. The importance ratio is $\rho_t(\theta) = \frac{0.25}{0.20} = 1.25$, and the token's weighted contribution to the objective is $\rho_t(\theta) \cdot R = 1.25 \times 2.0 = +2.50$.
+            </span>
+          </p>
+
+          <div class="callout-amber">
+            <span class="status-tag status-amber">
+              <span data-lang="es">Error frecuente: confundir el signo de actualización con SFT</span>
+              <span data-lang="en">Common mistake: confusing the update sign with SFT</span>
+            </span>
+            <span data-lang="es">
+              En SFT todos los tokens de respuesta en el conjunto de entrenamiento se empujan hacia arriba ($\log P_\theta \uparrow$). En cambio, en el gradiente de política el factor $R(x,y)$ (o la ventaja $A_t$) multiplica a $\nabla_\theta \log \pi_\theta$: si todas las recompensas fueran positivas (por ejemplo, $R \in [1, 5]$ sin restar una línea base), cada muestra tendría un coeficiente positivo, pero la suma de gradientes y la normalización de probabilidades pueden disminuir la probabilidad de respuestas de menor recompensa; centrar con un baseline puede reducir varianza (`00:33:15`).
+            </span>
+            <span data-lang="en">
+              In SFT every target response token in the dataset is pushed upward ($\log P_\theta \uparrow$). Under policy gradient, $R(x,y)$ (or advantage $A_t$) multiplies $\nabla_\theta \log \pi_\theta$: if all rewards were strictly positive (e.g., $R \in [1, 5]$ without subtracting a baseline), each sample has a positive coefficient, but the aggregate gradient and probability normalization can decrease lower-reward output probabilities; a baseline can reduce variance (`00:33:15`).
+            </span>
+          </div>
+
+<p><span data-lang="es"><strong>Precisión del ratio:</strong> el ratio por token se usa en el objetivo sustituto de PPO sobre estados muestreados. No es una corrección exacta de toda la distribución de trayectorias fuera de política: el ratio de una secuencia completa es el producto de los ratios de sus tokens, sujeto a soporte compatible.</span><span data-lang="en"><strong>Ratio precision:</strong> PPO uses token ratios in a surrogate over sampled states. This is not exact correction of the full off-policy trajectory distribution: a complete sequence ratio is the product of its token ratios, assuming compatible support.</span></p>
+          <details class="check-box">
+            <summary>
+              <span data-lang="es">Comprueba 2.1: ¿Por qué el truco de la derivada logarítmica permite usar funciones de recompensa no diferenciables (como ejecutar un test unitario en Python)?</span>
+              <span data-lang="en">Check 2.1: Why does the log-derivative trick allow using non-differentiable reward functions (such as running a Python unit test)?</span>
+            </summary>
+            <div class="check-solution">
+              <span class="status-tag status-green">
+                <span data-lang="es">Respuesta razonada</span>
+                <span data-lang="en">Reasoned answer</span>
+              </span>
+              <span data-lang="es">
+                Porque en la expresión $\nabla_\theta J(\theta) = \mathbb{E}\big[R(x,y) \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\big]$ el operador gradiente $\nabla_\theta$ actúa únicamente sobre la log-probabilidad de los tokens $\log \pi_\theta(a_t \mid s_t)$ (que es una red neuronal diferenciable), mientras que $R(x,y)$ interviene como un simple escalar multiplicativo externo sin necesidad de calcular $\nabla_\theta R$.
+              </span>
+              <span data-lang="en">
+                Because in $\nabla_\theta J(\theta) = \mathbb{E}\big[R(x,y) \sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\big]$, the gradient operator $\nabla_\theta$ acts strictly on the token log-probabilities $\log \pi_\theta(a_t \mid s_t)$ (which come from a differentiable neural network), while $R(x,y)$ acts as an external scalar multiplier without ever requiring $\nabla_\theta R$.
+              </span>
+            </div>
+          </details>
+        </div>
+      </article>
+
+      <!-- SUBAPARTADO 2.2 -->
+      <article class="panel-card" style="margin-bottom:24px;">
+        <div class="panel-head-strip">
+          <span class="num-badge yellow">2.2</span>
+          <h3>
+            <span data-lang="es">Los 3 retos del RL clásico y PPO (<span lang="en">Proximal Policy Optimization</span>)</span>
+            <span data-lang="en">The 3 Classical RL Challenges &amp; PPO (Proximal Policy Optimization)</span>
+          </h3>
+          <span class="timestamp-tag">00:31:41 – 00:58:20</span>
+        </div>
+
+        <div class="prose">
+          <p>
+            <span data-lang="es"><strong>PPO y límites:</strong> El crítico ayuda a estimar ventajas y reducir varianza; el clipping desalienta ciertos cambios excesivos y una penalización KL puede limitar deriva. No garantizan resolver crédito causal ni evitar reward hacking. REINFORCE sigue siendo un estimador válido, aunque puede tener alta varianza.</span>
+            <span data-lang="en"><strong>PPO and limits:</strong> A critic helps estimate advantages and reduce variance; clipping discourages certain excessive updates and a KL penalty can limit drift. They do not guarantee causal credit assignment or prevent reward hacking. REINFORCE is still a valid estimator, although variance can be high.</span>
+          </p>
+
+          <!-- Tira cómica del problema de asignación de crédito: Teddy en la caja sellada -->
+          <div class="callout-cobalt">
+            <span class="status-tag status-cobalt">
+              <span data-lang="es">Viñeta de la clase (00:37:10): Asignación de crédito en «Teddy en la caja sellada»</span>
+              <span data-lang="en">Lecture panel (00:37:10): Credit assignment in "Teddy in a sealed box"</span>
+            </span>
+            <span data-lang="es"><strong>Crédito por token:</strong> Si «Teddy walks out» recibe R = 0, REINFORCE sin baseline aporta R∇log π = 0: no castiga ningún token. Con baseline b = 0,5, la ventaja −0,5 sí aporta señal negativa a la secuencia. Esto no identifica automáticamente el token causante del error.</span>
+            <span data-lang="en"><strong>Token credit:</strong> If “Teddy walks out” receives R = 0, baseline-free REINFORCE contributes R∇log π = 0: no token is penalized. With baseline b = 0.5, advantage −0.5 supplies a negative sequence signal, without automatically identifying the causal error token.</span>
+            <div class="token-comic-strip">
+              <span class="tok-box">Teddy</span>
+              <span class="tok-box bad">walks (¡Error aquí!)</span>
+              <span class="tok-box">out</span>
+              <span class="tok-box">of</span>
+              <span class="tok-box">the</span>
+              <span class="tok-box">box</span>
+              <span>→</span>
+              <span class="tok-box bad">R_final = 0</span>
+            </div>
+          </div>
+
+          <h4>
+            <span data-lang="es">1. Función de Valor $V_\psi(s_t)$ y Ventaja por Token $A_t$</span>
+            <span data-lang="en">1. Value Function $V_\psi(s_t)$ and Per-Token Advantage $A_t$</span>
+          </h4>
+          <p>
+            <span data-lang="es">
+              Para reducir la varianza y asignar crédito a cada paso $t$, PPO entrena una <strong>Función de Valor</strong> $V_\psi(s_t)$ (un cabezal escalar que estima qué recompensa final se espera obtener desde el prefijo parcial $s_t$). Así, la <strong>Ventaja $A_t$</strong> mide cuánto mejor o peor fue elegir el token $a_t$ respecto a lo que se esperaba en el estado $s_t$ (calculada en la práctica con <em>Generalized Advantage Estimation</em>, GAE, `00:42:15`):
+            </span>
+            <span data-lang="en">
+              To reduce variance and assign credit at each step $t$, PPO trains a <strong>Value Function</strong> $V_\psi(s_t)$ (a scalar head estimating the expected final return from partial prefix $s_t$). The <strong>Advantage $A_t$</strong> measures how much better or worse token $a_t$ performed relative to expectation at state $s_t$ (computed in practice via <em>Generalized Advantage Estimation</em>, GAE, `00:42:15`):
+            </span>
+          </p>
+          <div class="math-block">
+            $$A_t \approx R(x,y) - V_\psi(s_t) \quad \text{(o mediante diferencias temporales: } \delta_t = r_t + \gamma V_\psi(s_{t+1}) - V_\psi(s_t)\text{)}$$
+          </div>
+
+          <h4>
+            <span data-lang="es">2. Recorte (<span lang="en">Clipping</span>) del Ratio de Importancia y Penalización KL en PPO</span>
+            <span data-lang="en">2. Importance Ratio Clipping and KL Penalty in PPO</span>
+          </h4>
+          <p>
+            <span data-lang="es">
+              Si reutilizamos las muestras de $\pi_{\text{old}}$ durante varias épocas, $\rho_t(\theta) = \frac{\pi_\theta(a_t\mid s_t)}{\pi_{\text{old}}(a_t\mid s_t)}$ puede alejarse mucho de $1$, destruyendo la política. PPO desalienta ciertos cambios excesivos, sin imponer un límite duro a cada ratio, con un umbral $\epsilon$ (típicamente $\epsilon = 0{,}2$) tomando el mínimo pesimista entre el objetivo sin recortar y el recortado, y añade la divergencia KL respecto al modelo de referencia SFT $\pi_{\text{ref}}$:
+            </span>
+            <span data-lang="en">
+              When reusing $\pi_{\text{old}}$ rollouts across multiple epochs, $\rho_t(\theta) = \frac{\pi_\theta(a_t\mid s_t)}{\pi_{\text{old}}(a_t\mid s_t)}$ can drift far from $1$, collapsing the policy. PPO discourages excessive updates rather than imposing a hard bound with threshold $\epsilon$ (typically $\epsilon = 0.2$) by taking the pessimistic minimum between the unclipped and clipped surrogate objectives, while subtracting a KL penalty relative to the frozen SFT reference $\pi_{\text{ref}}$:
+            </span>
+          </p>
+
+          <div class="math-block">
+            $$J_{\text{PPO}}(\theta) = \mathbb{E}_{t}\!\Big[ \min\!\Big( \rho_t(\theta) A_t, \; \text{clip}\big(\rho_t(\theta), 1-\epsilon, 1+\epsilon\big) A_t \Big) - \beta \, \text{KL}\big(\pi_\theta(\cdot\mid s_t) \parallel \pi_{\text{ref}}(\cdot\mid s_t)\big) \Big]$$
+          </div>
+
+          <h4>
+            <span data-lang="es">Ejemplo paso a paso ($\epsilon = 0{,}20$)</span>
+            <span data-lang="en">Step-by-step example ($\epsilon = 0.20$)</span>
+          </h4>
+          <p>
+            <span data-lang="es">
+              Sea el intervalo de confianza $[1-\epsilon, 1+\epsilon] = [0{,}80, \; 1{,}20]$:
+              <br />— <strong>Caso 1 ($A_t = +2{,}0 > 0$ y $\rho_t = 1{,}50 > 1{,}20$):</strong> El término sin recortar vale $1{,}50 \times 2{,}0 = 3{,}00$ y el recortado vale $1{,}20 \times 2{,}0 = 2{,}40$. Como PPO toma el $\min(3{,}00, \; 2{,}40) = 2{,}40$ (una constante respecto a $\theta$), <strong>el gradiente se vuelve $0$</strong>: ya aumentamos suficiente la probabilidad de este token y PPO frena para no sobreoptimizar.
+              <br />— <strong>Caso 2 ($A_t = -2{,}0 < 0$ y $\rho_t = 0{,}60 < 0{,}80$):</strong> El término sin recortar vale $0{,}60 \times (-2{,}0) = -1{,}20$ y el recortado vale $0{,}80 \times (-2{,}0) = -1{,}60$. El mínimo es $\min(-1{,}20, \; -1{,}60) = -1{,}60$ (constante), anulando también el gradiente cuando ya redujimos suficiente un token negativo (`00:51:30`).
+            </span>
+            <span data-lang="en">
+              Let the trust region be $[1-\epsilon, 1+\epsilon] = [0.80, \; 1.20]$:
+              <br />— <strong>Case 1 ($A_t = +2.0 > 0$ and $\rho_t = 1.50 > 1.20$):</strong> The unclipped term is $1.50 \times 2.0 = 3.00$ and the clipped term is $1.20 \times 2.0 = 2.40$. Because PPO takes $\min(3.00, \; 2.40) = 2.40$ (flat with respect to $\theta$), <strong>the gradient becomes $0$</strong>: we already boosted this token enough, so PPO halts further updates.
+              <br />— <strong>Case 2 ($A_t = -2.0 < 0$ and $\rho_t = 0.60 < 0.80$):</strong> The unclipped term is $0.60 \times (-2.0) = -1.20$ and the clipped term is $0.80 \times (-2.0) = -1.60$. The minimum is $\min(-1.20, \; -1.60) = -1.60$ (flat), likewise zeroing the gradient once a bad token has been suppressed enough (`00:51:30`).
+            </span>
+          </p>
+
+          <div class="callout-amber">
+            <span class="status-tag status-amber">
+              <span data-lang="es">Límite de memoria en PPO: 4 modelos simultáneos en GPU (`00:56:15`)</span>
+              <span data-lang="en">PPO memory bottleneck: 4 simultaneous models in GPU (`00:56:15`)</span>
+            </span>
+            <span data-lang="es">
+              Un bucle completo de PPO con RLHF requiere mantener en memoria cuatro redes de escala billonaria: <strong>1) Política activa $\pi_\theta$</strong> (entrenable), <strong>2) Crítico / Función de Valor $V_\psi$</strong> (entrenable), <strong>3) Política de referencia $\pi_{\text{ref}}$</strong> (congelada) y <strong>4) Modelo de Recompensa $r_\phi$</strong> (congelado). Este enorme coste de VRAM motivó la creación de GRPO.
+            </span>
+            <span data-lang="en">
+              A full PPO RLHF loop requires holding four large networks in memory: <strong>1) Active Policy $\pi_\theta$</strong> (trainable), <strong>2) Critic / Value Function $V_\psi$</strong> (trainable), <strong>3) Reference Policy $\pi_{\text{ref}}$</strong> (frozen), and <strong>4) Reward Model $r_\phi$</strong> (frozen). This massive VRAM footprint motivated the creation of GRPO.
+            </span>
+          </div>
+
+          <details class="check-box">
+            <summary>
+              <span data-lang="es">Comprueba 2.2: Si la ventaja de un token es positiva ($A_t = +1{,}5$) pero durante las actualizaciones previas su probabilidad bajó por accidente a $\rho_t(\theta) = 0{,}70$ (Con $\epsilon = 0{,}20$), ¿PPO anula el gradiente o sigue activo?</span>
+              <span data-lang="en">Check 2.2: If a token's advantage is positive ($A_t = +1.5$) but during prior updates its probability accidentally dropped to $\rho_t(\theta) = 0.70$ (with $\epsilon = 0.20$), does PPO zero out the gradient or keep it active?</span>
+            </summary>
+            <div class="check-solution">
+              <span class="status-tag status-green">
+                <span data-lang="es">Respuesta razonada</span>
+                <span data-lang="en">Reasoned answer</span>
+              </span>
+              <span data-lang="es">
+                <strong>El gradiente sigue activo.</strong> Con $A_t = +1{,}5$, el término sin recortar es $0{,}70 \times 1{,}5 = 1{,}05$, mientras que el término recortado en $[0{,}80, 1{,}20]$ vale $0{,}80 \times 1{,}5 = 1{,}20$. Como $\min(1{,}05, \; 1{,}20) = 1{,}05 = \rho_t(\theta) A_t$, domina la rama no recortada para permitir que el modelo recupere y suba la probabilidad de ese buen token (`00:52:40`).
+              </span>
+              <span data-lang="en">
+                <strong>The gradient remains active.</strong> With $A_t = +1.5$, the unclipped term is $0.70 \times 1.5 = 1.05$, while the clipped term on $[0.80, 1.20]$ is $0.80 \times 1.5 = 1.20$. Since $\min(1.05, \; 1.20) = 1.05 = \rho_t(\theta) A_t$, the unclipped branch wins so the model can recover and push the good token's probability back up (`00:52:40`).
+              </span>
+            </div>
+          </details>
+        </div>
+      </article>
+
+      <!-- SUBAPARTADO 2.3 -->
+      <article class="panel-card" style="margin-bottom:24px;">
+        <div class="panel-head-strip">
+          <span class="num-badge mint">2.3</span>
+          <h3>
+            <span data-lang="es">GRPO (<span lang="en">Group Relative Policy Optimization</span>) y Sesgo de Longitud (DAPO / Dr. GRPO)</span>
+            <span data-lang="en">GRPO (Group Relative Policy Optimization) &amp; Length Bias (DAPO / Dr. GRPO)</span>
+          </h3>
+          <span class="timestamp-tag">00:58:21 – 01:21:10</span>
+        </div>
+
+        <div class="prose">
+          <p>
+            <span data-lang="es">
+              <strong>Idea principal:</strong> Introducido por DeepSeekMath y popularizado en DeepSeek-R1, <strong>GRPO</strong> elimina por completo la red de Función de Valor $V_\psi$ (el crítico). En su lugar, para cada pregunta $q$, muestrea un grupo de $G$ respuestas independientes $\{o_1, o_2, \dots, o_G\} \sim \pi_{\text{old}}(\cdot\mid q)$, evalúa la recompensa de cada una $(r_1, \dots, r_G)$ y utiliza la <strong>media del propio grupo como línea base</strong>.
+            </span>
+            <span data-lang="en">
+              <strong>Main idea:</strong> Introduced in DeepSeekMath and popularized by DeepSeek-R1, <strong>GRPO</strong> completely eliminates the Value Function network $V_\psi$ (the critic). Instead, for each prompt $q$, it samples a group of $G$ independent outputs $\{o_1, o_2, \dots, o_G\} \sim \pi_{\text{old}}(\cdot\mid q)$, scores each completion $(r_1, \dots, r_G)$, and uses the <strong>group's own mean reward as the baseline</strong>.
+            </span>
+          </p>
+
+          <div class="math-block">
+            $$J_{\text{GRPO}}(\theta) = \mathbb{E}_{q, \{o_i\}_{i=1}^G \sim \pi_{\text{old}}}\!\left[ \frac{1}{G}\sum_{i=1}^{G} \frac{1}{|o_i|} \sum_{t=1}^{|o_i|} \Big( \min\!\big(\rho_{i,t}(\theta) A_i, \; \text{clip}(\rho_{i,t}(\theta), 1-\epsilon, 1+\epsilon) A_i\big) - \beta \, \text{KL}(\pi_\theta \parallel \pi_{\text{ref}}) \Big) \right]$$
+            <p><span data-lang="es">Si todas las recompensas del grupo coinciden, la desviación típica es cero: esta expresión necesita estabilización numérica o tratamiento explícito del grupo, y no aporta una señal relativa útil.</span><span data-lang="en">If all group rewards match, standard deviation is zero: this expression requires numerical stabilization or explicit group handling and provides no useful relative signal.</span></p>
+            $$\text{donde la ventaja grupal de todos los tokens de la respuesta } i \text{ es: } \quad A_i = \frac{r_i - \text{mean}(r_1, \dots, r_G)}{\text{std}(r_1, \dots, r_G)}$$
+          </div>
+
+          <h4>
+            <span data-lang="es">Análisis de la ponderación por longitud (<span lang="en">Length Bias</span>) en GRPO clásico (`01:08:45 – 01:18:30`)</span>
+            <span data-lang="en">Analysis of Length Weighting in Standard GRPO (`01:08:45 – 01:18:30`)</span>
+          </h4>
+          <p>
+            <span data-lang="es">
+              Observa el factor $\frac{1}{|o_i|}$ que divide la suma de los $|o_i|$ tokens de la respuesta $i$ en la fórmula de GRPO clásico. Cada token de la respuesta $i$ recibe un peso efectivo proporcional a $\frac{A_i}{|o_i|}$:
+            </span>
+            <span data-lang="en">
+              Notice the $\frac{1}{|o_i|}$ factor dividing the sum over the $|o_i|$ tokens of output $i$ in standard GRPO. Every token in output $i$ receives an effective gradient weight proportional to $\frac{A_i}{|o_i|}$:
+            </span>
+          </p>
+          <ul>
+            <li>
+              <span data-lang="es">
+                <strong>Cuando la respuesta es correcta ($A_i > 0$):</strong> Para maximizar $\frac{A_i}{|o_i|} > 0$, el término por token es mayor cuanto <strong>más corta</strong> sea $|o_i|$. Entre dos respuestas correctas, GRPO premia con mayor intensidad por token a la más concisa.
+              </span>
+              <span data-lang="en">
+                <strong>When the output is correct ($A_i > 0$):</strong> To maximize $\frac{A_i}{|o_i|} > 0$, the per-token reward signal is larger when $|o_i|$ is <strong>shorter</strong>. Between two correct answers, GRPO rewards the more concise one more strongly per token.
+              </span>
+            </li>
+            <li>
+              <span data-lang="es">
+                <strong>Cuando la respuesta es incorrecta ($A_i < 0$):</strong> Como $A_i$ es negativo, el castigo por token es $\frac{-|A_i|}{|o_i|}$. ¡Cuanto <strong>más larga</strong> sea la respuesta incorrecta ($|o_i| \to \infty$), más pequeño es el castigo que sufre cada token individual! En consecuencia, durante el entrenamiento las respuestas incorrectas explotan en longitud generando divagaciones interminables para diluir su penalización.
+              </span>
+              <span data-lang="en">
+                <strong>When the output is incorrect ($A_i < 0$):</strong> Because $A_i$ is negative, the per-token penalty is $\frac{-|A_i|}{|o_i|}$. The <strong>longer</strong> an incorrect completion is ($|o_i| \to \infty$), the smaller the penalty suffered by each individual token! Consequently, during training incorrect responses explode in length, rambling endlessly to dilute their penalty.
+              </span>
+            </li>
+          </ul>
+
+          <h4>
+            <span data-lang="es">Correcciones en DAPO y Dr. GRPO (`01:16:10 – 01:21:10`)</span>
+            <span data-lang="en">Corrections in DAPO and Dr. GRPO (`01:16:10 – 01:21:10`)</span>
+          </h4>
+          <p>
+            <span data-lang="es"><strong>Dr. GRPO:</strong> utiliza un divisor constante y elimina la normalización de ventajas por desviación típica. <strong>DAPO:</strong> agrega la pérdida por tokens, conservando ventajas normalizadas por grupo; también incorpora recorte asimétrico, muestreo dinámico y tratamiento de respuestas largas. No son el mismo algoritmo. Comparar pesos por token no demuestra por sí solo la dinámica del entrenamiento.</span>
+            <span data-lang="en"><strong>Dr. GRPO:</strong> uses a constant divisor and removes reward-standard-deviation advantage scaling. <strong>DAPO:</strong> aggregates loss over tokens, retaining group-normalized advantages; it also uses asymmetric clipping, dynamic sampling and overlong-output handling. These are different algorithms. Per-token weights alone do not prove training dynamics.</span>
+          </p>
+
+          <details class="check-box">
+            <summary>
+              <span data-lang="es">Comprueba 2.3: Dos respuestas incorrectas tienen exactamente la misma ventaja negativa $A_1 = A_2 = -1{,}0$, pero la Respuesta 1 tiene $|o_1| = 100$ tokens y la Respuesta 2 tiene $|o_2| = 1000$ tokens. En GRPO estándar, ¿cuál recibe menor castigo por token?</span>
+              <span data-lang="en">Check 2.3: Two incorrect outputs share the exact same negative advantage $A_1 = A_2 = -1.0$, but Output 1 has $|o_1| = 100$ tokens and Output 2 has $|o_2| = 1000$ tokens. Under standard GRPO, which one suffers a smaller penalty per token?</span>
+            </summary>
+            <div class="check-solution">
+              <span class="status-tag status-green">
+                <span data-lang="es">Respuesta razonada</span>
+                <span data-lang="en">Reasoned answer</span>
+              </span>
+              <span data-lang="es">
+                La <strong>Respuesta 2 ($1000$ tokens)</strong> recibe $10$ veces menos castigo por token ($A_2 / |o_2| = -0{,}001$ frente a $A_1 / |o_1| = -0{,}010$). Por eso GRPO estándar incentiva involuntariamente a que el modelo se vuelva verboso cuando no sabe resolver un problema.
+              </span>
+              <span data-lang="en">
+                <strong>Output 2 ($1000$ tokens)</strong> suffers a $10\times$ smaller penalty per token ($A_2 / |o_2| = -0.001$ vs. $A_1 / |o_1| = -0.010$). That is why standard GRPO inadvertently incentivizes verbose rambling when the model fails a problem.
+              </span>
+            </div>
+          </details>
+        </div>
+      </article>
+
+      <!-- SUBAPARTADO 2.4 -->
+      <article class="panel-card">
+        <div class="panel-head-strip">
+          <span class="num-badge lavender">2.4</span>
+          <h3>
+            <span data-lang="es">Supervisión de Proceso y Destilación On-Policy (KL Inversa, Autodestilación y Multi-Maestro)</span>
+            <span data-lang="en">Process Supervision &amp; On-Policy Distillation (Reverse KL, Self &amp; Multi-Teacher)</span>
+          </h3>
+          <span class="timestamp-tag">01:21:11 – 01:43:18</span>
+        </div>
+
+        <div class="prose">
+          <p>
+            <span data-lang="es">
+              <strong>Idea principal:</strong> En la versión de GRPO con recompensa de resultado aquí descrita se asigna la misma ventaja escalar $A_i$ a todos los tokens de una secuencia (recompensa de resultado u <em>Outcome Reward</em>). Aunque se intentaron entrenar Modelos de Recompensa de Proceso (<em>Process Reward Models</em>, PRM) para puntuar cada paso intermedio, son costosos de etiquetar y vulnerables al <span lang="en">reward hacking</span>. Una alternativa para este objetivo para obtener <strong>supervisión densa token a token de manera <span lang="en">on-policy</span></strong> es la <strong>Destilación On-Policy con Divergencia KL Inversa</strong>.
+            </span>
+            <span data-lang="en">
+              <strong>Main idea:</strong> Critic-free RL methods like GRPO assign the same scalar advantage $A_i$ to every token in a completion (an <em>Outcome Reward</em>). While <em>Process Reward Models (PRMs)</em> were proposed to score intermediate steps, they are expensive to label and prone to reward hacking. One approach to achieve <strong>dense per-token supervision on-policy</strong> is <strong>On-Policy Distillation using Reverse KL Divergence</strong>.
+            </span>
+          </p>
+
+          <h4>
+            <span data-lang="es">KL Directa (<span lang="en">Forward KL</span>) frente a KL Inversa (<span lang="en">Reverse KL</span>) (`01:26:10 – 01:34:45`)</span>
+            <span data-lang="en">Forward KL vs. Reverse KL (`01:26:10 – 01:34:45`)</span>
+          </h4>
+          <p>
+            <span data-lang="es">
+              Sea $P_{\text{T}}(v \mid s_t)$ la distribución del modelo Profesor (<span lang="en">Teacher</span>) y $\pi_\theta(v \mid s_t)$ la del Estudiante (<span lang="en">Student</span>) sobre el vocabulario $v \in \mathcal{V}$:
+            </span>
+            <span data-lang="en">
+              Let $P_{\text{T}}(v \mid s_t)$ be the Teacher distribution and $\pi_\theta(v \mid s_t)$ be the Student distribution over vocabulary $v \in \mathcal{V}$:
+            </span>
+          </p>
+
+          <div class="math-block">
+            $$\text{KL Directa (SFT / Mean-Seeking): } \quad D_{\text{KL}}(P_{\text{T}} \parallel \pi_\theta) = \sum_{v \in \mathcal{V}} P_{\text{T}}(v\mid s_t) \log \frac{P_{\text{T}}(v\mid s_t)}{\pi_\theta(v\mid s_t)}$$
+            $$\text{KL Inversa (On-Policy / Mode-Seeking): } \quad D_{\text{KL}}(\pi_\theta \parallel P_{\text{T}}) = \sum_{v \in \mathcal{V}} \pi_\theta(v\mid s_t) \log \frac{\pi_\theta(v\mid s_t)}{P_{\text{T}}(v\mid s_t)}$$
+          </div>
+
+          <ul>
+            <li>
+              <span data-lang="es"><strong>KL directa:</strong> pondera por la distribución del profesor. Es infinita si este asigna probabilidad positiva donde el estudiante asigna cero. Su tendencia a cubrir modos depende de la familia de distribuciones; no obliga a colocar masa en una zona intermedia inválida de un vocabulario categórico.</span>
+              <span data-lang="en"><strong>Forward KL:</strong> weights by the teacher distribution. Positive teacher probability with zero student probability gives infinite divergence. Mode-covering depends on the distribution family; it does not force mass into an invalid middle region of a categorical vocabulary.</span>
+            </li>
+            <li>
+              <span data-lang="es"><strong>KL inversa:</strong> pondera por el estudiante y puede favorecer una moda cuando su familia es limitada. Ignorar otra moda no es gratis: con P=(0,5;0,5) y π=(1;0), D_KL(π||P)=ln 2≈0,693. Sin restricciones, ambas direcciones se minimizan en π=P. Probabilidad positiva del estudiante donde el profesor asigna cero da KL inversa infinita.</span>
+              <span data-lang="en"><strong>Reverse KL:</strong> weights by the student and may favor one mode in a restricted family. Ignoring another mode is not free: with P=(0.5,0.5) and π=(1,0), D_KL(π||P)=ln 2≈0.693. Without restrictions both directions are minimized at π=P. Positive student probability with zero teacher probability gives infinite reverse KL.</span>
+            </li>
+          </ul>
+
+          <h4>
+            <span data-lang="es">Autodestilación On-Policy y Destilación Multi-Maestro (`01:35:00 – 01:43:18`)</span>
+            <span data-lang="en">On-Policy Self-Distillation and Multi-Teacher Distillation (`01:35:00 – 01:43:18`)</span>
+          </h4>
+          <p>
+            <span data-lang="es">
+              En la <strong>Destilación On-Policy</strong>, el estudiante $\pi_\theta$ genera primero su propia respuesta $y \sim \pi_\theta(\cdot\mid x)$, y en cada posición $t$ se minimiza $D_{\text{KL}}\big(\pi_\theta(\cdot\mid s_t) \parallel P_{\text{T}}(\cdot\mid s_t)\big)$, lo que equivale a usar una ventaja por token $A_t = -\log \frac{\pi_\theta(a_t\mid s_t)}{P_{\text{T}}(a_t\mid s_t)}$. Dos variantes destacadas en la clase son:
+              <br />1. <strong>Autodestilación (<span lang="en">Self-Distillation</span>):</strong> Cuando no tenemos un modelo profesor más grande, usamos el <strong>mismo modelo</strong> como profesor pero <strong>inyectándole la solución correcta o una pista en su prompt</strong>: $P_{\text{T}}(\cdot \mid x, \text{solución}, y_{<t})$ supervisa densamente a $\pi_\theta(\cdot \mid x, y_{<t})$.
+              <br />2. <strong>Destilación Multi-Maestro (<span lang="en">Multi-Teacher</span>):</strong> Varios maestros especializados (uno entrenado con RL en matemáticas, otro en código, otro en uso de herramientas) transfieren sus habilidades simultáneamente a un único modelo estudiante generalista (como vimos al final de la receta de GLM-5).
+            </span>
+            <span data-lang="en">
+              In <strong>On-Policy Distillation</strong>, the student $\pi_\theta$ first generates its own trajectory $y \sim \pi_\theta(\cdot\mid x)$, and at each token position $t$ we minimize $D_{\text{KL}}\big(\pi_\theta(\cdot\mid s_t) \parallel P_{\text{T}}(\cdot\mid s_t)\big)$, which acts like a dense per-token advantage $A_t = -\log \frac{\pi_\theta(a_t\mid s_t)}{P_{\text{T}}(a_t\mid s_t)}$. Two key variants covered in lecture are:
+              <br />1. <strong>Self-Distillation:</strong> When no larger teacher exists, we use the <strong>exact same model</strong> as the teacher by <strong>feeding the ground-truth solution or reference hint into the teacher's prompt</strong>: $P_{\text{T}}(\cdot \mid x, \text{solution}, y_{<t})$ densely supervises $\pi_\theta(\cdot \mid x, y_{<t})$.
+              <br />2. <strong>Multi-Teacher Distillation:</strong> Multiple specialist teachers (one RL-trained on math, one on coding, one on agentic tool use) distil their capabilities into a single generalist student model.
+            </span>
+          </p>
+
+          <details class="check-box">
+            <summary>
+              <span data-lang="es">Comprueba 2.4: En el ejemplo «Teddy is in a sealed box. Teddy ___ out», el estudiante asigna $0{,}45$ a "walks" y $0{,}45$ a "climbs", mientras que el profesor asigna $0{,}01$ a "walks" y $0{,}90$ a "climbs". ¿Cuánto vale la señal por token $\log \frac{P_{\text{T}}(v\mid s_t)}{\pi_\theta(v\mid s_t)}$ para cada palabra?</span>
+              <span data-lang="en">Check 2.4: In the example "Teddy is in a sealed box. Teddy ___ out", the student assigns $0.45$ to "walks" and $0.45$ to "climbs", whereas the teacher assigns $0.01$ to "walks" and $0.90$ to "climbs". What is the per-token signal $\log \frac{P_{\text{T}}(v\mid s_t)}{\pi_\theta(v\mid s_t)}$ for each word?</span>
+            </summary>
+            <div class="check-solution">
+              <span class="status-tag status-green">
+                <span data-lang="es">Respuesta razonada</span>
+                <span data-lang="en">Reasoned answer</span>
+              </span>
+              <span data-lang="es">
+                Para <code>"walks"</code>: $\ln(0{,}01 / 0{,}45) = \ln(0{,}0222) \approx \mathbf{-3{,}81}$ (fuerte penalización negativa localizada exactamente en el verbo erróneo). Para <code>"climbs"</code>: $\ln(0{,}90 / 0{,}45) = \ln(2) \approx \mathbf{+0{,}69}$ (refuerzo positivo directo).
+              </span>
+              <span data-lang="en">
+                For <code>"walks"</code>: $\ln(0.01 / 0.45) = \ln(0.0222) \approx \mathbf{-3.81}$ (strong negative penalty localized right on the faulty verb). For <code>"climbs"</code>: $\ln(0.90 / 0.45) = \ln(2) \approx \mathbf{+0.69}$ (direct positive reinforcement).
+              </span>
+            </div>
+          </details>
+        </div>
+      </article>
+    </section>
+
+    <!-- ===================================================================
+         3. PRÁCTICA / PRACTICE (#practica)
+         =================================================================== -->
+    <section id="practica" class="section-block">
+      <div class="section-banner">
+        <h2>
+          <span data-lang="es">3. Práctica — 3 Laboratorios Interactivos de RL en LLMs</span>
+          <span data-lang="en">3. Practice — 3 Interactive RL with LLMs Laboratories</span>
+        </h2>
+        <span class="mono" style="background:#fbd023; color:#171717;">PPO • GRPO • Reverse KL</span>
+      </div>
+
+      <!-- ===============================================================
+           LABORATORIO 1: PPO CLIPPING Y REGIONES DE GRADIENTE CERO
+           =============================================================== -->
+      <div class="panel-card" style="margin-bottom:28px;" id="lab-1">
+        <div class="panel-head-strip">
+          <span class="num-badge blue">LAB 1</span>
+          <h3>
+            <span data-lang="es">Recorte (<span lang="en">Clipping</span>) en PPO y Regiones de Gradiente Cero</span>
+            <span data-lang="en">PPO Clipping and Zero-Gradient Regions</span>
+          </h3>
+        </div>
+
+        <!-- 1. Objetivo y enlace -->
+        <p style="margin-top:0;">
+          <span data-lang="es">
+            <strong>1. Objetivo:</strong> Comprobar numéricamente cómo el operador $\min\big(\rho_t A_t, \text{clip}(\rho_t, 1-\epsilon, 1+\epsilon)A_t\big)$ del <a href="#teoria">Concepto 2.2</a> detiene el gradiente cuando el ratio de importancia $\rho_t(\theta)$ supera el límite permitido en la dirección de la ventaja $A_t$.
+          </span>
+          <span data-lang="en">
+            <strong>1. Objective:</strong> Numerically verify how the $\min\big(\rho_t A_t, \text{clip}(\rho_t, 1-\epsilon, 1+\epsilon)A_t\big)$ operator from <a href="#teoria">Concept 2.2</a> halts the gradient once the importance ratio $\rho_t(\theta)$ crosses the trust-region boundary in the direction of advantage $A_t$.
+          </span>
+        </p>
+
+        <!-- 2. Predicción -->
+        <div class="callout-cobalt">
+          <span class="status-tag status-cobalt">
+            <span data-lang="es">2. Predicción antes de mover los controles</span>
+            <span data-lang="en">2. Prediction before adjusting controls</span>
+          </span>
+          <span data-lang="es">
+            Con $\epsilon = 0{,}20$, si la ventaja es negativa ($A_t = -1{,}50$) y el ratio actual es $\rho_t = 1{,}35$ (es decir, el token malo aumentó de probabilidad por error), ¿estará el gradiente bloqueado en cero o seguirá activo para corregir el error?
+          </span>
+          <span data-lang="en">
+            With $\epsilon = 0.20$, if advantage is negative ($A_t = -1.50$) and the current ratio is $\rho_t = 1.35$ (meaning the bad token accidentally increased in probability), will the gradient be clipped to zero or remain active to fix the mistake?
+          </span>
+        </div>
+
+        <!-- 3. Controles + Botón Restablecer -->
+        <div class="comic-spread" style="margin-bottom:14px;">
+          <div class="output-card">
+            <div class="control-field" style="margin-bottom:12px;">
+              <label for="lab1-rho">
+                <span>
+                  <span data-lang="es">Ratio de importancia $\rho_t(\theta) = \pi_\theta / \pi_{\text{old}}$</span>
+                  <span data-lang="en">Importance ratio $\rho_t(\theta) = \pi_\theta / \pi_{\text{old}}$</span>
+                </span>
+                <span class="mono" id="lab1-rho-val">1.35</span>
+              </label>
+              <input type="range" id="lab1-rho" class="comic-range" min="0.40" max="1.80" step="0.05" value="1.35" oninput="updateLab1()" />
+            </div>
+
+            <div class="control-field" style="margin-bottom:12px;">
+              <label for="lab1-adv">
+                <span>
+                  <span data-lang="es">Ventaja del token ($A_t$)</span>
+                  <span data-lang="en">Token advantage ($A_t$)</span>
+                </span>
+                <span class="mono" id="lab1-adv-val">2.00</span>
+              </label>
+              <input type="range" id="lab1-adv" class="comic-range" min="-2.50" max="2.50" step="0.25" value="2.00" oninput="updateLab1()" />
+            </div>
+
+            <div class="control-field" style="margin-bottom:14px;">
+              <label for="lab1-eps">
+                <span>
+                  <span data-lang="es">Umbral de recorte ($\epsilon$)</span>
+                  <span data-lang="en">Clipping threshold ($\epsilon$)</span>
+                </span>
+                <span class="mono" id="lab1-eps-val">0.20</span>
+              </label>
+              <select id="lab1-eps" class="comic-select" onchange="updateLab1()">
+                <option value="0.10">0.10 (Intervalo [0.90, 1.10])</option>
+                <option value="0.20" selected>0.20 (Intervalo [0.80, 1.20])</option>
+                <option value="0.30">0.30 (Intervalo [0.70, 1.30])</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn-rect" onclick="resetLab1()">
+              <span data-lang="es">Restablecer controles</span>
+              <span data-lang="en">Reset controls</span>
+            </button>
+          </div>
+
+          <!-- 4. Resultado e interpretación -->
+          <div class="output-card" id="lab1-output" aria-live="polite"></div>
+        </div>
+
+        <!-- 5. Aviso metodológico -->
+        <div class="callout-amber">
+          <span class="status-tag status-amber">
+            <span data-lang="es">5. Aviso metodológico: Calculado / Ilustrativo / Limitaciones</span>
+            <span data-lang="en">5. Methodological notice: Computed / Illustrative / Limitations</span>
+          </span>
+          <span data-lang="es">
+            <strong>Calculado:</strong> Evalúa exactamente $\rho_t A_t$, $\text{clip}(\rho_t, 1-\epsilon, 1+\epsilon)A_t$ y el mínimo pesimista. <strong>Ilustrativo:</strong> Muestra el estado del gradiente para un token individual. <strong>Limitaciones:</strong> En la práctica el optimizador suma gradientes sobre todos los tokens del lote junto con la penalización KL.
+          </span>
+          <span data-lang="en">
+            <strong>Computed:</strong> Evaluates exact $\rho_t A_t$, $\text{clip}(\rho_t, 1-\epsilon, 1+\epsilon)A_t$, and the pessimistic minimum. <strong>Illustrative:</strong> Shows gradient status for a single token. <strong>Limitations:</strong> In practice the optimizer aggregates gradients across all batch tokens alongside the KL penalty.
+          </span>
+        </div>
+
+        <!-- 6. Pregunta de comprensión del Lab 1 -->
+        <div class="quiz-card" style="margin-bottom:0;" id="lab1-check">
+          <p style="margin-top:0; font-weight:800;">
+            <span data-lang="es">6. Comprobación del Laboratorio 1: Con $\epsilon = 0{,}20$, ¿en cuáles de estos dos escenarios PPO recorta el objetivo y hace que el gradiente de ese término recortado respecto a $\theta$ sea $0$?</span>
+            <span data-lang="en">6. Laboratory 1 Check: With $\epsilon = 0.20$, in which two scenarios does PPO clip the objective and make the gradient with respect to $\theta$ strictly $0$?</span>
+          </p>
+          <div class="quiz-options">
+            <button type="button" class="quiz-opt-btn" onclick="gradeLabCheck('lab1', 0, true)">
+              <span class="opt-badge">A</span>
+              <span>
+                <span data-lang="es">Cuando ($A_t &gt; 0$ y $\rho_t &gt; 1{,}20$) o cuando ($A_t &lt; 0$ y $\rho_t &lt; 0{,}80$).</span>
+                <span data-lang="en">When ($A_t &gt; 0$ and $\rho_t &gt; 1.20$) or when ($A_t &lt; 0$ and $\rho_t &lt; 0.80$).</span>
+              </span>
+            </button>
+            <button type="button" class="quiz-opt-btn" onclick="gradeLabCheck('lab1', 1, false)">
+              <span class="opt-badge">B</span>
+              <span>
+                <span data-lang="es">Solamente cuando $\rho_t = 1{,}00$ exacto.</span>
+                <span data-lang="en">Only when $\rho_t = 1.00$ exactly.</span>
+              </span>
+            </button>
+            <button type="button" class="quiz-opt-btn" onclick="gradeLabCheck('lab1', 2, false)">
+              <span class="opt-badge">C</span>
+              <span>
+                <span data-lang="es">Cuando ($A_t &gt; 0$ y $\rho_t &lt; 0{,}80$) únicamente.</span>
+                <span data-lang="en">Only when ($A_t &gt; 0$ and $\rho_t &lt; 0.80$).</span>
+              </span>
+            </button>
+          </div>
+          <div id="lab1-feedback" class="quiz-feedback" aria-live="polite"></div>
+          <div style="margin-top:10px;">
+            <button type="button" class="btn-rect" onclick="resetLabCheck('lab1')">
+              <span data-lang="es">Reintentar pregunta</span>
+              <span data-lang="en">Retry question</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===============================================================
+           LABORATORIO 2: GRPO Y SESGO DE LONGITUD (GRPO vs Dr. GRPO)
+           =============================================================== -->
+      <div class="panel-card" style="margin-bottom:28px;" id="lab-2">
+        <div class="panel-head-strip">
+          <span class="num-badge yellow">LAB 2</span>
+          <h3>
+            <span data-lang="es">Ventaja Grupal en GRPO y Sesgo de Longitud ($1/|o_i|$ frente a Dr. GRPO)</span>
+            <span data-lang="en">GRPO Group Advantage &amp; Length Bias ($1/|o_i|$ vs. Dr. GRPO)</span>
+          </h3>
+        </div>
+
+        <p style="margin-top:0;">
+          <span data-lang="es">
+            <strong>1. Objetivo:</strong> Comparar para un grupo de $G=4$ respuestas (dos correctas con $r=1$ y dos incorrectas con $r=0$) cómo la división por $|o_i|$ en GRPO clásico distorsiona el peso por token de las respuestas largas incorrectas, y cómo lo corrige Dr. GRPO (<a href="#teoria">Concepto 2.3</a>).
+          </span>
+          <span data-lang="en">
+            <strong>1. Objective:</strong> Compare across a group of $G=4$ outputs (two correct with $r=1$ and two incorrect with $r=0$) how dividing by $|o_i|$ in standard GRPO distorts the per-token weight of long incorrect outputs, and how Dr. GRPO fixes it (<a href="#teoria">Concept 2.3</a>).
+          </span>
+        </p>
+
+        <div class="callout-cobalt">
+          <span class="status-tag status-cobalt">
+            <span data-lang="es">2. Predicción antes de interactuar</span>
+            <span data-lang="en">2. Prediction before interacting</span>
+          </span>
+          <span data-lang="es">
+            La Respuesta 3 ($r_3 = 0$, incorrecta concisa de $100$ tokens) y la Respuesta 4 ($r_4 = 0$, incorrecta verbosa de longitud ajustable $|o_4|$) tienen el mismo error. Si aumentas $|o_4|$ de $100$ a $800$ tokens en GRPO estándar, ¿qué ocurre con el castigo que recibe cada token de la Respuesta 4?
+          </span>
+          <span data-lang="en">
+            Output 3 ($r_3 = 0$, concise wrong answer of $100$ tokens) and Output 4 ($r_4 = 0$, verbose wrong answer of adjustable length $|o_4|$) both failed. If you increase $|o_4|$ from $100$ to $800$ tokens under standard GRPO, what happens to the per-token penalty on Output 4?
+          </span>
+        </div>
+
+        <div class="comic-spread" style="margin-bottom:14px;">
+          <div class="output-card">
+            <div class="control-field" style="margin-bottom:12px;">
+              <label for="lab2-len1">
+                <span>
+                  <span data-lang="es">Longitud $o_1$ (Correcta 1, $r_1=1$)</span>
+                  <span data-lang="en">Length $o_1$ (Correct 1, $r_1=1$)</span>
+                </span>
+                <span class="mono" id="lab2-len1-val">100 tokens</span>
+              </label>
+              <input type="range" id="lab2-len1" class="comic-range" min="50" max="500" step="50" value="100" oninput="updateLab2()" />
+            </div>
+
+            <div class="control-field" style="margin-bottom:12px;">
+              <label for="lab2-len4">
+                <span>
+                  <span data-lang="es">Longitud $o_4$ (Incorrecta verbosa, $r_4=0$)</span>
+                  <span data-lang="en">Length $o_4$ (Verbose wrong, $r_4=0$)</span>
+                </span>
+                <span class="mono" id="lab2-len4-val">600 tokens</span>
+              </label>
+              <input type="range" id="lab2-len4" class="comic-range" min="100" max="1000" step="100" value="600" oninput="updateLab2()" />
+            </div>
+
+            <div class="control-field" style="margin-bottom:14px;">
+              <label for="lab2-norm">
+                <span>
+                  <span data-lang="es">Variante del algoritmo:</span>
+                  <span data-lang="en">Algorithm variant:</span>
+                </span>
+              </label>
+              <select id="lab2-norm" class="comic-select" onchange="updateLab2()">
+                <option value="standard" selected>GRPO Estándar (divide entre |o_i| y std)</option>
+                <option value="drgrpo">Dr. GRPO: constant 500, no std</option><option value="dapo">DAPO: total tokens, group std</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn-rect" onclick="resetLab2()">
+              <span data-lang="es">Restablecer controles</span>
+              <span data-lang="en">Reset controls</span>
+            </button>
+          </div>
+
+          <div class="output-card" id="lab2-output" aria-live="polite"></div>
+        </div>
+
+        <div class="callout-amber">
+          <span class="status-tag status-amber">
+            <span data-lang="es">5. Aviso metodológico: Calculado / Ilustrativo / Limitaciones</span>
+            <span data-lang="en">5. Methodological notice: Computed / Illustrative / Limitations</span>
+          </span>
+          <span data-lang="es">
+            <strong>Calculado:</strong> Ventaja grupal sobre $G=4$ respuestas con recompensas $[1, 1, 0, 0]$ (donde $o_2=300\text{ tok}$ y $o_3=100\text{ tok}$ son fijas) y señal efectiva por token. <strong>Ilustrativo:</strong> Evidencia por qué las respuestas erróneas crecen en longitud bajo GRPO estándar. <strong>Limitaciones:</strong> Asume $\rho_{i,t} = 1$ (primera época de actualización tras el muestreo).
+          </span>
+          <span data-lang="en">
+            <strong>Computed:</strong> Group advantage across $G=4$ outputs with rewards $[1, 1, 0, 0]$ (with fixed $o_2=300\text{ tok}$ and $o_3=100\text{ tok}$) and effective per-token signal. <strong>Illustrative:</strong> Demonstrates why wrong completions grow in length under standard GRPO. <strong>Limitations:</strong> Assumes $\rho_{i,t} = 1$ (first update epoch after sampling).
+          </span>
+        </div>
+
+        <div class="quiz-card" style="margin-bottom:0;" id="lab2-check">
+          <p style="margin-top:0; font-weight:800;">
+            <span data-lang="es">6. Comprobación del Laboratorio 2: ¿Cómo evita Dr. GRPO que el modelo aprenda a generar respuestas incorrectas cada vez más largas?</span>
+            <span data-lang="en">6. Laboratory 2 Check: How does Dr. GRPO prevent the model from learning to generate increasingly long incorrect outputs?</span>
+          </p>
+          <div class="quiz-options">
+            <button type="button" class="quiz-opt-btn" onclick="gradeLabCheck('lab2', 0, false)">
+              <span class="opt-badge">A</span>
+              <span>
+                <span data-lang="es">Multiplicando la ventaja negativa por cero para no penalizar errores.</span>
+                <span data-lang="en">Multiplying negative advantages by zero so errors are never penalized.</span>
+              </span>
+            </button>
+            <button type="button" class="quiz-opt-btn" onclick="gradeLabCheck('lab2', 1, true)">
+              <span class="opt-badge">B</span>
+              <span>
+                <span data-lang="es">Sustituyendo la normalización por longitud individual $1/|o_i|$ por un divisor constante común $L_{\max}$, de forma que todos los tokens erróneos reciban el mismo castigo unitario sin importar cuánto divague la respuesta.</span>
+                <span data-lang="en">Replacing individual length normalization $1/|o_i|$ with a common constant divisor $L_{\max}$, so every faulty token receives the same unit penalty regardless of how long the output rambles.</span>
+              </span>
+            </button>
+            <button type="button" class="quiz-opt-btn" onclick="gradeLabCheck('lab2', 2, false)">
+              <span class="opt-badge">C</span>
+              <span>
+                <span data-lang="es">Volviendo a añadir la red de función de valor $V_\psi$ de PPO.</span>
+                <span data-lang="en">Re-introducing the PPO value function network $V_\psi$.</span>
+              </span>
+            </button>
+          </div>
+          <div id="lab2-feedback" class="quiz-feedback" aria-live="polite"></div>
+          <div style="margin-top:10px;">
+            <button type="button" class="btn-rect" onclick="resetLabCheck('lab2')">
+              <span data-lang="es">Reintentar pregunta</span>
+              <span data-lang="en">Retry question</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===============================================================
+           LABORATORIO 3: KL DIRECTA VS KL INVERSA EN DESTILACIÓN ON-POLICY
+           =============================================================== -->
+      <div class="panel-card" id="lab-3">
+        <div class="panel-head-strip">
+          <span class="num-badge mint">LAB 3</span>
+          <h3>
+            <span data-lang="es">KL Directa vs. KL Inversa en Destilación On-Policy («Teddy climbs out»)</span>
+            <span data-lang="en">Forward KL vs. Reverse KL in On-Policy Distillation ("Teddy climbs out")</span>
+          </h3>
+        </div>
+
+        <p style="margin-top:0;">
+          <span data-lang="es">
+            <strong>1. Objetivo:</strong> Comparar la divergencia KL Directa $D_{\text{KL}}(P_{\text{T}} \parallel \pi_\theta)$ frente a la KL Inversa $D_{\text{KL}}(\pi_\theta \parallel P_{\text{T}})$ sobre los 3 candidatos del ejemplo de la clase (<code>"climbs"</code>, <code>"jumps"</code>, <code>"walks"</code>) y ver cómo la KL Inversa penaliza severamente poner probabilidad en la acción físicamente imposible <code>"walks"</code> (<a href="#teoria">Concepto 2.4</a>).
+          </span>
+          <span data-lang="en">
+            <strong>1. Objective:</strong> Compare Forward KL $D_{\text{KL}}(P_{\text{T}} \parallel \pi_\theta)$ against Reverse KL $D_{\text{KL}}(\pi_\theta \parallel P_{\text{T}})$ across the 3 candidate verbs from the lecture example (<code>"climbs"</code>, <code>"jumps"</code>, <code>"walks"</code>) and see how Reverse KL severely penalizes placing probability on the physically impossible action <code>"walks"</code> (<a href="#teoria">Concept 2.4</a>).
+          </span>
+        </p>
+
+        <div class="callout-cobalt">
+          <span class="status-tag status-cobalt">
+            <span data-lang="es">2. Predicción antes de interactuar</span>
+            <span data-lang="en">2. Prediction before interacting</span>
+          </span>
+          <span data-lang="es">
+            El Profesor es bimodal: asigna $P_{\text{T}}(\text{"climbs"}) = 0{,}49$, $P_{\text{T}}(\text{"jumps"}) = 0{,}49$ y $P_{\text{T}}(\text{"walks"}) = 0{,}02$. Si el Estudiante se concentra en una sola moda válida ($\pi_\theta(\text{"climbs"}) = 0{,}96$, $\pi_\theta(\text{"jumps"}) = 0{,}02$, $\pi_\theta(\text{"walks"}) = 0{,}02$), ¿cuál de las dos divergencias (KL Directa o KL Inversa) será mucho menor?
+          </span>
+          <span data-lang="en">
+            The Teacher is bimodal: assigning $P_{\text{T}}(\text{"climbs"}) = 0.49$, $P_{\text{T}}(\text{"jumps"}) = 0.49$, and $P_{\text{T}}(\text{"walks"}) = 0.02$. If the Student locks onto a single valid mode ($\pi_\theta(\text{"climbs"}) = 0.96$, $\pi_\theta(\text{"jumps"}) = 0.02$, $\pi_\theta(\text{"walks"}) = 0.02$), which divergence (Forward KL or Reverse KL) will be much smaller?
+          </span>
+        </div>
+
+        <div class="comic-spread" style="margin-bottom:14px;">
+          <div class="output-card">
+            <div class="control-field" style="margin-bottom:12px;">
+              <label for="lab3-profile">
+                <span>
+                  <span data-lang="es">Perfil del Estudiante $\pi_\theta(\cdot\mid s_t)$:</span>
+                  <span data-lang="en">Student Profile $\pi_\theta(\cdot\mid s_t)$:</span>
+                </span>
+              </label>
+              <select id="lab3-profile" class="comic-select" onchange="updateLab3()">
+                <option value="mode" selected>1. Buscador de 1 moda válida: climbs=0.96, jumps=0.02, walks=0.02</option>
+                <option value="hallucinate">2. Alucinación física ("walks"): climbs=0.30, jumps=0.20, walks=0.50</option>
+                <option value="spread">3. Difuso (Mean-seeking): climbs=0.38, jumps=0.38, walks=0.24</option>
+              </select>
+            </div>
+
+            <div class="control-field" style="margin-bottom:14px;">
+              <label for="lab3-twalks">
+                <span>
+                  <span data-lang="es">Probabilidad Profesor en error $P_{\text{T}}(\text{"walks"})$</span>
+                  <span data-lang="en">Teacher probability on error $P_{\text{T}}(\text{"walks"})$</span>
+                </span>
+                <span class="mono" id="lab3-twalks-val">0.02</span>
+              </label>
+              <input type="range" id="lab3-twalks" class="comic-range" min="0.005" max="0.10" step="0.005" value="0.02" oninput="updateLab3()" />
+            </div>
+
+            <button type="button" class="btn-rect" onclick="resetLab3()">
+              <span data-lang="es">Restablecer controles</span>
+              <span data-lang="en">Reset controls</span>
+            </button>
+          </div>
+
+          <div class="output-card" id="lab3-output" aria-live="polite"></div>
+        </div>
+
+        <div class="callout-amber">
+          <span class="status-tag status-amber">
+            <span data-lang="es">5. Aviso metodológico: Calculado / Ilustrativo / Limitaciones</span>
+            <span data-lang="en">5. Methodological notice: Computed / Illustrative / Limitations</span>
+          </span>
+          <span data-lang="es">
+            <strong>Calculado:</strong> Divergencias exactas $D_{\text{KL}}(P_{\text{T}}\parallel \pi_\theta)$ y $D_{\text{KL}}(\pi_\theta\parallel P_{\text{T}})$ en nats, repartiendo $1 - P_{\text{T}}(\text{"walks"})$ a partes iguales entre las dos modas válidas <code>"climbs"</code> y <code>"jumps"</code>. <strong>Ilustrativo:</strong> Demuestra el comportamiento <span lang="en">mode-seeking</span>. <strong>Limitaciones:</strong> En un LLM real la suma se realiza sobre todo el vocabulario $|\mathcal{V}|$ en cada paso de la secuencia generada por el estudiante.
+          </span>
+          <span data-lang="en">
+            <strong>Computed:</strong> Exact divergences $D_{\text{KL}}(P_{\text{T}}\parallel \pi_\theta)$ and $D_{\text{KL}}(\pi_\theta\parallel P_{\text{T}})$ in nats, splitting $1 - P_{\text{T}}(\text{"walks"})$ equally between the two valid modes <code>"climbs"</code> and <code>"jumps"</code>. <strong>Illustrative:</strong> Demonstrates mode-seeking behavior. <strong>Limitations:</strong> In a real LLM the sum spans the full vocabulary $|\mathcal{V}|$ at each step of the student-sampled trajectory.
+          </span>
+        </div>
+
+        <div class="quiz-card" style="margin-bottom:0;" id="lab3-check">
+          <p style="margin-top:0; font-weight:800;">
+            <span data-lang="es">6. Comprobación del Laboratorio 3: ¿Por qué la Destilación On-Policy con KL Inversa permite que un modelo estudiante más pequeño sea preciso sin dispersarse?</span>
+            <span data-lang="en">6. Laboratory 3 Check: Why does On-Policy Distillation with Reverse KL allow a smaller student model to remain sharp without spreading mass?</span>
+          </p>
+          <div class="quiz-options">
+            <button type="button" class="quiz-opt-btn" onclick="gradeLabCheck('lab3', 0, true)">
+              <span class="opt-badge">A</span>
+              <span>
+                <span data-lang="es">Porque la KL Inversa es buscadora de modas (<span lang="en">mode-seeking</span>): penaliza fuertemente poner probabilidad donde el profesor asigna casi cero, pero no exige cubrir todas las modas alternativas del profesor a la vez.</span>
+                <span data-lang="en">Because Reverse KL is mode-seeking: it heavily penalizes placing probability where the teacher assigns near-zero mass, without forcing the student to cover every alternative teacher mode simultaneously.</span>
+              </span>
+            </button>
+            <button type="button" class="quiz-opt-btn" onclick="gradeLabCheck('lab3', 1, false)">
+              <span class="opt-badge">B</span>
+              <span>
+                <span data-lang="es">Porque la KL Inversa ignora por completo las probabilidades del profesor.</span>
+                <span data-lang="en">Because Reverse KL completely ignores teacher probabilities.</span>
+              </span>
+            </button>
+            <button type="button" class="quiz-opt-btn" onclick="gradeLabCheck('lab3', 2, false)">
+              <span class="opt-badge">C</span>
+              <span>
+                <span data-lang="es">Porque solo evalúa el último token <code>[EOS]</code> de la secuencia.</span>
+                <span data-lang="en">Because it only evaluates the final <code>[EOS]</code> token of the sequence.</span>
+              </span>
+            </button>
+          </div>
+          <div id="lab3-feedback" class="quiz-feedback" aria-live="polite"></div>
+          <div style="margin-top:10px;">
+            <button type="button" class="btn-rect" onclick="resetLabCheck('lab3')">
+              <span data-lang="es">Reintentar pregunta</span>
+              <span data-lang="en">Retry question</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         4. COMPRUEBA LO APRENDIDO / CHECK YOUR UNDERSTANDING (#cuestionario)
+         =================================================================== -->
+    <section id="cuestionario" class="section-block">
+      <div class="section-banner">
+        <h2>
+          <span data-lang="es">4. Comprueba lo aprendido — Cuestionario de Integración (8 Preguntas)</span>
+          <span data-lang="en">4. Check your understanding — Integration Quiz (8 Questions)</span>
+        </h2>
+        <span id="quiz-score-pill" class="mono" style="background:#7bdcb5; color:#171717; font-weight:900; padding:4px 12px;">0 / 8</span>
+      </div>
+
+      <p class="prose">
+        <span data-lang="es">
+          Responde las siguientes 8 preguntas que integran REINFORCE, muestreo por importancia, PPO, GRPO, sesgo de longitud y destilación <span lang="en">on-policy</span>. Puedes reintentar cada pregunta de forma individual y tus respuestas se mantienen si cambias de idioma.
+        </span>
+        <span data-lang="en">
+          Answer the following 8 questions integrating REINFORCE, importance sampling, PPO, GRPO, length bias, and on-policy distillation. You can retry each question individually, and your answers persist across language switches.
+        </span>
+      </p>
+
+      <div id="quiz-list-container"></div>
+    </section>
+
+    <!-- ===================================================================
+         5. RESUMEN Y REFERENCIAS / SUMMARY AND REFERENCES (#referencias)
+         =================================================================== -->
+    <section id="referencias" class="section-block">
+      <div class="section-banner">
+        <h2>
+          <span data-lang="es">5. Resumen y referencias</span>
+          <span data-lang="en">5. Summary and references</span>
+        </h2>
+        <span class="mono" style="background:#c4a7e7; color:#171717;">Stanford CME295 • Lecture 04</span>
+      </div>
+
+      <div class="panel-card">
+        <div class="prose">
+          <h3>
+            <span data-lang="es">Qué debe poder explicar el estudiante al terminar esta clase</span>
+            <span data-lang="en">What the student should be able to explain after completing this lecture</span>
+          </h3>
+          <ul>
+            <li>
+              <span data-lang="es"><strong>De REINFORCE al Muestreo por Importancia:</strong> Cómo el truco de la derivada logarítmica convierte la maximización del retorno esperado en actualizaciones ponderadas sobre $\nabla_\theta \log \pi_\theta(a_t\mid s_t)$, y cómo el ratio $\rho_t(\theta) = \pi_\theta / \pi_{\text{old}}$ permite reutilizar costosos <span lang="en">rollouts</span> autorregresivos durante varias actualizaciones paralelas.</span>
+              <span data-lang="en"><strong>From REINFORCE to Importance Sampling:</strong> How the log-derivative trick turns expected return maximization into weighted updates over $\nabla_\theta \log \pi_\theta(a_t\mid s_t)$, and how the ratio $\rho_t(\theta) = \pi_\theta / \pi_{\text{old}}$ reuses expensive autoregressive rollouts across multiple parallel updates.</span>
+            </li>
+            <li>
+              <span data-lang="es"><strong>Estabilidad y Asignación de Crédito en PPO:</strong> Cómo la función de valor $V_\psi(s_t)$ reduce la varianza y localiza la ventaja $A_t$ por token, cómo el recorte $\min(\rho_t A_t, \text{clip}(\rho_t, 1-\epsilon, 1+\epsilon)A_t)$ frena actualizaciones excesivas anulando el gradiente, y por qué una configuración RLHF habitual separa política, referencia, recompensa y crítico; no son cuatro redes completas obligatorias.</span>
+              <span data-lang="en"><strong>Stability and Credit Assignment in PPO:</strong> How the value function $V_\psi(s_t)$ reduces variance and localizes per-token advantage $A_t$, how $\min(\rho_t A_t, \text{clip}(\rho_t, 1-\epsilon, 1+\epsilon)A_t)$ halts excessive updates by zeroing gradients, and why a common RLHF setup separates policy, reference, reward and critic; four full networks are not mandatory.</span>
+            </li>
+            <li>
+              <span data-lang="es"><strong>GRPO y Sesgo de Longitud:</strong> Cómo GRPO sustituye la red de valor por la media y desviación típica de un grupo de $G$ muestras, por qué dividir entre $|o_i|$ diluye el castigo por token en respuestas erróneas largas ($A_i < 0$), y cómo lo corrigen DAPO y Dr. GRPO.</span>
+              <span data-lang="en"><strong>GRPO and Length Bias:</strong> How GRPO replaces the value network with the mean and standard deviation across $G$ sampled outputs, why dividing by $|o_i|$ dilutes per-token penalties on long incorrect completions ($A_i < 0$), and how DAPO and Dr. GRPO resolve it.</span>
+            </li>
+            <li>
+              <span data-lang="es"><strong>Destilación On-Policy con KL Inversa:</strong> Por qué la KL Inversa ($D_{\text{KL}}(\pi_\theta \parallel P_{\text{T}})$) es buscadora de modas (<span lang="en">mode-seeking</span>) y ofrece supervisión densa por token sobre trayectorias generadas por el propio estudiante, incluyendo autodestilación y destilación multi-maestro.</span>
+              <span data-lang="en"><strong>On-Policy Distillation with Reverse KL:</strong> Why Reverse KL ($D_{\text{KL}}(\pi_\theta \parallel P_{\text{T}})$) is mode-seeking and provides dense per-token supervision over student-generated trajectories, including self-distillation and multi-teacher distillation.</span>
+            </li>
+          </ul>
+
+          <h3>
+            <span data-lang="es">Índice de marcas de tiempo verificadas y fuentes técnicas</span>
+            <span data-lang="en">Verified timestamp index and technical sources</span>
+          </h3>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th><span data-lang="es">Tramo (Video)</span><span data-lang="en">Span (Video)</span></th>
+                <th><span data-lang="es">Tema cubierto en la clase</span><span data-lang="en">Topic covered in lecture</span></th>
+                <th><span data-lang="es">Referencia técnica asociada</span><span data-lang="en">Associated technical reference</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">00:00:06 – 00:05:14</td>
+                <td><span data-lang="es">Repaso Clase 3, visión general del post-entrenamiento, RLHF frente a RLVR</span><span data-lang="en">Lecture 3 recap, post-training overview, RLHF vs. RLVR</span></td>
+                <td>Ouyang et al. (2022) <em>InstructGPT</em>; Lambert et al. (2024) <em>TÜLU 3 / RLVR</em></td>
+              </tr>
+              <tr>
+                <td class="mono">00:05:15 – 00:23:55</td>
+                <td><span data-lang="es">Formulación RL en LLMs (estados, acciones, trayectorias) y derivación de REINFORCE con el truco de la derivada logarítmica</span><span data-lang="en">RL formulation in LLMs (states, actions, rollouts) and deriving REINFORCE via the log-derivative trick</span></td>
+                <td>Williams (1992), <em>Simple Statistical Gradient-Following Algorithms (REINFORCE)</em></td>
+              </tr>
+              <tr>
+                <td class="mono">00:23:56 – 00:31:40</td>
+                <td><span data-lang="es">Cuello de botella del rollout autorregresivo y Muestreo por Importancia ($\rho_t = \pi_\theta / \pi_{\text{old}}$)</span><span data-lang="en">Autoregressive rollout bottleneck and Importance Sampling ($\rho_t = \pi_\theta / \pi_{\text{old}}$)</span></td>
+                <td>Sutton &amp; Barto (2018), <em>Reinforcement Learning: An Introduction</em></td>
+              </tr>
+              <tr>
+                <td class="mono">00:31:41 – 00:58:20</td>
+                <td><span data-lang="es">Los 3 retos del RL (varianza, asignación de crédito por token «Teddy walks out», reward hacking) y PPO (función de valor $V_\psi$, ventaja GAE, clipping $\epsilon$ y penalización KL)</span><span data-lang="en">The 3 RL challenges (variance, token credit assignment "Teddy walks out", reward hacking) and PPO (value function $V_\psi$, GAE advantage, $\epsilon$-clipping &amp; KL penalty)</span></td>
+                <td>Schulman et al. (2017) <em>Proximal Policy Optimization Algorithms (PPO)</em>; Schulman et al. (2016) <em>GAE</em></td>
+              </tr>
+              <tr>
+                <td class="mono">00:58:21 – 01:21:10</td>
+                <td><span data-lang="es">GRPO sin red de valor, ventaja relativa de grupo, análisis de ponderación por longitud ($1/|o_i|$) y mejoras en DAPO y Dr. GRPO</span><span data-lang="en">Critic-free GRPO, group relative advantage, proof of length bias ($1/|o_i|$), and fixes in DAPO &amp; Dr. GRPO</span></td>
+                <td>Shao et al. (2024) <em>DeepSeekMath (GRPO)</em>; DeepSeek-AI (2025) <em>DeepSeek-R1</em>; Liu et al. (2025) <em>Dr. GRPO</em>; Yu et al. (2025) <em>DAPO</em></td>
+              </tr>
+              <tr>
+                <td class="mono">01:21:11 – 01:43:18</td>
+                <td><span data-lang="es">Supervisión de proceso vs. resultado, Destilación On-Policy, KL Directa vs. KL Inversa (mode-seeking), Autodestilación y Destilación Multi-Maestro</span><span data-lang="en">Process vs. outcome supervision, On-Policy Distillation, Forward vs. Reverse KL (mode-seeking), Self-Distillation &amp; Multi-Teacher Distillation</span></td>
+                <td>Agarwal et al. (2024) <em>On-Policy Distillation of Language Models (GKD)</em>; Gu et al. (2024) <em>MiniLLM</em></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // ESTADO GLOBAL CONSERVADO AL CAMBIAR DE IDIOMA
+    // =========================================================================
+    let currentLang = 'es';
+
+    const labChecksState = {
+      lab1: { answered: false, idx: null, correct: false },
+      lab2: { answered: false, idx: null, correct: false },
+      lab3: { answered: false, idx: null, correct: false }
+    };
+
+    const labCheckExplanations = {
+      lab1: {
+        okEs: 'Estado: Correcto (00:51:30). Cuando A_t > 0 y ρ_t > 1 + ε, o cuando A_t < 0 y ρ_t < 1 − ε, domina la rama recortada constante y el gradiente de ese término recortado se anula, no necesariamente el total.',
+        okEn: 'Status: Correct (00:51:30). When A_t > 0 and ρ_t > 1 + ε, or when A_t < 0 and ρ_t < 1 − ε, the flat clipped branch wins and the clipped-term gradient is zero, not necessarily the total gradient.',
+        errEs: 'Estado: Incorrecto. Revisa el signo de A_t: PPO solo recorta cuando ya nos hemos movido más allá de 1 + ε (si A_t > 0) o más abajo de 1 − ε (si A_t < 0).',
+        errEn: 'Status: Incorrect. Check the sign of A_t: PPO only clips when we have already moved past 1 + ε (for A_t > 0) or below 1 − ε (for A_t < 0).'
+      },
+      lab2: {
+        okEs: 'Estado: Correcto (01:17:20). Al usar un divisor constante L_max en lugar de 1/|o_i|, la penalización por token de una respuesta errónea ya no disminuye al añadir más palabras.',
+        okEn: 'Status: Correct (01:17:20). By using a constant divisor L_max instead of 1/|o_i|, the per-token penalty on an incorrect output no longer shrinks when adding more words.',
+        errEs: 'Estado: Incorrecto. Recuerda que en GRPO estándar el factor 1/|o_i| divide la ventaja negativa entre la longitud; Dr. GRPO lo reemplaza por una constante fija.',
+        errEn: 'Status: Incorrect. Recall that in standard GRPO the 1/|o_i| factor divides negative advantage by sequence length; Dr. GRPO replaces it with a fixed constant.'
+      },
+      lab3: {
+        okEs: 'Estado: Correcto (01:29:40). La KL Inversa D_KL(π_θ || P_T) es buscadora de modas (mode-seeking): castiga severamente donde P_T ≈ 0 pero permite concentrarse en una sola moda válida.',
+        okEn: 'Status: Correct (01:29:40). Reverse KL D_KL(π_θ || P_T) is mode-seeking: it heavily penalizes tokens where P_T ≈ 0 while allowing the student to focus on a single valid mode.',
+        errEs: 'Estado: Incorrecto. Revisa la diferencia entre KL Directa (mean-seeking) y KL Inversa (mode-seeking) en el Concepto 2.4.',
+        errEn: 'Status: Incorrect. Review the difference between Forward KL (mean-seeking) and Reverse KL (mode-seeking) in Concept 2.4.'
+      }
+    };
+
+    const quizQuestions = [
+  {
+    "id": "q1",
+    "qEs": "01 / ¿Qué papel desempeña el \"truco de la derivada logarítmica\" (∇_θ π_θ = π_θ ∇_θ log π_θ) en el algoritmo REINFORCE aplicado a LLMs?",
+    "qEn": "01 / What role does the \"log-derivative trick\" (∇_θ π_θ = π_θ ∇_θ log π_θ) play in the REINFORCE algorithm applied to LLMs?",
+    "optsEs": [
+      "Permite eliminar por completo el muestreo autorregresivo durante la generación.",
+      "Permite escribir el gradiente de la recompensa esperada como una esperanza sobre la suma de log-probabilidades de los tokens multiplicada por la recompensa escalar R(x,y), sin necesitar que R(x,y) sea diferenciable.",
+      "Sustituye la función softmax del decodificador por una función escalón."
+    ],
+    "optsEn": [
+      "It completely eliminates autoregressive sampling during generation.",
+      "It expresses the gradient of expected reward as an expectation over the sum of token log-probabilities multiplied by the scalar reward R(x,y), without requiring R(x,y) to be differentiable.",
+      "It replaces the decoder softmax with a step function."
+    ],
+    "correct": 1,
+    "expEs": "Estado: Correcto (00:14:20). Gracias a ∇_θ log π_θ(y|x) = Σ_t ∇_θ log π_θ(a_t|s_t), podemos usar verificadores discretos 0/1 o compiladores como recompensa R(x,y).",
+    "expEn": "Status: Correct (00:14:20). Thanks to ∇_θ log π_θ(y|x) = Σ_t ∇_θ log π_θ(a_t|s_t), we can use discrete 0/1 verifiers or compilers as the reward R(x,y)."
+  },
+  {
+    "id": "q2",
+    "qEs": "02 / ¿Por qué se introduce el Muestreo por Importancia con el ratio ρ_t(θ) = π_θ(a_t|s_t) / π_old(a_t|s_t) en el entrenamiento RL de LLMs?",
+    "qEn": "02 / Why is Importance Sampling with the ratio ρ_t(θ) = π_θ(a_t|s_t) / π_old(a_t|s_t) introduced in LLM RL training?",
+    "optsEs": [
+      "Para obligar a que el modelo genere un único token por respuesta.",
+      "Porque π_old es el modelo de recompensa Bradley-Terry y π_θ es el tokenizador.",
+      "Porque generar rollouts autorregresivos token a token es muy lento; el ratio ρ_t(θ) permite recolectar un lote de respuestas con π_old y realizar múltiples actualizaciones de gradiente en paralelo sobre π_θ."
+    ],
+    "optsEn": [
+      "To force the model to generate only a single token per response.",
+      "Because π_old is the Bradley-Terry reward model and π_θ is the tokenizer.",
+      "Because generating autoregressive rollouts token by token is slow; the ratio ρ_t(θ) lets us collect a batch of completions under π_old and perform multiple parallel gradient updates on π_θ."
+    ],
+    "correct": 2,
+    "expEs": "Estado: Correcto (00:25:40). La generación es secuencial, pero la evaluación de probabilidades es paralela; reponderar por π_θ / π_old aprovecha cada lote de trayectorias durante varias épocas.",
+    "expEn": "Status: Correct (00:25:40). Generation is sequential, whereas probability evaluation is parallel; reweighting by π_θ / π_old reuses each rollout batch across multiple update steps."
+  },
+  {
+    "id": "q3",
+    "qEs": "03 / Con R = 0 y sin baseline ni regularización, ¿qué aporta esa muestra a REINFORCE?",
+    "qEn": "03 / With R = 0 and no baseline or regularization, what does this sample contribute to REINFORCE?",
+    "optsEs": [
+      "Cero: R∇log π = 0.",
+      "Un gradiente infinito.",
+      "Un castigo negativo a todos los tokens."
+    ],
+    "optsEn": [
+      "Zero: R∇log π = 0.",
+      "An infinite gradient.",
+      "A negative penalty for every token."
+    ],
+    "correct": 0,
+    "expEs": "Una ventaja negativa requiere, por ejemplo, baseline positivo: con b=0,5, R−b=−0,5.",
+    "expEn": "A negative advantage requires, for example, a positive baseline: with b=0.5, R−b=−0.5."
+  },
+  {
+    "id": "q4",
+    "qEs": "04 / En PPO con umbral ε = 0,20, un token tiene ventaja negativa A_t = −2,0 y tras varias actualizaciones su ratio bajó a ρ_t(θ) = 0,65. ¿Qué ocurre con el objetivo recortado de PPO en ese punto?",
+    "qEn": "04 / In PPO with threshold ε = 0.20, a token has negative advantage A_t = −2.0 and after several updates its ratio dropped to ρ_t(θ) = 0.65. What happens to the clipped PPO objective at that point?",
+    "optsEs": [
+      "El modelo duplica la probabilidad del token para compensar.",
+      "El término recortado vale −1,60 y tiene gradiente cero; otros términos aún pueden cambiar la política.",
+      "El ratio se multiplica por infinito."
+    ],
+    "optsEn": [
+      "The model doubles the token probability to compensate.",
+      "The clipped term is −1.60 with zero gradient; other terms can still change the policy.",
+      "The ratio is multiplied by infinity."
+    ],
+    "correct": 1,
+    "expEs": "min(0,65·−2;0,80·−2)=−1,60. Solo ese término queda plano.",
+    "expEn": "min(0.65·−2,0.80·−2)=−1.60. Only that term is flat."
+  },
+  {
+    "id": "q5",
+    "qEs": "05 / ¿Qué componente elimina GRPO frente a PPO con un crítico separado?",
+    "qEn": "05 / What component does GRPO remove compared with PPO using a separate critic?",
+    "optsEs": [
+      "Reduciendo el tamaño del vocabulario a 10 palabras.",
+      "Eliminando la política activa π_θ y entrenando únicamente el tokenizador.",
+      "Eliminando por completo el modelo de Función de Valor V_ψ(s_t) y estimando la ventaja de cada respuesta comparando su recompensa contra la media y desviación típica de un grupo de G respuestas muestreadas para el mismo prompt."
+    ],
+    "optsEn": [
+      "By shrinking the vocabulary size to 10 words.",
+      "By removing the active policy π_θ and training only the tokenizer.",
+      "By completely removing the Value Function network V_ψ(s_t) and estimating advantage by comparing each output’s reward against the mean and standard deviation of a group of G outputs sampled for the same prompt."
+    ],
+    "correct": 2,
+    "expEs": "Elimina el crítico y estima ventajas con el grupo. El porcentaje de ahorro depende de la implementación.",
+    "expEn": "It removes the critic and estimates group advantages. Memory savings depend on implementation."
+  },
+  {
+    "id": "q6",
+    "qEs": "06 / ¿Por qué la fórmula original de GRPO induce un sesgo de longitud (length bias) que hace que las respuestas incorrectas se vuelvan extremadamente largas?",
+    "qEn": "06 / Why does the original GRPO formula induce a length bias that causes incorrect responses to become excessively long?",
+    "optsEs": [
+      "Porque divide la suma de cada respuesta entre su longitud |o_i|; cuando la ventaja es negativa (A_i < 0), un |o_i| grande reduce la penalización que recibe cada token individual (A_i / |o_i|), premiando indirectamente divagar cuando se falla.",
+      "Porque los modelos de razonamiento no tienen token de fin de secuencia [EOS].",
+      "Porque GRPO multiplica la recompensa por la longitud al cuadrado."
+    ],
+    "optsEn": [
+      "Because it divides each output sum by its length |o_i|; when advantage is negative (A_i < 0), a large |o_i| shrinks the per-token penalty (A_i / |o_i|), indirectly rewarding rambling on failed attempts.",
+      "Because reasoning models lack an end-of-sequence [EOS] token.",
+      "Because GRPO multiplies the reward by length squared."
+    ],
+    "correct": 0,
+    "expEs": "La normalización cambia pesos por token; es un mecanismo de sesgo, no una prueba completa de cómo evolucionará la longitud.",
+    "expEn": "Normalization changes per-token weights: a bias mechanism, not a complete proof of length dynamics."
+  },
+  {
+    "id": "q7",
+    "qEs": "07 / Con P=(0,5;0,5) y π=(1;0), ¿cuánto vale D_KL(π||P)?",
+    "qEn": "07 / With P=(0.5,0.5) and π=(1,0), what is D_KL(π||P)?",
+    "optsEs": [
+      "Cero: ignorar una moda nunca cuesta.",
+      "ln 2 ≈ 0,693.",
+      "−1."
+    ],
+    "optsEn": [
+      "Zero: ignoring a mode is always free.",
+      "ln 2 ≈ 0.693.",
+      "−1."
+    ],
+    "correct": 1,
+    "expEs": "1·ln(1/0,5)+0=ln 2. Ignorar la segunda moda no da coste cero.",
+    "expEn": "1·ln(1/0.5)+0=ln 2. Ignoring the second mode is not free."
+  },
+  {
+    "id": "q8",
+    "qEs": "08 / ¿En qué consiste la Autodestilación On-Policy (On-Policy Self-Distillation) explicada al final de la clase?",
+    "qEn": "08 / What is On-Policy Self-Distillation as explained at the end of the lecture?",
+    "optsEs": [
+      "En copiar los pesos de la primera capa en la última capa sin calcular gradientes.",
+      "En entrenar el modelo sin ningún prompt ni datos de entrada.",
+      "En utilizar el mismo modelo como profesor y como estudiante, entregándole al profesor la solución correcta o información privilegiada en su prompt para que supervise densamente (token a token) la trayectoria generada por el estudiante sin esa pista."
+    ],
+    "optsEn": [
+      "Copying first-layer weights into the final layer without computing gradients.",
+      "Training the model without any prompts or input data.",
+      "Using the exact same model as both teacher and student, feeding the ground-truth solution or privileged context into the teacher prompt so it can densely supervise (token by token) the trajectory generated by the unhinted student."
+    ],
+    "correct": 2,
+    "expEs": "Estado: Correcto (01:36:50). Condicionar al mismo modelo sobre la respuesta correcta convierte una señal dispersa (la solución final) en supervisión densa por token.",
+    "expEn": "Status: Correct (01:36:50). Conditioning the same model on the ground-truth answer converts a sparse outcome (the final solution) into dense per-token supervision."
+  }
+];
+
+    const quizState = {};
+    quizQuestions.forEach(q => {
+      quizState[q.id] = { answered: false, idx: null };
+    });
+
+    // =========================================================================
+    // RENDERIZADO MATEMÁTICO CON KATEX
+    // =========================================================================
+    function renderMath(el) {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(el || document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    // =========================================================================
+    // CAMBIO DE IDIOMA CONSERVANDO CONTROLES Y RESPUESTAS
+    // =========================================================================
+    function setLanguage(lang) {
+      currentLang = lang;
+      const normLabels = lang === 'es' ? ['GRPO: media por respuesta y std','Dr. GRPO: constante 500, sin std','DAPO: total de tokens, con std'] : ['GRPO: per-response mean and std','Dr. GRPO: constant 500, no std','DAPO: total tokens, with std'];
+      document.querySelectorAll('#lab2-norm option').forEach((o,i)=>o.textContent=normLabels[i]);
+      document.documentElement.lang = lang;
+
+      const btnEs = document.getElementById('btn-lang-es');
+      const btnEn = document.getElementById('btn-lang-en');
+
+      if (lang === 'es') {
+        btnEs.classList.add('active');
+        btnEs.setAttribute('aria-pressed', 'true');
+        btnEn.classList.remove('active');
+        btnEn.setAttribute('aria-pressed', 'false');
+        document.title = 'CME295 Clase 04 — Aprendizaje por Refuerzo en LLMs (RL with LLMs)';
+      } else {
+        btnEn.classList.add('active');
+        btnEn.setAttribute('aria-pressed', 'true');
+        btnEs.classList.remove('active');
+        btnEs.setAttribute('aria-pressed', 'false');
+        document.title = 'CME295 Lecture 04 — Reinforcement Learning with LLMs';
+      }
+
+      updateIntroWidget();
+      updateLab1();
+      updateLab2();
+      updateLab3();
+      renderAllLabChecks();
+      renderQuiz();
+      renderMath(document.body);
+    }
+
+    // =========================================================================
+    // MICRO-SIMULADOR 01 (#inicio): EMPUJE DEL GRADIENTE E IMPORTANCIA
+    // =========================================================================
+    function updateIntroWidget() {
+      const piOld = parseFloat(document.getElementById('intro-pi-old').value);
+      const piNew = parseFloat(document.getElementById('intro-pi-new').value);
+      const adv = parseFloat(document.getElementById('intro-adv').value);
+
+      document.getElementById('intro-pi-old-val').textContent = piOld.toFixed(2);
+      document.getElementById('intro-pi-new-val').textContent = piNew.toFixed(2);
+      document.getElementById('intro-adv-val').textContent = (adv >= 0 ? '+' : '') + adv.toFixed(2);
+
+      const rho = piNew / piOld;
+      const surrogate = rho * adv;
+
+      let dirEs = adv > 0 ? '↑ AUMENTA probabilidad del token' : (adv < 0 ? '↓ REDUCE probabilidad del token' : '— Sin cambio (A_t = 0)');
+      let dirEn = adv > 0 ? '↑ INCREASES token probability' : (adv < 0 ? '↓ DECREASES token probability' : '— No change (A_t = 0)');
+      let badgeTone = adv > 0 ? 'var(--green-tint)' : (adv < 0 ? 'var(--red-tint)' : '#ffffff');
+
+      const out = document.getElementById('intro-widget-out');
+      out.innerHTML = `
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <span class="m-label">Ratio $\\rho_t(\\theta)$</span>
+            <span class="m-val">${rho.toFixed(2)}×</span>
+          </div>
+          <div class="metric-box">
+            <span class="m-label">$\\rho_t(\\theta) \\cdot A_t$</span>
+            <span class="m-val">${(surrogate >= 0 ? '+' : '') + surrogate.toFixed(2)}</span>
+          </div>
+        </div>
+        <div style="background:${badgeTone}; border:2px solid #171717; padding:8px 10px; font-family:var(--font-mono); font-size:0.8rem; font-weight:800;">
+          ${currentLang === 'es' ? dirEs : dirEn}
+        </div>
+      `;
+      renderMath(out);
+    }
+
+    // =========================================================================
+    // LABORATORIO 1: PPO CLIPPING Y REGIONES DE GRADIENTE CERO
+    // =========================================================================
+    function updateLab1() {
+      const rho = parseFloat(document.getElementById('lab1-rho').value);
+      const adv = parseFloat(document.getElementById('lab1-adv').value);
+      const eps = parseFloat(document.getElementById('lab1-eps').value);
+
+      document.getElementById('lab1-rho-val').textContent = rho.toFixed(2);
+      document.getElementById('lab1-adv-val').textContent = (adv >= 0 ? '+' : '') + adv.toFixed(2);
+      document.getElementById('lab1-eps-val').textContent = eps.toFixed(2);
+
+      const low = 1 - eps;
+      const high = 1 + eps;
+      const rhoClip = Math.min(Math.max(rho, low), high);
+
+      const unclipped = rho * adv;
+      const clipped = rhoClip * adv;
+      const ppoObj = Math.min(unclipped, clipped);
+
+      const isClippedZeroGrad = (adv > 0 && rho > high) || (adv < 0 && rho < low);
+
+      let statusTextEs = '';
+      let statusTextEn = '';
+      let statusBg = 'var(--green-tint)';
+
+      if (adv === 0) {
+        statusTextEs = 'Estado: Ventaja nula (A_t = 0) → Gradiente 0.';
+        statusTextEn = 'Status: Zero advantage (A_t = 0) → Gradient 0.';
+        statusBg = '#ffffff';
+      } else if (isClippedZeroGrad) {
+        statusTextEs = `Estado: ¡RECORTADO (Gradiente = 0)! Como ρ_t = ${rho.toFixed(2)} salió del límite en la dirección de A_t, se anula la contribución de este término recortado; otros términos aún pueden cambiar la política.`;
+        statusTextEn = `Status: CLIPPED (Gradient = 0)! Because ρ_t = ${rho.toFixed(2)} crossed the bound in the direction of A_t, this clipped-term contribution is zero; other terms can still change the policy.`;
+        statusBg = 'var(--amber-tint)';
+      } else {
+        statusTextEs = `Estado: GRADIENTE ACTIVO. Domina la rama sin recortar (ρ_t·A_t = ${unclipped.toFixed(2)}), actualizando π_θ.`;
+        statusTextEn = `Status: ACTIVE GRADIENT. Unclipped branch wins (ρ_t·A_t = ${unclipped.toFixed(2)}), updating π_θ.`;
+        statusBg = 'var(--green-tint)';
+      }
+
+      const out = document.getElementById('lab1-output');
+      out.innerHTML = `
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <span class="m-label">${currentLang === 'es' ? 'Sin recortar' : 'Unclipped'} ($\\rho_t A_t$)</span>
+            <span class="m-val">${unclipped.toFixed(2)}</span>
+          </div>
+          <div class="metric-box">
+            <span class="m-label">${currentLang === 'es' ? 'Recortado' : 'Clipped'} ($\\text{clip} \\cdot A_t$)</span>
+            <span class="m-val">${clipped.toFixed(2)}</span>
+          </div>
+          <div class="metric-box">
+            <span class="m-label">PPO $\\min(\\cdot, \\cdot)$</span>
+            <span class="m-val">${ppoObj.toFixed(2)}</span>
+          </div>
+        </div>
+        <div style="background:${statusBg}; border:2px solid #171717; padding:10px 12px; font-size:0.86rem; font-weight:700;">
+          ${currentLang === 'es' ? statusTextEs : statusTextEn}
+        </div>
+      `;
+      renderMath(out);
+    }
+
+    function resetLab1() {
+      document.getElementById('lab1-rho').value = '1.35';
+      document.getElementById('lab1-adv').value = '2.00';
+      document.getElementById('lab1-eps').value = '0.20';
+      updateLab1();
+    }
+
+    // =========================================================================
+    // LABORATORIO 2: GRPO Y SESGO DE LONGITUD
+    // =========================================================================
+    function updateLab2() {
+      const len1 = parseInt(document.getElementById('lab2-len1').value, 10);
+      const len4 = parseInt(document.getElementById('lab2-len4').value, 10);
+      const mode = document.getElementById('lab2-norm').value;
+
+      document.getElementById('lab2-len1-val').textContent = `${len1} tokens`;
+      document.getElementById('lab2-len4-val').textContent = `${len4} tokens`;
+
+      // Grupo G=4: r = [1, 1, 0, 0] -> media = 0.5, std = 0.5
+      const rewards = [1, 1, 0, 0];
+      const lengths = [len1, 300, 100, len4];
+      const meanR = 0.5;
+      const stdR = 0.5;
+      const Lmax = 500;
+
+      const rows = rewards.map((r, i) => {
+        const adv = mode === 'drgrpo' ? r - meanR : (r - meanR) / stdR;
+        const divisor = mode === 'standard' ? 4 * lengths[i] : mode === 'dapo' ? lengths.reduce((a,b)=>a+b,0) : 4 * Lmax;
+        const perTokenSignal = adv / divisor;
+        return {
+          idx: i + 1,
+          r,
+          len: lengths[i],
+          adv,
+          perTokenSignal
+        };
+      });
+
+      const ratioPenalty = (Math.abs(rows[2].perTokenSignal) / Math.abs(rows[3].perTokenSignal)).toFixed(1);
+
+      const out = document.getElementById('lab2-output');
+      let listHtml = rows.map(item => {
+        const isPos = item.adv >= 0;
+        const bg = isPos ? 'var(--green-tint)' : 'var(--red-tint)';
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:${bg}; border:2px solid #171717; padding:6px 10px; margin-bottom:6px; font-family:var(--font-mono); font-size:0.78rem; font-weight:700;">
+            <span>o_${item.idx} (r=${item.r}, |o_${item.idx}|=${item.len})</span>
+            <span>${currentLang === 'es' ? 'Señal/token:' : 'Signal/token:'} ${(item.perTokenSignal >= 0 ? '+' : '') + (item.perTokenSignal * 100).toFixed(3)}×10⁻²</span>
+          </div>
+        `;
+      }).join('');
+
+      const name = mode === 'standard' ? 'GRPO' : mode === 'drgrpo' ? 'Dr. GRPO' : 'DAPO';
+      const summaryEs = '<strong>'+name+':</strong> Coeficientes del término sin recortar, con ratio 1: GRPO usa A/(G·longitud), Dr. GRPO (r−media)/(G·500), DAPO A/suma de longitudes. Razón de magnitudes o₃/o₄: '+ratioPenalty+'. Son pesos, no gradientes medidos: no se entrena una red ni se demuestra una evolución de longitud. 500 es un factor de escala elegido.';
+      const summaryEn = '<strong>'+name+':</strong> Unclipped coefficients at ratio 1: GRPO uses A/(G·length), Dr. GRPO (r−mean)/(G·500), DAPO A/total tokens. Magnitude ratio o₃/o₄: '+ratioPenalty+'. These are weights, not measured gradients: no network is trained or length trajectory demonstrated. 500 is a chosen scale.';
+      out.innerHTML = `
+        ${listHtml}
+        <p style="margin:8px 0 0 0; font-size:0.85rem;">${currentLang === 'es' ? summaryEs : summaryEn}</p>
+      `;
+      renderMath(out);
+    }
+
+    function resetLab2() {
+      document.getElementById('lab2-len1').value = '100';
+      document.getElementById('lab2-len4').value = '600';
+      document.getElementById('lab2-norm').value = 'standard';
+      updateLab2();
+    }
+
+    // =========================================================================
+    // LABORATORIO 3: KL DIRECTA VS KL INVERSA EN DESTILACIÓN ON-POLICY
+    // =========================================================================
+    function updateLab3() {
+      const profile = document.getElementById('lab3-profile').value;
+      const pWalksT = parseFloat(document.getElementById('lab3-twalks').value);
+      document.getElementById('lab3-twalks-val').textContent = pWalksT.toFixed(3);
+
+      const pValidT = (1 - pWalksT) / 2;
+      const teacher = [pValidT, pValidT, pWalksT]; // [climbs, jumps, walks]
+
+      let student = [0.96, 0.02, 0.02];
+      if (profile === 'hallucinate') {
+        student = [0.30, 0.20, 0.50];
+      } else if (profile === 'spread') {
+        student = [0.38, 0.38, 0.24];
+      }
+
+      let forwardKL = 0;
+      let reverseKL = 0;
+      for (let i = 0; i < 3; i++) {
+        forwardKL += teacher[i] * Math.log(teacher[i] / student[i]);
+        reverseKL += student[i] * Math.log(student[i] / teacher[i]);
+      }
+
+      const tokenAdvWalks = Math.log(teacher[2] / student[2]);
+
+      const out = document.getElementById('lab3-output');
+      let interpEs = '';
+      let interpEn = '';
+
+      interpEs = '<strong>Comparación calculada:</strong> KL directa '+forwardKL.toFixed(3)+', KL inversa '+reverseKL.toFixed(3)+' nats. Ambas valen cero si profesor y estudiante coinciden. Ignorar una moda no es gratis. Se comparan distribuciones elegidas: aquí no se generan rollouts ni se ejecuta destilación on-policy o actualización de parámetros.';
+      interpEn = '<strong>Computed comparison:</strong> Forward KL '+forwardKL.toFixed(3)+', reverse KL '+reverseKL.toFixed(3)+' nats. Both are zero when teacher and student match. Ignoring a mode is not free. Selected distributions are compared: no rollouts, on-policy distillation or parameter updates are executed.';
+      out.innerHTML = `
+        <div class="metrics-grid">
+          <div class="metric-box">
+            <span class="m-label">KL Directa $D_{\\text{KL}}(P_{\\text{T}}\\parallel \\pi_\\theta)$</span>
+            <span class="m-val">${forwardKL.toFixed(3)}</span>
+          </div>
+          <div class="metric-box">
+            <span class="m-label">KL Inversa $D_{\\text{KL}}(\\pi_\\theta\\parallel P_{\\text{T}})$</span>
+            <span class="m-val">${reverseKL.toFixed(3)}</span>
+          </div>
+          <div class="metric-box">
+            <span class="m-label">Señal en "walks"</span>
+            <span class="m-val">${tokenAdvWalks.toFixed(2)}</span>
+          </div>
+        </div>
+        <p style="margin:0; font-size:0.85rem;">${currentLang === 'es' ? interpEs : interpEn}</p>
+      `;
+      renderMath(out);
+    }
+
+    function resetLab3() {
+      document.getElementById('lab3-profile').value = 'mode';
+      document.getElementById('lab3-twalks').value = '0.02';
+      updateLab3();
+    }
+
+    // =========================================================================
+    // PREGUNTAS DE COMPRENSIÓN DE LOS 3 LABORATORIOS
+    // =========================================================================
+    function gradeLabCheck(labId, optIdx, isCorrect) {
+      labChecksState[labId] = { answered: true, idx: optIdx, correct: isCorrect };
+      renderSingleLabCheck(labId);
+    }
+
+    function resetLabCheck(labId) {
+      labChecksState[labId] = { answered: false, idx: null, correct: false };
+      renderSingleLabCheck(labId);
+    }
+
+    function renderSingleLabCheck(labId) {
+      const card = document.getElementById(`${labId}-check`);
+      if (!card) return;
+      const state = labChecksState[labId];
+      const buttons = card.querySelectorAll('.quiz-opt-btn');
+
+      buttons.forEach((btn, i) => {
+        btn.classList.remove('selected-correct', 'selected-wrong');
+        btn.disabled = state.answered;
+        if (state.answered && i === state.idx) {
+          btn.classList.add(state.correct ? 'selected-correct' : 'selected-wrong');
+        }
+      });
+
+      const fb = document.getElementById(`${labId}-feedback`);
+      if (!state.answered) {
+        fb.className = 'quiz-feedback';
+        fb.innerHTML = '';
+        return;
+      }
+
+      const info = labCheckExplanations[labId];
+      const msg = state.correct
+        ? (currentLang === 'es' ? info.okEs : info.okEn)
+        : (currentLang === 'es' ? info.errEs : info.errEn);
+
+      fb.className = `quiz-feedback visible ${state.correct ? 'correct' : 'wrong'}`;
+      fb.innerHTML = `<strong>${state.correct ? '✓ ' : '⚠ '}</strong>${msg}`;
+    }
+
+    function renderAllLabChecks() {
+      ['lab1', 'lab2', 'lab3'].forEach(renderSingleLabCheck);
+    }
+
+    // =========================================================================
+    // CUESTIONARIO FINAL DE INTEGRACIÓN (8 PREGUNTAS)
+    // =========================================================================
+    function answerQuiz(qId, optIdx) {
+      quizState[qId] = { answered: true, idx: optIdx };
+      renderQuiz();
+    }
+
+    function retryQuiz(qId) {
+      quizState[qId] = { answered: false, idx: null };
+      renderQuiz();
+    }
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-list-container');
+      let correctCount = 0;
+      const letters = ['A', 'B', 'C'];
+
+      container.innerHTML = quizQuestions.map(q => {
+        const st = quizState[q.id];
+        const isCorrect = st.answered && st.idx === q.correct;
+        if (isCorrect) correctCount++;
+
+        const promptText = currentLang === 'es' ? q.qEs : q.qEn;
+        const opts = currentLang === 'es' ? q.optsEs : q.optsEn;
+        const expText = currentLang === 'es' ? q.expEs : q.expEn;
+        const retryText = currentLang === 'es' ? 'Reintentar esta pregunta' : 'Retry this question';
+
+        const errPrefix = currentLang === 'es'
+          ? 'Estado: Incorrecto. Explicación de la respuesta correcta: '
+          : 'Status: Incorrect. Explanation of the correct answer: ';
+
+        const optsHtml = opts.map((optStr, i) => {
+          let cls = 'quiz-opt-btn';
+          if (st.answered && st.idx === i) {
+            cls += isCorrect ? ' selected-correct' : ' selected-wrong';
+          }
+          return `
+            <button type="button" class="${cls}" ${st.answered ? 'disabled' : ''} onclick="answerQuiz('${q.id}', ${i})">
+              <span class="opt-badge">${letters[i]}</span>
+              <span>${optStr}</span>
+            </button>
+          `;
+        }).join('');
+
+        return `
+          <div class="quiz-card">
+            <p style="margin-top:0; font-family:var(--font-display); font-weight:850; font-size:1.05rem;">${promptText}</p>
+            <div class="quiz-options">${optsHtml}</div>
+            <div class="quiz-feedback ${st.answered ? 'visible ' + (isCorrect ? 'correct' : 'wrong') : ''}" aria-live="polite">
+              ${st.answered ? `<strong>${isCorrect ? '✓ ' : '⚠ ' + errPrefix}</strong>${expText}` : ''}
+            </div>
+            <div style="margin-top:10px;">
+              <button type="button" class="btn-rect" onclick="retryQuiz('${q.id}')">${retryText}</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('quiz-score-pill').textContent = `${correctCount} / ${quizQuestions.length}`;
+      renderMath(container);
+    }
+
+    // Inicialización al cargar el DOM
+    window.addEventListener('DOMContentLoaded', () => {
+      setLanguage(currentLang);
+    });
+  </script>
+</body>
+</html>
