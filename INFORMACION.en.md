@@ -12,9 +12,9 @@ Repository documentation is available in Spanish and English. Lecture 1 provides
 
 ## Status and scope
 
-Lectures 1 and 2 are available. The first lecture covering tokenization, embeddings, RNN/LSTM, self-attention, QKV, positions, and Transformer architecture. It includes seven educational labs.
+Lectures 1, 2, and 3 are available. The first lecture covering tokenization, embeddings, RNN/LSTM, self-attention, QKV, positions, and Transformer architecture. It includes seven educational labs.
 
-The index reserves entries for lectures 3–10. These are placeholders for pending content, not completed lectures or a commitment to publication dates.
+The index reserves entries for lectures 4–10. These are placeholders for pending content, not completed lectures or a commitment to publication dates.
 
 The notes were created with AI assistance and have not yet been checked line by line against the original videos. They will be reviewed gradually; well-supported corrections help improve their accuracy.
 

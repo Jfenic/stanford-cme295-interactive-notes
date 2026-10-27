@@ -12,9 +12,9 @@ La documentación está disponible en español e inglés. La clase 1 incluye apu
 
 ## Estado y alcance
 
-Actualmente están disponibles las clases 1 y 2. La primera clase recorre tokenización, embeddings, RNN/LSTM, autoatención, QKV, posiciones y arquitectura Transformer. Incluye siete laboratorios pedagógicos.
+Actualmente están disponibles las clases 1, 2 y 3. La primera clase recorre tokenización, embeddings, RNN/LSTM, autoatención, QKV, posiciones y arquitectura Transformer. Incluye siete laboratorios pedagógicos.
 
-El índice reserva posiciones para las clases 3–10. Son marcadores de contenido pendiente, no clases ya preparadas ni un compromiso de fechas de publicación.
+El índice reserva posiciones para las clases 4–10. Son marcadores de contenido pendiente, no clases ya preparadas ni un compromiso de fechas de publicación.
 
 Los apuntes se han elaborado con asistencia de IA y todavía no se han contrastado línea por línea con los vídeos originales. Se revisarán progresivamente; las correcciones justificadas ayudan a mejorar su precisión.
 

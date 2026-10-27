@@ -1,0 +1,3041 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CME295 / APUNTES — Clase 03: Entrenamiento de LLMs (LLM Training)</title>
+
+  <!-- Tipografías Google Fonts: Bangers, Space Grotesk, Inter y JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet" />
+
+  <!-- KaTeX para renderizado matemático limpio sin delimitadores crudos -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    :root {
+      --bg-paper: #f3efe6;
+      --bg-panel: #ffffff;
+      --ink: #141414;
+      --text-muted: #4a4a45;
+      --comic-yellow: #fbd023;
+      --comic-yellow-light: #fff6c5;
+      --comic-coral: #f26b5b;
+      --comic-coral-light: #ffe3df;
+      --comic-blue: #2f76ec;
+      --comic-blue-dark: #1d4ed8;
+      --comic-blue-light: #e6f0ff;
+      --comic-mint: #7bdcb5;
+      --comic-mint-light: #e2faef;
+      --comic-mint-dark: #0f5c3e;
+      --comic-lavender: #c4a7e7;
+      --comic-lavender-light: #f2ebfb;
+      --border-thick: 3px solid #141414;
+      --border-thin: 2px solid #141414;
+      --shadow-comic: 5px 5px 0px #141414;
+      --shadow-comic-sm: 3px 3px 0px #141414;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+      --font-comic: 'Bangers', 'Space Grotesk', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background-color: var(--bg-paper);
+      color: var(--ink);
+      font-family: var(--font-sans);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-paper);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.07) 1px, transparent 1px);
+      background-size: 16px 16px;
+      color: var(--ink);
+      font-size: 16.5px;
+      line-height: 1.65;
+    }
+
+    /* Visibilidad estricta de un idioma a la vez */
+    html[lang="es"] [data-lang="en"] {
+      display: none !important;
+    }
+    html[lang="en"] [data-lang="es"] {
+      display: none !important;
+    }
+
+    /* Foco accesible por teclado */
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid var(--comic-blue);
+      outline-offset: 2px;
+    }
+
+    .comic-page {
+      max-width: 1180px;
+      margin: 18px auto 64px;
+      padding: 0 16px;
+    }
+
+    /* Tramas de puntos estilo cómic (Halftone dot patterns) */
+    .halftone-yellow {
+      background-color: var(--comic-yellow);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.16) 1.25px, transparent 1.25px);
+      background-size: 10px 10px;
+    }
+
+    .halftone-coral {
+      background-color: var(--comic-coral);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.2) 1.35px, transparent 1.35px);
+      background-size: 10px 10px;
+    }
+
+    .halftone-mint {
+      background-color: var(--comic-mint);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.14) 1.25px, transparent 1.25px);
+      background-size: 10px 10px;
+    }
+
+    .halftone-lavender {
+      background-color: var(--comic-lavender);
+      background-image: radial-gradient(rgba(20, 20, 20, 0.14) 1.25px, transparent 1.25px);
+      background-size: 10px 10px;
+    }
+
+    /* =====================================================================
+       CABECERA NEGRA SUPERIOR (#141414)
+       ===================================================================== */
+    .top-comic-bar {
+      background-color: var(--ink);
+      color: #ffffff;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      padding: 10px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 8px;
+      z-index: 100;
+      margin-bottom: 16px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .index-link {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--comic-yellow);
+      text-decoration: none;
+      border: 2px solid var(--comic-yellow);
+      padding: 4px 10px;
+      text-transform: uppercase;
+    }
+
+    .index-link:hover {
+      background-color: var(--comic-yellow);
+      color: var(--ink);
+    }
+
+    .lang-toggle {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .lang-btn {
+      min-width: 44px;
+      min-height: 36px;
+      padding: 4px 12px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.88rem;
+      border: 2px solid #ffffff;
+      background-color: var(--ink);
+      color: #ffffff;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    .lang-btn.active,
+    .lang-btn[aria-pressed="true"] {
+      background-color: var(--comic-yellow);
+      color: var(--ink);
+      border-color: var(--comic-yellow);
+      box-shadow: 2px 2px 0px #ffffff;
+    }
+
+    .top-nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .top-nav-links a {
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .top-nav-links a:hover {
+      color: var(--comic-yellow);
+      text-decoration: underline;
+    }
+
+    .btn-download-top {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 800;
+      background-color: var(--comic-mint);
+      color: var(--ink);
+      border: 2px solid #ffffff;
+      padding: 6px 10px;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
+
+    .btn-download-top:hover {
+      background-color: var(--comic-yellow);
+    }
+
+    /* =====================================================================
+       BANNER HERO PRINCIPAL (AMARILLO + CORAL EN SEMITONO)
+       ===================================================================== */
+    .hero-comic-banner {
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      display: grid;
+      grid-template-columns: 1.18fr 0.82fr;
+      overflow: hidden;
+      margin-bottom: 16px;
+      position: relative;
+      background-color: var(--comic-yellow);
+    }
+
+    @media (max-width: 860px) {
+      .hero-comic-banner {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hero-left {
+      padding: 28px 30px;
+      position: relative;
+      z-index: 2;
+      border-right: var(--border-thick);
+    }
+
+    @media (max-width: 860px) {
+      .hero-left {
+        border-right: none;
+        border-bottom: var(--border-thick);
+      }
+    }
+
+    .hero-headline {
+      font-family: var(--font-display);
+      font-size: clamp(2.05rem, 4vw, 3.2rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin: 0 0 12px 0;
+      color: var(--ink);
+    }
+
+    .hero-subline {
+      font-size: 1.08rem;
+      font-weight: 800;
+      margin: 0 0 16px 0;
+      color: var(--ink);
+    }
+
+    .hero-meta-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .hero-badge {
+      background-color: #ffffff;
+      border: var(--border-thin);
+      padding: 4px 10px;
+      box-shadow: var(--shadow-comic-sm);
+    }
+
+    .hero-right {
+      padding: 20px 24px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 240px;
+      overflow: hidden;
+    }
+
+    .speech-bubble {
+      background-color: #ffffff;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 10px 14px;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.94rem;
+      line-height: 1.25;
+      position: relative;
+      display: inline-block;
+    }
+
+    .speech-bubble.lavender {
+      background-color: var(--comic-lavender-light);
+    }
+
+    .speech-bubble.yellow {
+      background-color: var(--comic-yellow-light);
+    }
+
+    .speech-bubble::after {
+      content: "";
+      position: absolute;
+      bottom: -12px;
+      right: 22px;
+      border-width: 12px 12px 0 0;
+      border-style: solid;
+      border-color: var(--ink) transparent transparent transparent;
+    }
+
+    .stamp-clase {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background-color: #ffffff;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 6px 12px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      transform: rotate(5deg);
+      z-index: 3;
+    }
+
+    /* =====================================================================
+       5 PESTAÑAS BENTO NUMERADAS (01 A 05)
+       ===================================================================== */
+    .comic-tabs-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 780px) {
+      .comic-tabs-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .comic-tab {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      min-height: 54px;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      text-decoration: none;
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.05rem;
+      transition: transform 0.1s ease;
+    }
+
+    .comic-tab:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0px #141414;
+    }
+
+    .comic-tab:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #141414;
+    }
+
+    .comic-tab .tab-num {
+      font-family: var(--font-mono);
+      font-weight: 800;
+      font-size: 1.15rem;
+    }
+
+    .tab-01 { background-color: var(--comic-blue); color: #ffffff; }
+    .tab-02 { background-color: var(--comic-coral); }
+    .tab-03 { background-color: var(--comic-yellow); }
+    .tab-04 { background-color: var(--comic-mint); }
+    .tab-05 { background-color: var(--comic-lavender); }
+
+    /* =====================================================================
+       CUADRÍCULA DE VIÑETAS (COMIC BENTO SPREAD)
+       ===================================================================== */
+    .comic-spread {
+      display: grid;
+      grid-template-columns: 1.56fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 920px) {
+      .comic-spread {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comic-panel {
+      background-color: var(--bg-panel);
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      padding: 22px 24px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .num-tag {
+      background-color: var(--comic-coral);
+      color: var(--ink);
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 5px 13px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.38rem;
+      line-height: 1;
+      transform: skewX(-8deg);
+      display: inline-block;
+    }
+
+    .num-tag.blue { background-color: var(--comic-blue); color: #ffffff; }
+    .num-tag.yellow { background-color: var(--comic-yellow); }
+    .num-tag.mint { background-color: var(--comic-mint); }
+    .num-tag.lavender { background-color: var(--comic-lavender); }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.28rem, 2.2vw, 1.72rem);
+      font-weight: 900;
+      margin: 0;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .timestamp-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 800;
+      background-color: var(--bg-paper);
+      border: var(--border-thin);
+      padding: 3px 8px;
+      margin-left: auto;
+    }
+
+    .panel-body-with-char {
+      display: grid;
+      grid-template-columns: 1fr 185px;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .panel-body-with-char {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .char-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+    }
+
+    /* Viñeta 4 etapas del Osito de Peluche */
+    .teddy-stages-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      background-color: var(--bg-paper);
+      border: var(--border-thin);
+      padding: 12px;
+    }
+
+    @media (max-width: 760px) {
+      .teddy-stages-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .teddy-stage-card {
+      background-color: #ffffff;
+      border: var(--border-thin);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 8px 10px;
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .teddy-stage-card strong {
+      font-family: var(--font-display);
+      font-size: 0.84rem;
+      display: block;
+      margin-bottom: 4px;
+      padding-bottom: 3px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    /* Subtarjetas de teoría */
+    .comic-subcard {
+      background-color: var(--bg-paper);
+      border: var(--border-thin);
+      padding: 11px 14px;
+      margin-bottom: 11px;
+    }
+
+    .comic-subcard h4 {
+      margin: 0 0 6px 0;
+      font-family: var(--font-display);
+      font-size: 0.98rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .comic-subcard p,
+    .comic-subcard ul {
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    .comic-subcard ul {
+      padding-left: 18px;
+    }
+
+    .comic-subcard li {
+      margin-bottom: 4px;
+    }
+
+    .math-strip {
+      background-color: #ffffff;
+      border: var(--border-thin);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 10px 14px;
+      margin: 10px 0;
+      overflow-x: auto;
+      font-size: 0.93rem;
+    }
+
+    .warning-badge-box {
+      background-color: var(--comic-yellow-light);
+      border: var(--border-thin);
+      border-left: 6px solid var(--ink);
+      padding: 9px 13px;
+      font-size: 0.87rem;
+      margin-top: 8px;
+    }
+
+    /* Panel derecho interactivo "PRUEBA / ..." */
+    .prueba-panel {
+      background-color: var(--bg-panel);
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .prueba-header {
+      border-bottom: var(--border-thick);
+      padding: 12px 16px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.18rem;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .prueba-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    input[type="range"].comic-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 12px;
+      background: var(--comic-blue);
+      border: 2px solid var(--ink);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"].comic-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--comic-yellow);
+      border: 3px solid var(--ink);
+      box-shadow: 2px 2px 0px var(--ink);
+      cursor: pointer;
+    }
+
+    .mini-prob-box {
+      background-color: var(--bg-paper);
+      border: var(--border-thin);
+      padding: 12px;
+      position: relative;
+    }
+
+    .mini-prob-row {
+      display: grid;
+      grid-template-columns: 88px 1fr 56px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 7px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .mini-prob-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .mini-bar-track {
+      height: 16px;
+      background-color: #dcd8ce;
+      border: 2px solid var(--ink);
+      overflow: hidden;
+    }
+
+    .mini-bar-fill {
+      height: 100%;
+      transition: width 0.2s ease;
+    }
+
+    .fill-blue { background-color: var(--comic-blue); }
+    .fill-coral { background-color: var(--comic-coral); }
+    .fill-lavender { background-color: #9d65ea; }
+    .fill-gray { background-color: #9ca3af; }
+    .fill-mint { background-color: #10b981; }
+    .fill-yellow { background-color: var(--comic-yellow); }
+
+    .stamp-callout {
+      background-color: #ffffff;
+      border: var(--border-thin);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 5px 9px;
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.72rem;
+      text-align: center;
+      line-height: 1.15;
+      transform: rotate(-3deg);
+      text-transform: uppercase;
+    }
+
+    .btn-comic-primary {
+      width: 100%;
+      min-height: 44px;
+      background-color: var(--comic-blue);
+      color: #ffffff;
+      border: var(--border-thin);
+      box-shadow: var(--shadow-comic-sm);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.96rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-comic-primary:hover {
+      background-color: var(--comic-blue-dark);
+    }
+
+    .btn-comic-secondary {
+      min-height: 40px;
+      padding: 6px 12px;
+      background-color: var(--bg-paper);
+      color: var(--ink);
+      border: var(--border-thin);
+      box-shadow: var(--shadow-comic-sm);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.84rem;
+      cursor: pointer;
+    }
+
+    .btn-comic-secondary:hover {
+      background-color: var(--comic-yellow);
+    }
+
+    /* =====================================================================
+       TIRAS CÓMICAS INFERIORES: "COMPRUEBA LO APRENDIDO" (MINT GREEN)
+       ===================================================================== */
+    .comprueba-strip {
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      padding: 15px 18px;
+      margin-bottom: 26px;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    @media (max-width: 860px) {
+      .comprueba-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comprueba-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .comprueba-banner-title {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.28rem;
+      line-height: 1.05;
+      text-transform: uppercase;
+      transform: rotate(-4deg);
+      color: var(--ink);
+    }
+
+    .comprueba-card {
+      background-color: #ffffff;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic-sm);
+      padding: 15px 18px;
+    }
+
+    .comprueba-question {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 1.1rem;
+      margin: 0 0 12px 0;
+    }
+
+    .comprueba-options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .comic-opt-btn {
+      background-color: var(--bg-paper);
+      border: var(--border-thin);
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-family: var(--font-sans);
+      font-size: 0.89rem;
+      font-weight: 600;
+      color: var(--ink);
+      min-height: 52px;
+    }
+
+    .comic-opt-btn:hover:not(:disabled) {
+      background-color: var(--comic-yellow-light);
+      box-shadow: var(--shadow-comic-sm);
+    }
+
+    .opt-letter {
+      background-color: #ffffff;
+      border: 2px solid var(--ink);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 0.88rem;
+      padding: 2px 7px;
+      flex-shrink: 0;
+    }
+
+    .comic-opt-btn.is-correct {
+      background-color: var(--comic-mint-light);
+      border: 3px solid var(--comic-mint-dark);
+      box-shadow: var(--shadow-comic-sm);
+    }
+
+    .comic-opt-btn.is-correct .opt-letter {
+      background-color: var(--comic-mint-dark);
+      color: #ffffff;
+    }
+
+    .comic-opt-btn.is-wrong {
+      background-color: var(--comic-coral-light);
+      border: 3px solid #991b1b;
+    }
+
+    .comic-opt-btn.is-wrong .opt-letter {
+      background-color: #991b1b;
+      color: #ffffff;
+    }
+
+    .comprueba-feedback-box {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border: var(--border-thin);
+      background-color: var(--comic-mint-light);
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+    }
+
+    .comprueba-feedback-box.visible {
+      display: flex;
+    }
+
+    .comprueba-feedback-box.wrong {
+      background-color: var(--comic-yellow-light);
+    }
+
+    .section-divider-banner {
+      background-color: var(--ink);
+      color: #ffffff;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      padding: 12px 20px;
+      margin: 34px 0 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      scroll-margin-top: 84px;
+    }
+
+    .section-divider-banner h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Tokens coloreados para SFT (Prompt vs Respuesta) */
+    .sft-tokens-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 8px;
+      background-color: #ffffff;
+      border: var(--border-thin);
+      margin-top: 6px;
+    }
+
+    .tok-prompt {
+      background-color: #e5e7eb;
+      color: #4b5563;
+      border: 2px dashed #6b7280;
+      padding: 2px 7px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .tok-target {
+      background-color: var(--comic-mint);
+      color: var(--ink);
+      border: 2px solid var(--ink);
+      padding: 2px 7px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 800;
+      box-shadow: 2px 2px 0px var(--ink);
+    }
+
+    /* Tablas estilo cómic */
+    .table-scroll {
+      overflow-x: auto;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-comic);
+      background-color: #ffffff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.89rem;
+    }
+
+    th, td {
+      border: 2px solid var(--ink);
+      padding: 9px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background-color: var(--comic-yellow);
+      font-family: var(--font-display);
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    /* Cuadrícula 2x2 On-policy/Off-policy vs Dense/Sparse */
+    .matrix-2x2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    .matrix-cell {
+      border: var(--border-thin);
+      padding: 10px;
+      background-color: #ffffff;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .matrix-cell:hover {
+      background-color: var(--comic-yellow-light);
+    }
+
+    .matrix-cell.selected-cell {
+      background-color: var(--comic-mint-light);
+      border: 3px solid var(--ink);
+      box-shadow: var(--shadow-comic-sm);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="comic-page">
+
+    <!-- ===================================================================
+         BARRA SUPERIOR NEGRA (CME295 / APUNTES — CLASE 03 + ES/EN + NAV)
+         =================================================================== -->
+    <header class="top-comic-bar">
+      <div class="brand-group">
+        <a href="../index.html" class="index-link">
+          <span data-lang="es">← Índice</span>
+          <span data-lang="en">← Index</span>
+        </a>
+        <span class="brand-title">CME295 / APUNTES — CLASE 03</span>
+      </div>
+
+      <div class="lang-toggle" role="group" aria-label="Selector de idioma / Language selector">
+        <button type="button" id="btn-es" class="lang-btn active" aria-pressed="true" onclick="setLanguage('es')">ES</button>
+        <button type="button" id="btn-en" class="lang-btn" aria-pressed="false" onclick="setLanguage('en')">EN</button>
+      </div>
+
+      <nav class="top-nav-links" aria-label="Navegación principal">
+        <a href="#inicio">
+          <span data-lang="es">Inicio</span>
+          <span data-lang="en">Start</span>
+        </a>
+        <a href="#teoria">
+          <span data-lang="es">Teoría</span>
+          <span data-lang="en">Theory</span>
+        </a>
+        <a href="#practica">
+          <span data-lang="es">Laboratorio</span>
+          <span data-lang="en">Lab</span>
+        </a>
+        <a href="#cuestionario">Quiz</a>
+        <a href="#referencias">
+          <span data-lang="es">Referencias</span>
+          <span data-lang="en">References</span>
+        </a>
+      </nav>
+    </header>
+
+    <!-- ===================================================================
+         BANNER HERO ESTILO CÓMIC (AMARILLO SEMITONO + CORAL + ROBOT CHEF SVG)
+         =================================================================== -->
+    <section class="hero-comic-banner" aria-labelledby="hero-title">
+      <div class="hero-left halftone-yellow">
+        <h1 id="hero-title" class="hero-headline">
+          <span data-lang="es">De autocompletar a razonar,<br />viñeta a viñeta.</span>
+          <span data-lang="en">From autocompleting to reasoning,<br />panel by panel.</span>
+        </h1>
+        <p class="hero-subline">
+          <span data-lang="es">Pre-training, SFT, LoRA, RLHF, DPO, GRPO y la receta real de GLM-5.</span>
+          <span data-lang="en">Pre-training, SFT, LoRA, RLHF, DPO, GRPO, and the real-world GLM-5 recipe.</span>
+        </p>
+        <div class="hero-meta-strip">
+          <span class="hero-badge">Stanford CME295 • Lecture 03</span>
+          <span class="hero-badge">Afshine &amp; Shervine Amidi</span>
+          <span class="hero-badge">
+            <a href="https://www.youtube.com/watch?v=S3bCDcJhz4s" target="_blank" rel="noopener noreferrer" style="color:inherit;">YouTube (00:00:05 – 01:44:25) ↗</a>
+          </span>
+        </div>
+      </div>
+
+      <div class="hero-right halftone-coral">
+        <div class="stamp-clase">
+          <span data-lang="es">CLASE 03</span>
+          <span data-lang="en">LECTURE 03</span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:center; z-index:2;">
+          <div class="speech-bubble" style="transform: rotate(-3deg);">
+            <span data-lang="es">¡Entrenemos<br />paso a paso!</span>
+            <span data-lang="en">Let's train<br />step by step!</span>
+          </div>
+
+          <!-- Robot Chef / Trainer Mascot Inline SVG -->
+          <svg width="118" height="132" viewBox="0 0 120 135" aria-hidden="true">
+            <!-- Gorro de Chef de entrenamiento -->
+            <path d="M 32 28 C 22 10, 45 4, 60 10 C 75 4, 98 10, 88 28 Z" fill="#ffffff" stroke="#141414" stroke-width="3.5" />
+            <rect x="34" y="24" width="52" height="8" fill="#fbd023" stroke="#141414" stroke-width="3" />
+            <!-- Cabeza Robot -->
+            <rect x="22" y="32" width="76" height="54" rx="8" fill="#ffffff" stroke="#141414" stroke-width="4" />
+            <!-- Auriculares azules -->
+            <rect x="12" y="44" width="10" height="26" fill="#2f76ec" stroke="#141414" stroke-width="3" />
+            <rect x="98" y="44" width="10" height="26" fill="#2f76ec" stroke="#141414" stroke-width="3" />
+            <!-- Visor Negro -->
+            <rect x="32" y="42" width="56" height="32" rx="4" fill="#141414" />
+            <!-- Ojos brillantes -->
+            <path d="M 40 58 Q 46 48 52 58" fill="none" stroke="#7bdcb5" stroke-width="4" stroke-linecap="round" />
+            <path d="M 68 58 Q 74 48 80 58" fill="none" stroke="#7bdcb5" stroke-width="4" stroke-linecap="round" />
+            <!-- Cuerpo y medidor RL -->
+            <rect x="30" y="90" width="60" height="38" fill="#ffffff" stroke="#141414" stroke-width="4" />
+            <rect x="42" y="98" width="36" height="20" fill="#fbd023" stroke="#141414" stroke-width="3" />
+            <text x="60" y="112" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11" fill="#141414">+RL</text>
+          </svg>
+
+          <!-- Tarjetas encadenadas de la receta -->
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="background:#fff; border:3px solid #141414; padding:4px 10px; font-family:var(--font-display); font-weight:900; transform:rotate(-4deg); box-shadow:3px 3px 0 #141414;">
+              Pre-train →
+            </div>
+            <div style="background:#7bdcb5; border:3px solid #141414; padding:4px 10px; font-family:var(--font-display); font-weight:900; transform:rotate(3deg); box-shadow:3px 3px 0 #141414;">
+              SFT / LoRA →
+            </div>
+            <div style="background:#fbd023; border:3px solid #141414; padding:3px 10px; font-family:var(--font-mono); font-weight:900; text-align:center; box-shadow:3px 3px 0 #141414;">
+              [ RL / GRPO ]
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         5 PESTAÑAS BENTO NUMERADAS DE NAVEGACIÓN (01 A 05)
+         =================================================================== -->
+    <nav class="comic-tabs-row" aria-label="Secciones de los apuntes">
+      <a href="#inicio" class="comic-tab tab-01">
+        <span class="tab-num">01</span>
+        <span data-lang="es">Inicio</span>
+        <span data-lang="en">Start</span>
+      </a>
+      <a href="#teoria" class="comic-tab tab-02">
+        <span class="tab-num">02</span>
+        <span data-lang="es">Teoría</span>
+        <span data-lang="en">Theory</span>
+      </a>
+      <a href="#practica" class="comic-tab tab-03">
+        <span class="tab-num">03</span>
+        <span data-lang="es">Laboratorio</span>
+        <span data-lang="en">Laboratory</span>
+      </a>
+      <a href="#cuestionario" class="comic-tab tab-04">
+        <span class="tab-num">04</span>
+        <span>Quiz</span>
+      </a>
+      <a href="#referencias" class="comic-tab tab-05">
+        <span class="tab-num">05</span>
+        <span data-lang="es">Referencias</span>
+        <span data-lang="en">References</span>
+      </a>
+    </nav>
+
+    <!-- ===================================================================
+         FILA BENTO 01 (#inicio): LAS 4 ETAPAS Y EL OSITO DE PELUCHE
+         =================================================================== -->
+    <section id="inicio" style="scroll-margin-top:84px;">
+      <div class="comic-spread">
+
+        <!-- VIÑETA IZQUIERDA 01 -->
+        <article class="comic-panel">
+          <div>
+            <div class="panel-header">
+              <span class="num-tag blue">01</span>
+              <h2 class="panel-title">
+                <span data-lang="es">/ Las 4 Etapas de Entrenamiento y el Caso del Osito</span>
+                <span data-lang="en">/ The 4 Training Stages &amp; The Teddy Bear Case</span>
+              </h2>
+              <span class="timestamp-badge">00:00:05 – 00:05:30</span>
+            </div>
+
+            <div class="panel-body-with-char">
+              <div>
+                <p style="margin-top:0;">
+                  <span data-lang="es">
+                    <strong>Repaso Clase 2 y cambio de paradigma:</strong> Ya conocemos la arquitectura moderna de solo decodificador (Chinchilla $D \approx 20N$, Sparse MoE, RoPE, GQA, Pre-Norm y RMSNorm). Antes se entrenaba un modelo desde cero para cada tarea; hoy usamos <strong>aprendizaje por transferencia (<span lang="en">Transfer Learning</span>)</strong> dividido en <strong>Pre-entrenamiento</strong> (conocimiento general masivo) y <strong>Post-entrenamiento</strong> (SFT + Preferencias + Razonamiento RL).
+                  </span>
+                  <span data-lang="en">
+                    <strong>Lecture 2 recap &amp; paradigm shift:</strong> We know the modern decoder-only architecture (Chinchilla $D \approx 20N$, Sparse MoE, RoPE, GQA, Pre-Norm, and RMSNorm). Instead of training separate task-specific models from scratch, modern LLMs rely on <strong>Transfer Learning</strong> split into <strong>Pre-training</strong> (broad world knowledge) and <strong>Post-training</strong> (SFT + Preference Alignment + Reasoning RL).
+                  </span>
+                </p>
+                <p style="margin-bottom:0;">
+                  <span data-lang="es">
+                    Observa abajo cómo responde el <strong>mismo modelo</strong> a la pregunta de la clase: <em>«¿Puedo meter mi osito de peluche en la lavadora?»</em> según la etapa alcanzada (`00:31:05`, `00:46:40`, `01:11:35`):
+                  </span>
+                  <span data-lang="en">
+                    See below how the <strong>exact same model</strong> responds to the lecture's signature question: <em>"Can I put my teddy bear in the washer?"</em> across each training stage (`00:31:05`, `00:46:40`, `01:11:35`):
+                  </span>
+                </p>
+              </div>
+
+              <!-- Personaje Ilustrado SVG + Bocadillo Lavanda -->
+              <div class="char-box">
+                <div class="speech-bubble lavender" style="font-size:0.82rem; transform:rotate(-2deg);">
+                  <span data-lang="es">¡Pre-entrenar solo enseña a autocompletar, no a ser un asistente!</span>
+                  <span data-lang="en">Pre-training only teaches autocompletion, not how to be an assistant!</span>
+                </div>
+                <svg width="104" height="104" viewBox="0 0 120 120" aria-hidden="true">
+                  <path d="M 25 65 C 20 25, 95 20, 95 65 C 100 85, 90 105, 85 110 L 30 110 Z" fill="#1e293b" stroke="#141414" stroke-width="3.5" />
+                  <ellipse cx="60" cy="64" rx="24" ry="27" fill="#fde68a" stroke="#141414" stroke-width="3.5" />
+                  <circle cx="51" cy="60" r="3" fill="#141414" />
+                  <circle cx="69" cy="60" r="3" fill="#141414" />
+                  <path d="M 45 52 Q 51 49 56 53" fill="none" stroke="#141414" stroke-width="2.5" />
+                  <path d="M 64 53 Q 69 49 75 52" fill="none" stroke="#141414" stroke-width="2.5" />
+                  <path d="M 53 74 Q 60 80 67 74" fill="none" stroke="#141414" stroke-width="3" stroke-linecap="round" />
+                  <path d="M 32 115 L 42 92 L 78 92 L 88 115 Z" fill="#f26b5b" stroke="#141414" stroke-width="3.5" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tira de 4 Viñetas del Osito de Peluche -->
+          <div class="teddy-stages-grid">
+            <div class="teddy-stage-card">
+              <strong style="color:#991b1b;">1. Pre-training</strong>
+              <p style="margin:0 0 6px 0;">
+                <span data-lang="es">«Los ositos suelen fabricarse con algodón y poliéster en fábricas...»</span>
+                <span data-lang="en">"Teddy bears are usually made of cotton and polyester in factories..."</span>
+              </p>
+              <span style="font-family:var(--font-mono); font-size:0.72rem; background:#ffe3df; padding:2px 5px; border:1px solid #141414;">
+                <span data-lang="es">Solo autocompleta</span><span data-lang="en">Autocompletes only</span>
+              </span>
+            </div>
+
+            <div class="teddy-stage-card">
+              <strong style="color:var(--comic-blue-dark);">2. SFT (Supervisado)</strong>
+              <p style="margin:0 0 6px 0;">
+                <span data-lang="es">«No, podría dañarse. Lávalo a mano.»</span>
+                <span data-lang="en">"No, it might get damaged. Wash it by hand."</span>
+              </p>
+              <span style="font-family:var(--font-mono); font-size:0.72rem; background:var(--comic-blue-light); padding:2px 5px; border:1px solid #141414;">
+                <span data-lang="es">Útil pero seco</span><span data-lang="en">Helpful but dry</span>
+              </span>
+            </div>
+
+            <div class="teddy-stage-card">
+              <strong style="color:var(--comic-mint-dark);">3. RLHF / DPO</strong>
+              <p style="margin:0 0 6px 0;">
+                <span data-lang="es">«¡Mejor no! Tu osito podría lastimarse; lavarlo a mano con agua tibia es más seguro.»</span>
+                <span data-lang="en">"Better not! Your bear might get hurt; gentle hand-washing is much safer."</span>
+              </p>
+              <span style="font-family:var(--font-mono); font-size:0.72rem; background:var(--comic-mint-light); padding:2px 5px; border:1px solid #141414;">
+                <span data-lang="es">Alineado al humano</span><span data-lang="en">Human-aligned tone</span>
+              </span>
+            </div>
+
+            <div class="teddy-stage-card">
+              <strong style="color:#6b21a8;">4. Reasoning RL</strong>
+              <p style="margin:0 0 6px 0;">
+                <span data-lang="es"><code>&lt;think&gt;</code> Planteo ecuaciones de edad... <code>&lt;/think&gt;</code> «El osito tiene 4 años.»</span>
+                <span data-lang="en"><code>&lt;think&gt;</code> Setting up age equations... <code>&lt;/think&gt;</code> "The bear is 4 years old."</span>
+              </p>
+              <span style="font-family:var(--font-mono); font-size:0.72rem; background:var(--comic-lavender-light); padding:2px 5px; border:1px solid #141414;">
+                <span data-lang="es">Verifica y razona</span><span data-lang="en">Verifies &amp; reasons</span>
+              </span>
+            </div>
+          </div>
+        </article>
+
+        <!-- PANEL INTERACTIVO DERECHO 01: PRUEBA / Evolución del Modelo -->
+        <aside class="prueba-panel" aria-label="Simulador de etapas de entrenamiento">
+          <div class="prueba-header halftone-yellow">
+            <span>
+              <span data-lang="es">PRUEBA / Las 4 Etapas</span>
+              <span data-lang="en">TRY IT / The 4 Stages</span>
+            </span>
+            <span style="font-family:var(--font-mono); font-size:0.8rem;">[00:02:27]</span>
+          </div>
+
+          <div class="prueba-body">
+            <div>
+              <label for="stage-select" style="font-weight:800; font-size:0.84rem; display:block; margin-bottom:4px;">
+                <span data-lang="es">Selecciona etapa del modelo:</span>
+                <span data-lang="en">Select model training stage:</span>
+              </label>
+              <select id="stage-select" onchange="updateStageSimulator()" style="width:100%; min-height:40px; border:2px solid #141414; font-family:var(--font-mono); font-weight:700; padding:6px 8px; background:#fff;">
+                <option value="pre">1. Pre-training + Mid-training (Base)</option>
+                <option value="sft">2. SFT (Supervised Fine-Tuning)</option>
+                <option value="pref" selected>3. Preference Alignment (RLHF / DPO)</option>
+                <option value="reas">4. Reasoning RL (GRPO + &lt;think&gt;)</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="prompt-select" style="font-weight:800; font-size:0.84rem; display:block; margin-bottom:4px;">
+                <span data-lang="es">Pregunta del usuario (Prompt):</span>
+                <span data-lang="en">User Prompt:</span>
+              </label>
+              <select id="prompt-select" onchange="updateStageSimulator()" style="width:100%; min-height:40px; border:2px solid #141414; font-family:var(--font-sans); font-weight:700; padding:6px 8px; background:#fff;">
+                <option value="washer">¿Puedo meter mi osito en la lavadora? / Washer?</option>
+                <option value="activity">¿Qué actividad hago con mi osito? / Activity?</option>
+                <option value="math">Problema algebraico de edades del osito / Age math</option>
+              </select>
+            </div>
+
+            <div class="mini-prob-box" id="stage-sim-output" aria-live="polite"></div>
+
+            <a href="#teoria" class="btn-comic-primary">
+              <span data-lang="es">Ver cómo se entrena cada etapa →</span>
+              <span data-lang="en">See how each stage is trained →</span>
+            </a>
+          </div>
+        </aside>
+      </div>
+
+      <!-- TIRA CÓMICA DE COMPROBACIÓN 01 -->
+      <div class="comprueba-strip halftone-mint" id="strip-check-01">
+        <div class="comprueba-left">
+          <div class="comprueba-banner-title">
+            <span data-lang="es">COMPRUEBA<br />LO APRENDIDO</span>
+            <span data-lang="en">CHECK YOUR<br />UNDERSTANDING</span>
+          </div>
+          <svg width="82" height="82" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="44" cy="44" r="24" fill="#fde68a" stroke="#141414" stroke-width="3.5" />
+            <path d="M 20 40 C 18 16, 70 16, 68 40" fill="#141414" />
+            <circle cx="37" cy="42" r="2.8" fill="#141414" />
+            <circle cx="52" cy="42" r="2.8" fill="#141414" />
+            <path d="M 38 54 L 50 53" stroke="#141414" stroke-width="3" stroke-linecap="round" />
+            <path d="M 16 95 L 26 70 L 62 70 L 72 95 Z" fill="#2f76ec" stroke="#141414" stroke-width="3.5" />
+            <circle cx="80" cy="26" r="14" fill="#ffffff" stroke="#141414" stroke-width="3" />
+            <text x="80" y="32" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="900" font-size="18" fill="#141414">?</text>
+          </svg>
+        </div>
+
+        <div class="comprueba-card">
+          <p class="comprueba-question">
+            <span data-lang="es">¿Por qué un modelo recién salido del pre-entrenamiento no responde directamente a una pregunta como lo haría un asistente?</span>
+            <span data-lang="en">Why doesn't a freshly pre-trained model directly answer a user's question like an assistant?</span>
+          </p>
+          <div class="comprueba-options-grid">
+            <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s1', 0, false)">
+              <span class="opt-letter">A</span>
+              <span>
+                <span data-lang="es">Porque durante el pre-entrenamiento no tiene capas de autoatención.</span>
+                <span data-lang="en">Because during pre-training it lacks self-attention layers.</span>
+              </span>
+            </button>
+            <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s1', 1, true)">
+              <span class="opt-letter">B</span>
+              <span>
+                <span data-lang="es">Porque solo fue entrenado para autocompletar documentos web; aún necesita SFT sobre pares (instrucción, respuesta) para adoptar el formato de asistente.</span>
+                <span data-lang="en">Because it was only trained to autocomplete web documents; it still needs SFT on (prompt, response) pairs to adopt an assistant format.</span>
+              </span>
+            </button>
+            <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s1', 2, false)">
+              <span class="opt-letter">C</span>
+              <span>
+                <span data-lang="es">Porque el pre-entrenamiento utiliza únicamente 100 ejemplos etiquetados a mano.</span>
+                <span data-lang="en">Because pre-training uses only 100 hand-labeled examples.</span>
+              </span>
+            </button>
+          </div>
+          <div id="s1-feedback" class="comprueba-feedback-box" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SECCIÓN 02: TEORÍA EN VIÑETAS (#teoria)
+         =================================================================== -->
+    <div id="teoria" class="section-divider-banner">
+      <h2>
+        <span data-lang="es">02 / Teoría en Viñetas — Pre-training, SFT, LoRA, RLHF, DPO, GRPO y GLM-5</span>
+        <span data-lang="en">02 / Theory in Panels — Pre-training, SFT, LoRA, RLHF, DPO, GRPO &amp; GLM-5</span>
+      </h2>
+      <span style="font-family:var(--font-mono); font-size:0.82rem; color:var(--comic-yellow);">
+        Stanford CME295 • 00:05:32 – 01:44:25
+      </span>
+    </div>
+
+    <!-- ===================================================================
+         FILA BENTO 02: PRE-TRAINING, TEACHER FORCING, BITS-PER-BYTE Y YaRN
+         =================================================================== -->
+    <div class="comic-spread">
+      <article class="comic-panel">
+        <div>
+          <div class="panel-header">
+            <span class="num-tag">02</span>
+            <h3 class="panel-title">
+              <span data-lang="es">/ Pre-training y Mid-training: Teacher Forcing, BPB y YaRN</span>
+              <span data-lang="en">/ Pre-training &amp; Mid-training: Teacher Forcing, BPB &amp; YaRN</span>
+            </h3>
+            <span class="timestamp-badge">00:05:32 – 00:30:35</span>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-blue); color:#fff; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">TEACHER FORCING</span>
+              <span data-lang="es">Paralelización con Máscara Causal y Entropía Cruzada (00:07:27 – 00:14:45)</span>
+              <span data-lang="en">Causal-Masked Parallelism &amp; Cross-Entropy Loss (00:07:27 – 00:14:45)</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>Teacher Forcing:</strong> Aunque una frase de $T$ tokens genera $T$ subproblemas de predicción, gracias a la <strong>autoatención enmascarada</strong> entrenamos todos los prefijos <strong>en paralelo en un solo pase</strong> alimentando siempre los tokens reales (<span lang="en">ground-truth</span>), sin esperar a que el modelo genere el token anterior.</span>
+                <span data-lang="en"><strong>Teacher Forcing:</strong> Although a $T$-token sentence yields $T$ prediction subtasks, <strong>causal masked self-attention</strong> trains all prefixes <strong>in parallel in a single pass</strong> using ground-truth tokens rather than waiting for previous model predictions.</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>Por qué usamos logaritmos:</strong> Maximizar $\prod_{t=1}^T P_\theta(x_t \mid x_{<t})$ multiplica millones de números en $[0,1]$, causando desbordamiento a cero (<span lang="en">underflow</span>). Tomando $-\log$ obtenemos la <strong>pérdida de entropía cruzada</strong> media por token.</span>
+                <span data-lang="en"><strong>Why we use logarithms:</strong> Maximizing $\prod_{t=1}^T P_\theta(x_t \mid x_{<t})$ multiplies millions of numbers in $[0,1]$, causing numerical underflow to zero. Taking $-\log$ yields the mean per-token <strong>cross-entropy loss</strong>.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-yellow); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">BITS-PER-BYTE (BPB)</span>
+              <span data-lang="es">Métrica Independiente del Tokenizador y Datos Web (00:14:50 – 00:22:10)</span>
+              <span data-lang="en">Tokenizer-Agnostic Metric &amp; Web Data Curation (00:14:50 – 00:22:10)</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>Problema de comparar pérdidas:</strong> Dos modelos con distinto tokenizador y vocabulario $|\mathcal{V}|$ dividen el mismo texto en distinto número de tokens $T$, haciendo incomparable su $\mathcal{L}_{\text{CE}}$. <strong>Bits-per-Byte (BPB)</strong> normaliza por la longitud en bytes UTF-8 ($B$) del texto crudo.</span>
+                <span data-lang="en"><strong>Loss comparison pitfall:</strong> Two models with different tokenizers and vocabulary sizes $|\mathcal{V}|$ split the same text into different token counts $T$, making raw $\mathcal{L}_{\text{CE}}$ incomparable. <strong>Bits-per-Byte (BPB)</strong> normalizes by raw UTF-8 byte count ($B$).</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>Escala y repetición (OLMo 3, DataComp-LM, GLM-5):</strong> Filtrado de CommonCrawl (idioma, deduplicación, calidad, eliminación de PII). <em>OLMo 3</em> demostró que repetir datos de alta calidad hasta <strong>4 épocas</strong> supera a usar datos ruidosos únicos (`00:19:45`). <strong>GLM-5</strong> se pre-entrenó con casi <strong>$30\text{ billones}$ ($30 \times 10^{12}$, <span lang="en">30 trillion</span>) de tokens</strong> (`00:20:30`).</span>
+                <span data-lang="en"><strong>Scale &amp; repetition (OLMo 3, DataComp-LM, GLM-5):</strong> Filtering CommonCrawl (language, deduplication, quality, PII removal). <em>OLMo 3</em> showed repeating high-quality data for up to <strong>4 epochs</strong> beats single-pass noisy data (`00:19:45`). <strong>GLM-5</strong> pre-trained on nearly <strong>$30\text{ trillion}$ ($30 \times 10^{12}$) tokens</strong> (`00:20:30`).</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="comic-subcard" style="margin-bottom:0;">
+            <h4>
+              <span style="background:var(--comic-coral); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">MID-TRAINING &amp; YaRN</span>
+              <span data-lang="es">Extensión de Ventana de Contexto ($4\text{K} \to 128\text{K}\text{–}200\text{K}$) (00:22:13 – 00:29:10)</span>
+              <span data-lang="en">Context Window Extension ($4\text{K} \to 128\text{K}\text{–}200\text{K}$) (00:22:13 – 00:29:10)</span>
+            </h4>
+            <p>
+              <span data-lang="es">
+                Pre-entrenar desde el inicio con secuencias largas es prohibitivo porque la atención escala cuadráticamente. Por eso se pre-entrena a $4\text{K}$ tokens y en el <strong>Mid-training</strong> se amplía a $32\text{K}\text{–}200\text{K}$ sobre documentos largos modificando las frecuencias $\theta_i$ de <strong>RoPE</strong> con <strong>YaRN</strong> (interpolando frecuencias bajas para que posiciones lejanas caigan dentro del rango angular ya conocido por el modelo).
+              </span>
+              <span data-lang="en">
+                Pre-training from scratch on long sequences is prohibitive due to quadratic attention cost. Models pre-train at $4\text{K}$ context and use <strong>Mid-training</strong> to expand to $32\text{K}\text{–}200\text{K}$ on long documents while rescaling <strong>RoPE</strong> frequencies via <strong>YaRN</strong> (interpolating low frequencies so distant positions map inside the angular range already learned).
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="math-strip">
+          $$\mathcal{L}_{\text{CE}}(\theta) = -\frac{1}{T}\sum_{t=1}^{T} \log_e P_\theta(x_t \mid x_{<t}), \qquad \text{BPB} = \frac{T}{B \ln 2} \, \mathcal{L}_{\text{CE}}(\theta)$$
+        </div>
+      </article>
+
+      <!-- PANEL INTERACTIVO DERECHO 02: PRUEBA / Bits-per-Byte (BPB) -->
+      <aside class="prueba-panel">
+        <div class="prueba-header halftone-yellow">
+          <span>
+            <span data-lang="es">PRUEBA / Bits-per-Byte (BPB)</span>
+            <span data-lang="en">TRY IT / Bits-per-Byte (BPB)</span>
+          </span>
+          <span style="font-family:var(--font-mono); font-size:0.8rem;">[00:14:50]</span>
+        </div>
+
+        <div class="prueba-body">
+          <p style="margin:0; font-size:0.87rem;">
+            <span data-lang="es">Un mismo párrafo ocupa <strong>$B = 400\text{ bytes}$ UTF-8</strong>. Compara el <strong>Modelo A</strong> (vocabulario grande, comprime en menos tokens $T_A$) frente al <strong>Modelo B</strong> ($T_B = 120$ tokens, $\mathcal{L}_B = 2{,}10$):</span>
+            <span data-lang="en">A paragraph spans <strong>$B = 400\text{ UTF-8 bytes}$</strong>. Compare <strong>Model A</strong> (larger vocabulary, fewer tokens $T_A$) against <strong>Model B</strong> ($T_B = 120$ tokens, $\mathcal{L}_B = 2.10$):</span>
+          </p>
+
+          <div>
+            <label for="bpb-ta" style="font-weight:800; font-size:0.83rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Tokens del Modelo A ($T_A$):</span><span data-lang="en">Model A token count ($T_A$):</span></span>
+              <span id="bpb-ta-val" style="font-family:var(--font-mono);">85</span>
+            </label>
+            <input type="range" id="bpb-ta" class="comic-slider" min="60" max="140" step="5" value="85" oninput="updateBPBWidget()" />
+          </div>
+
+          <div>
+            <label for="bpb-la" style="font-weight:800; font-size:0.83rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Pérdida CE Modelo A ($\mathcal{L}_A$):</span><span data-lang="en">Model A CE Loss ($\mathcal{L}_A$):</span></span>
+              <span id="bpb-la-val" style="font-family:var(--font-mono);">2.45</span>
+            </label>
+            <input type="range" id="bpb-la" class="comic-slider" min="1.60" max="3.20" step="0.05" value="2.45" oninput="updateBPBWidget()" />
+          </div>
+
+          <div class="mini-prob-box" id="bpb-output-box" aria-live="polite"></div>
+
+          <div class="speech-bubble lavender" style="font-size:0.81rem;">
+            <span data-lang="es">¡Un modelo con mayor $\mathcal{L}_{\text{CE}}$ por token puede tener mejor (menor) BPB si cada token abarca más bytes!</span>
+            <span data-lang="en">A model with higher per-token $\mathcal{L}_{\text{CE}}$ can actually achieve a better (lower) BPB if each token spans more bytes!</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- TIRA CÓMICA DE COMPROBACIÓN 02 -->
+    <div class="comprueba-strip halftone-mint" id="strip-check-02">
+      <div class="comprueba-left">
+        <div class="comprueba-banner-title">
+          <span data-lang="es">COMPRUEBA<br />VIÑETA 02</span>
+          <span data-lang="en">CHECK<br />PANEL 02</span>
+        </div>
+      </div>
+      <div class="comprueba-card">
+        <p class="comprueba-question">
+          <span data-lang="es">¿Qué desajuste (<span lang="en">mismatch</span>) introduce el esquema de Teacher Forcing entre el entrenamiento y la inferencia?</span>
+          <span data-lang="en">What mismatch does Teacher Forcing introduce between training time and inference time?</span>
+        </p>
+        <div class="comprueba-options-grid">
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s2', 0, true)">
+            <span class="opt-letter">A</span>
+            <span>
+              <span data-lang="es">En entrenamiento el modelo siempre condiciona sobre tokens reales sin errores; en inferencia condiciona sobre sus propias predicciones previas, pudiendo acumular errores.</span>
+              <span data-lang="en">During training the model always conditions on clean ground-truth tokens; at inference it conditions on its own past predictions, which can compound errors.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s2', 1, false)">
+            <span class="opt-letter">B</span>
+            <span>
+              <span data-lang="es">En entrenamiento se apaga la máscara causal y en inferencia se enciende.</span>
+              <span data-lang="en">During training the causal mask is turned off, and at inference it is turned on.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s2', 2, false)">
+            <span class="opt-letter">C</span>
+            <span>
+              <span data-lang="es">Teacher Forcing impide usar GPUs en paralelo durante el pre-entrenamiento.</span>
+              <span data-lang="en">Teacher Forcing prevents parallel GPU execution during pre-training.</span>
+            </span>
+          </button>
+        </div>
+        <div id="s2-feedback" class="comprueba-feedback-box" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         FILA BENTO 03: SFT (AJUSTE FINO SUPERVISADO) Y LoRA
+         =================================================================== -->
+    <div class="comic-spread">
+      <article class="comic-panel">
+        <div>
+          <div class="panel-header">
+            <span class="num-tag yellow">03</span>
+            <h3 class="panel-title">
+              <span data-lang="es">/ SFT (Ajuste Fino Supervisado) y Adaptadores LoRA</span>
+              <span data-lang="en">/ SFT (Supervised Fine-Tuning) &amp; LoRA Adapters</span>
+            </h3>
+            <span class="timestamp-badge">00:31:51 – 00:46:34</span>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-mint); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">SFT LOSS</span>
+              <span data-lang="es">Pérdida Localizada Solo en los Tokens de Respuesta (00:34:45 – 00:37:35)</span>
+              <span data-lang="en">Loss Localized Strictly to Response Tokens (00:34:45 – 00:37:35)</span>
+            </h4>
+            <p>
+              <span data-lang="es">
+                En <strong>SFT</strong> entrenamos con $10\,000\text{ a }1\,000\,000$ de pares $(\text{prompt } x, \text{respuesta } y)$ creados por humanos o destilados de un modelo profesor (<span lang="en">off-policy</span>). <strong>Diferencia clave frente al pre-entrenamiento:</strong> el prompt $x$ se entrega como condición dada y <strong>la pérdida de entropía cruzada se calcula únicamente sobre los tokens de la respuesta $y_t$</strong>:
+              </span>
+              <span data-lang="en">
+                In <strong>SFT</strong> we train on $10,000\text{ to }1,000,000$ $(\text{prompt } x, \text{response } y)$ pairs written by humans or distilled from a teacher model (<span lang="en">off-policy</span>). <strong>Key difference vs. pre-training:</strong> the prompt $x$ is provided as a given condition, and <strong>cross-entropy loss is computed strictly on the response tokens $y_t$</strong>:
+              </span>
+            </p>
+            <div class="sft-tokens-box" aria-label="Visualización de máscara de pérdida en SFT">
+              <span class="tok-prompt">Prompt: ¿Puedo</span>
+              <span class="tok-prompt">lavar</span>
+              <span class="tok-prompt">mi</span>
+              <span class="tok-prompt">osito? (Loss = 0)</span>
+              <span class="tok-target">No,</span>
+              <span class="tok-target">lávalo</span>
+              <span class="tok-target">a</span>
+              <span class="tok-target">mano. (Loss ✓)</span>
+            </div>
+          </div>
+
+          <div class="comic-subcard" style="margin-bottom:0;">
+            <h4>
+              <span style="background:var(--comic-blue); color:#fff; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">LoRA (PEFT)</span>
+              <span data-lang="es">Adaptación de Bajo Rango y Despliegue Multitarea en la FFN (00:40:15 – 00:45:15)</span>
+              <span data-lang="en">Low-Rank Adaptation &amp; Multi-Task FFN Deployment (00:40:15 – 00:45:15)</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>Idea matemática:</strong> En lugar de actualizar toda la matriz $W_0 \in \mathbb{R}^{d \times k}$, se <strong>congela $W_0$</strong> y se suma una actualización de rango bajo $\Delta W = B A$ con $B \in \mathbb{R}^{d \times r}$ y $A \in \mathbb{R}^{r \times k}$, donde $r \ll \min(d,k)$ (ej. $r = 8\text{ o }16$).</span>
+                <span data-lang="en"><strong>Mathematical core:</strong> Instead of updating the full matrix $W_0 \in \mathbb{R}^{d \times k}$, we <strong>freeze $W_0$</strong> and add a low-rank update $\Delta W = B A$ with $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$, where $r \ll \min(d,k)$ (e.g., $r = 8\text{ or }16$).</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>Inicialización cero:</strong> $A$ se inicializa de forma aleatoria (gaussiana) y <strong>$B = 0$</strong> para que en el paso inicial $\Delta W = B A = 0$ y no se altere el modelo base (`00:45:30`).</span>
+                <span data-lang="en"><strong>Zero initialization:</strong> $A$ is initialized with random Gaussian noise and <strong>$B = 0$</strong> so that at step 0 $\Delta W = B A = 0$, leaving the base model unaltered (`00:45:30`).</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>¿Dónde aplicar LoRA? (`00:42:35`):</strong> Aunque el artículo original de LoRA lo aplicaba en las matrices de atención ($Q, K, V, O$), los estudios recientes demuestran que <strong>aplicar LoRA en las capas FFN (MLP) rinde mejor</strong> porque la FFN concentra la mayor parte de los parámetros.</span>
+                <span data-lang="en"><strong>Where to apply LoRA? (`00:42:35`):</strong> Although the original LoRA paper targeted attention matrices ($Q, K, V, O$), recent studies show <strong>applying LoRA to FFN (MLP) layers performs best</strong> because FFN holds the majority of parameters.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="math-strip">
+          $$\mathcal{L}_{\text{SFT}}(\theta) = -\frac{1}{T}\sum_{t=1}^{T} \log P_\theta(y_t \mid x, y_{<t}), \qquad W = \underbrace{W_0}_{\text{congelado } (d \times k)} + \underbrace{B}_{(d \times r)} \cdot \underbrace{A}_{(r \times k)}$$
+        </div>
+      </article>
+
+      <!-- PANEL INTERACTIVO DERECHO 03: PRUEBA / Calculadora LoRA -->
+      <aside class="prueba-panel">
+        <div class="prueba-header halftone-yellow">
+          <span>
+            <span data-lang="es">PRUEBA / Ahorro con LoRA</span>
+            <span data-lang="en">TRY IT / LoRA Savings</span>
+          </span>
+          <span style="font-family:var(--font-mono); font-size:0.8rem;">[00:41:40]</span>
+        </div>
+
+        <div class="prueba-body">
+          <p style="margin:0; font-size:0.87rem;">
+            <span data-lang="es">Configura la dimensión $d \times d$ de una matriz FFN, el rango $r$ de LoRA y el número de tareas personalizadas (spam, sentimiento, traducción...) que quieres servir con un único modelo base $W_0$:</span>
+            <span data-lang="en">Set the FFN matrix dimension $d \times d$, LoRA rank $r$, and number of custom tasks (spam, sentiment, translation...) served over a single shared base model $W_0$:</span>
+          </p>
+
+          <div>
+            <label for="lora-d" style="font-weight:800; font-size:0.82rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Dimensión matriz $d$:</span><span data-lang="en">Matrix dimension $d$:</span></span>
+              <span id="lora-d-val" style="font-family:var(--font-mono);">4096</span>
+            </label>
+            <select id="lora-d" onchange="updateLoRAWidget()" style="width:100%; min-height:36px; border:2px solid #141414; font-family:var(--font-mono); font-weight:700; background:#fff;">
+              <option value="2048">2048 × 2048</option>
+              <option value="4096" selected>4096 × 4096</option>
+              <option value="8192">8192 × 8192</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="lora-r" style="font-weight:800; font-size:0.82rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Rango LoRA ($r$):</span><span data-lang="en">LoRA Rank ($r$):</span></span>
+              <span id="lora-r-val" style="font-family:var(--font-mono);">16</span>
+            </label>
+            <input type="range" id="lora-r" class="comic-slider" min="4" max="64" step="4" value="16" oninput="updateLoRAWidget()" />
+          </div>
+
+          <div>
+            <label for="lora-tasks" style="font-weight:800; font-size:0.82rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Número de tareas ($M$):</span><span data-lang="en">Number of tasks ($M$):</span></span>
+              <span id="lora-tasks-val" style="font-family:var(--font-mono);">5</span>
+            </label>
+            <input type="range" id="lora-tasks" class="comic-slider" min="1" max="10" step="1" value="5" oninput="updateLoRAWidget()" />
+          </div>
+
+          <div class="mini-prob-box" id="lora-output-box" aria-live="polite"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- TIRA CÓMICA DE COMPROBACIÓN 03 -->
+    <div class="comprueba-strip halftone-mint" id="strip-check-03">
+      <div class="comprueba-left">
+        <div class="comprueba-banner-title">
+          <span data-lang="es">COMPRUEBA<br />VIÑETA 03</span>
+          <span data-lang="en">CHECK<br />PANEL 03</span>
+        </div>
+      </div>
+      <div class="comprueba-card">
+        <p class="comprueba-question">
+          <span data-lang="es">En LoRA ($\Delta W = B A$), ¿cómo se inicializan las matrices $B$ y $A$ al comenzar el ajuste fino y por qué?</span>
+          <span data-lang="en">In LoRA ($\Delta W = B A$), how are matrices $B$ and $A$ initialized at the start of fine-tuning, and why?</span>
+        </p>
+        <div class="comprueba-options-grid">
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s3', 0, false)">
+            <span class="opt-letter">A</span>
+            <span>
+              <span data-lang="es">Ambas se inicializan a cero ($B=0, A=0$), por lo que los gradientes son siempre nulos y nunca aprenden.</span>
+              <span data-lang="en">Both are initialized to zero ($B=0, A=0$), so gradients remain zero forever.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s3', 1, true)">
+            <span class="opt-letter">B</span>
+            <span>
+              <span data-lang="es">$A$ se inicializa con ruido aleatorio y $B = 0$; así al inicio $\Delta W = B A = 0$ (el modelo empieza idéntico a $W_0$) pero los gradientes pueden fluir desde el primer paso.</span>
+              <span data-lang="en">$A$ is initialized with random noise and $B = 0$; thus initially $\Delta W = B A = 0$ (starting identical to $W_0$) while allowing non-zero gradients from step 1.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s3', 2, false)">
+            <span class="opt-letter">C</span>
+            <span>
+              <span data-lang="es">Se borra la matriz base $W_0$ y solo se conserva $B A$.</span>
+              <span data-lang="en">The base matrix $W_0$ is deleted and only $B A$ is kept.</span>
+            </span>
+          </button>
+        </div>
+        <div id="s3-feedback" class="comprueba-feedback-box" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         FILA BENTO 04: ALINEACIÓN DE PREFERENCIAS (BRADLEY-TERRY, RLHF Y DPO)
+         =================================================================== -->
+    <div class="comic-spread">
+      <article class="comic-panel">
+        <div>
+          <div class="panel-header">
+            <span class="num-tag mint">04</span>
+            <h3 class="panel-title">
+              <span data-lang="es">/ Alineación con Preferencias: Bradley-Terry, RLHF y DPO</span>
+              <span data-lang="en">/ Preference Alignment: Bradley-Terry, RLHF &amp; DPO</span>
+            </h3>
+            <span class="timestamp-badge">00:46:35 – 01:12:08</span>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-coral); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">BRADLEY-TERRY</span>
+              <span data-lang="es">Comparaciones por Pares ($y_w \succ y_l$) y Modelo de Recompensa (00:49:10 – 01:01:25)</span>
+              <span data-lang="en">Pairwise Comparisons ($y_w \succ y_l$) &amp; Reward Model (00:49:10 – 01:01:25)</span>
+            </h4>
+            <p>
+              <span data-lang="es">
+                Los humanos somos malos asignando notas numéricas aisladas (<span lang="en">pointwise</span>), pero muy consistentes eligiendo qué respuesta es mejor entre dos opciones A y B (<span lang="en">pairwise</span>: ganadora $y_w$ frente a perdedora $y_l$). En la <strong>Etapa 1 de RLHF</strong> se entrena un <strong>Modelo de Recompensa</strong> $r_\phi(x, y) \in \mathbb{R}$ (añadiendo un cabezal lineal escalar a un Transformer) mediante el modelo de <strong>Bradley-Terry</strong>:
+              </span>
+              <span data-lang="en">
+                Humans are inconsistent at assigning isolated numerical scores (<span lang="en">pointwise</span>), but reliable at choosing the better of two responses A vs. B (<span lang="en">pairwise</span>: winner $y_w$ vs. loser $y_l$). In <strong>RLHF Stage 1</strong>, a scalar <strong>Reward Model</strong> $r_\phi(x, y) \in \mathbb{R}$ is trained using the <strong>Bradley-Terry</strong> formulation:
+              </span>
+            </p>
+            <div class="math-strip" style="margin:6px 0;">
+              $$P(y_w \succ y_l \mid x) = \sigma\!\big(r_\phi(x, y_w) - r_\phi(x, y_l)\big), \qquad \mathcal{L}_{\text{RM}}(\phi) = -\mathbb{E}\!\Big[\log \sigma\!\big(r_\phi(x, y_w) - r_\phi(x, y_l)\big)\Big]$$
+            </div>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-blue); color:#fff; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">RLHF ETAPA 2</span>
+              <span data-lang="es">Optimización On-Policy y Penalización KL contra el Reward Hacking (01:01:50 – 01:05:35)</span>
+              <span data-lang="en">On-Policy Optimization &amp; KL Penalty Against Reward Hacking (01:01:50 – 01:05:35)</span>
+            </h4>
+            <p>
+              <span data-lang="es">
+                En la <strong>Etapa 2 de RLHF</strong>, el modelo de recompensa $r_\phi$ se <strong>congela</strong> y se actualizan los pesos del LLM $\pi_\theta$ muestreando respuestas <span lang="en">on-policy</span>. Para evitar el <strong><span lang="en">Reward Hacking</span></strong> (que el LLM engañe al modelo de recompensa repitiendo palabras aduladoras sin sentido), se resta una penalización de divergencia KL respecto al modelo SFT congelado ($\pi_{\text{ref}}$): $R(x,y) = r_\phi(x,y) - \beta \log \frac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}$.
+              </span>
+              <span data-lang="en">
+                In <strong>RLHF Stage 2</strong>, the reward model $r_\phi$ is <strong>frozen</strong> while the LLM policy $\pi_\theta$ is updated by sampling responses <span lang="en">on-policy</span>. To prevent <strong>Reward Hacking</strong> (exploiting reward model quirks with repetitive or nonsensical text), a KL penalty relative to the frozen SFT reference model ($\pi_{\text{ref}}$) is subtracted: $R(x,y) = r_\phi(x,y) - \beta \log \frac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}$.
+              </span>
+            </p>
+          </div>
+
+          <div class="comic-subcard" style="margin-bottom:0;">
+            <h4>
+              <span style="background:var(--comic-yellow); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">DPO (2023)</span>
+              <span data-lang="es">Optimización Directa de Preferencias sin Modelo de Recompensa (01:06:00 – 01:11:34)</span>
+              <span data-lang="en">Direct Preference Optimization Without a Reward Model (01:06:00 – 01:11:34)</span>
+            </h4>
+            <p>
+              <span data-lang="es">
+                <strong>DPO</strong> despeja analíticamente la recompensa óptima en función de $\pi_\theta$ y $\pi_{\text{ref}}$, entrenando directamente sobre los pares $(y_w, y_l)$ con una pérdida supervisada (<span lang="en">off-policy</span>, más estable y económica en memoria, aunque suele alcanzar un techo ligeramente inferior a RLHF <span lang="en">on-policy</span>):
+              </span>
+              <span data-lang="en">
+                <strong>DPO</strong> analytically reparameterizes the reward in terms of $\pi_\theta$ and $\pi_{\text{ref}}$, training directly on $(y_w, y_l)$ pairs via a supervised loss (<span lang="en">off-policy</span>, simpler and cheaper in memory, though often having a slightly lower performance ceiling than on-policy RLHF):
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="math-strip">
+          $$\mathcal{L}_{\text{DPO}}(\theta) = -\mathbb{E}_{(x, y_w, y_l)}\!\left[\log \sigma\!\left(\beta \log \frac{\pi_\theta(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)} - \beta \log \frac{\pi_\theta(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)}\right)\right]$$
+        </div>
+      </article>
+
+      <!-- PANEL INTERACTIVO DERECHO 04: PRUEBA / Bradley-Terry y Reward Hacking -->
+      <aside class="prueba-panel">
+        <div class="prueba-header halftone-yellow">
+          <span>
+            <span data-lang="es">PRUEBA / Bradley-Terry &amp; KL</span>
+            <span data-lang="en">TRY IT / Bradley-Terry &amp; KL</span>
+          </span>
+          <span style="font-family:var(--font-mono); font-size:0.8rem;">[00:57:05]</span>
+        </div>
+
+        <div class="prueba-body">
+          <p style="margin:0; font-size:0.86rem;">
+            <span data-lang="es">Ajusta las puntuaciones escalares $r_\phi(x, y_w)$ (ganadora), $r_\phi(x, y_l)$ (perdedora) y el coeficiente $\beta$ de penalización KL:</span>
+            <span data-lang="en">Adjust the scalar reward scores $r_\phi(x, y_w)$ (winner), $r_\phi(x, y_l)$ (loser), and the KL penalty coefficient $\beta$:</span>
+          </p>
+
+          <div>
+            <label for="bt-rw" style="font-weight:800; font-size:0.82rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Recompensa ganadora $r(y_w)$:</span><span data-lang="en">Winner reward $r(y_w)$:</span></span>
+              <span id="bt-rw-val" style="font-family:var(--font-mono);">2.5</span>
+            </label>
+            <input type="range" id="bt-rw" class="comic-slider" min="-2.0" max="5.0" step="0.5" value="2.5" oninput="updateBTWidget()" />
+          </div>
+
+          <div>
+            <label for="bt-rl" style="font-weight:800; font-size:0.82rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Recompensa perdedora $r(y_l)$:</span><span data-lang="en">Loser reward $r(y_l)$:</span></span>
+              <span id="bt-rl-val" style="font-family:var(--font-mono);">0.5</span>
+            </label>
+            <input type="range" id="bt-rl" class="comic-slider" min="-2.0" max="5.0" step="0.5" value="0.5" oninput="updateBTWidget()" />
+          </div>
+
+          <div>
+            <label for="bt-beta" style="font-weight:800; font-size:0.82rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Penalización KL ($\beta$):</span><span data-lang="en">KL Penalty ($\beta$):</span></span>
+              <span id="bt-beta-val" style="font-family:var(--font-mono);">0.10</span>
+            </label>
+            <input type="range" id="bt-beta" class="comic-slider" min="0.00" max="0.50" step="0.02" value="0.10" oninput="updateBTWidget()" />
+          </div>
+
+          <div class="mini-prob-box" id="bt-output-box" aria-live="polite"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- TIRA CÓMICA DE COMPROBACIÓN 04 -->
+    <div class="comprueba-strip halftone-mint" id="strip-check-04">
+      <div class="comprueba-left">
+        <div class="comprueba-banner-title">
+          <span data-lang="es">COMPRUEBA<br />VIÑETA 04</span>
+          <span data-lang="en">CHECK<br />PANEL 04</span>
+        </div>
+      </div>
+      <div class="comprueba-card">
+        <p class="comprueba-question">
+          <span data-lang="es">Durante la Etapa 2 de RLHF, ¿qué pesos están congelados y cuál es la diferencia clave frente a DPO?</span>
+          <span data-lang="en">During RLHF Stage 2, which weights are frozen, and what is the key difference compared to DPO?</span>
+        </p>
+        <div class="comprueba-options-grid">
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s4', 0, true)">
+            <span class="opt-letter">A</span>
+            <span>
+              <span data-lang="es">En RLHF Etapa 2 se congelan el modelo de recompensa $r_\phi$ y la referencia $\pi_{\text{ref}}$ mientras el LLM $\pi_\theta$ entrena <span lang="en">on-policy</span>; en cambio, DPO prescinde de $r_\phi$ y entrena <span lang="en">off-policy</span>.</span>
+              <span data-lang="en">In RLHF Stage 2 both the reward model $r_\phi$ and reference $\pi_{\text{ref}}$ are frozen while the LLM $\pi_\theta$ trains on-policy; conversely, DPO bypasses $r_\phi$ and trains off-policy.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s4', 1, false)">
+            <span class="opt-letter">B</span>
+            <span>
+              <span data-lang="es">En RLHF Etapa 2 se congela el LLM $\pi_\theta$ y solo se actualiza el modelo de recompensa $r_\phi$.</span>
+              <span data-lang="en">In RLHF Stage 2 the LLM $\pi_\theta$ is frozen and only the reward model $r_\phi$ is updated.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s4', 2, false)">
+            <span class="opt-letter">C</span>
+            <span>
+              <span data-lang="es">DPO requiere entrenar 4 modelos de recompensa simultáneamente.</span>
+              <span data-lang="en">DPO requires training 4 reward models simultaneously.</span>
+            </span>
+          </button>
+        </div>
+        <div id="s4-feedback" class="comprueba-feedback-box" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         FILA BENTO 05: RAZONAMIENTO (GRPO), DESTILACIÓN ON-POLICY Y GLM-5
+         =================================================================== -->
+    <div class="comic-spread">
+      <article class="comic-panel">
+        <div>
+          <div class="panel-header">
+            <span class="num-tag lavender">05</span>
+            <h3 class="panel-title">
+              <span data-lang="es">/ Razonamiento (GRPO), Destilación On-Policy y Receta GLM-5</span>
+              <span data-lang="en">/ Reasoning (GRPO), On-Policy Distillation &amp; GLM-5 Recipe</span>
+            </h3>
+            <span class="timestamp-badge">01:12:09 – 01:44:25</span>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-lavender); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">&lt;think&gt; &amp; GRPO</span>
+              <span data-lang="es">Tokens de Razonamiento, Recompensas Verificables y GRPO (01:14:10 – 01:23:30)</span>
+              <span data-lang="en">Reasoning Tokens, Verifiable Rewards &amp; GRPO (01:14:10 – 01:23:30)</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>Por qué se ocultan los tokens <code>&lt;think&gt;</code> hoy en día (`01:15:30`):</strong> 1) Evitar que los competidores destilen fácilmente el proceso de razonamiento; 2) Privacidad: el modelo puede verbalizar datos sensibles del contexto privado mientras piensa. <strong>Ojo en facturación (`01:18:17`):</strong> aunque no se muestren enteros en la interfaz, se facturan como <strong>tokens de salida</strong>.</span>
+                <span data-lang="en"><strong>Why raw <code>&lt;think&gt;</code> tokens are hidden in modern UIs (`01:15:30`):</strong> 1) Preventing competitors from distilling the reasoning traces; 2) Privacy: the model may verbalize sensitive prompt context while thinking. <strong>Billing note (`01:18:17`):</strong> hidden thinking tokens are still billed as <strong>output tokens</strong>.</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>GRPO (<span lang="en">Group Relative Policy Optimization</span>, DeepSeek-R1):</strong> En matemáticas y código no hace falta un modelo neuronal de recompensa: usamos <strong>recompensas verificables</strong> (respuesta exacta o tests unitarios + formato <code>&lt;think&gt;</code>). Se muestrean $G$ trayectorias para un mismo prompt y se normaliza su ventaja relativa $A_i = \frac{r_i - \text{media}(r)}{\text{std}(r)}$ sin necesitar red crítica (<span lang="en">critic</span>).</span>
+                <span data-lang="en"><strong>GRPO (Group Relative Policy Optimization, DeepSeek-R1):</strong> Math and code do not need a neural reward model: we use <strong>verifiable rewards</strong> (exact answer or unit tests + <code>&lt;think&gt;</code> format bonus). It samples $G$ trajectories per prompt and normalizes relative advantage $A_i = \frac{r_i - \text{mean}(r)}{\text{std}(r)}$ without a separate critic network.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="comic-subcard">
+            <h4>
+              <span style="background:var(--comic-mint); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">ON-POLICY DISTILL</span>
+              <span data-lang="es">Lo Mejor de Ambos Mundos: Señal Densa + On-Policy (01:23:35 – 01:27:45)</span>
+              <span data-lang="en">Best of Both Worlds: Dense Signal + On-Policy (01:23:35 – 01:27:45)</span>
+            </h4>
+            <p>
+              <span data-lang="es">
+                SFT es <em>denso</em> (feedback en cada token) pero <em>off-policy</em>; RL/GRPO es <em>on-policy</em> pero su recompensa final es <em>dispersa (<span lang="en">sparse</span>)</em>. La <strong>Destilación On-Policy</strong> hace que el estudiante genere su propia trayectoria <span lang="en">on-policy</span> y un modelo profesor (o el mismo modelo con la solución en su prompt: <strong>autodestilación</strong>) supervise <strong>cada token paso a paso</strong>.
+              </span>
+              <span data-lang="en">
+                SFT is <em>dense</em> (per-token feedback) but <em>off-policy</em>; RL/GRPO is <em>on-policy</em> but gives a <em>sparse</em> end-of-sequence reward. <strong>On-Policy Distillation</strong> lets the student generate trajectories <span lang="en">on-policy</span> while a teacher model (or the same model conditioned on the ground-truth answer: <strong>self-distillation</strong>) provides <strong>dense per-token supervision</strong>.
+              </span>
+            </p>
+          </div>
+
+          <div class="comic-subcard" style="margin-bottom:0;">
+            <h4>
+              <span style="background:var(--comic-yellow); color:#141414; padding:2px 7px; border:2px solid #141414; font-family:var(--font-mono); font-size:0.76rem;">CASO REAL: GLM-5</span>
+              <span data-lang="es">Colapso del Modelo, Best-Fit Packing y Pipeline de 3 Etapas RL (01:28:50 – 01:44:20)</span>
+              <span data-lang="en">Model Collapse, Best-Fit Packing &amp; 3-Stage RL Pipeline (01:28:50 – 01:44:20)</span>
+            </h4>
+            <ul>
+              <li>
+                <span data-lang="es"><strong>Colapso del modelo (<span lang="en">Model Collapse</span>, `01:32:10`):</strong> Entrenar recursivamente con datos sintéticos degrada la distribución por: 1) muestreo finito que pierde las colas poco frecuentes; 2) errores del aproximador; 3) sesgos léxicos de cada proveedor (ej. abuso de la expresión <em>«load-bearing»</em> en modelos recientes).</span>
+                <span data-lang="en"><strong>Model Collapse (`01:32:10`):</strong> Training recursively on synthetic web data degrades distribution quality due to: 1) finite sampling losing the long tail; 2) approximator error; 3) vendor lexical quirks (e.g., overusing <em>"load-bearing"</em>).</span>
+              </li>
+              <li>
+                <span data-lang="es"><strong>Receta GLM-5 ($744\text{B}$ MoE, $200\text{K}$ contexto):</strong> Usa solo el $\sim 1\%$ de CommonCrawl, aplica <strong>Best-Fit Packing</strong> en Mid-training ($4\text{K} \to 32\text{K} \to 128\text{K} \to 200\text{K}$) para no truncar documentos, seguido de SFT y <strong>3 etapas RL</strong> (Reasoning RL $\to$ Agentic RL $\to$ General RL) con <strong>Destilación On-Policy entre etapas (<span lang="en">Cross-Stage Distillation</span>)</strong> para no olvidar lo aprendido en etapas previas.</span>
+                <span data-lang="en"><strong>GLM-5 Recipe ($744\text{B}$ MoE, $200\text{K}$ context):</strong> Keeps only $\sim 1\%$ of CommonCrawl, uses <strong>Best-Fit Packing</strong> in Mid-training ($4\text{K} \to 32\text{K} \to 128\text{K} \to 200\text{K}$) to avoid document truncation, followed by SFT and <strong>3 RL stages</strong> (Reasoning RL $\to$ Agentic RL $\to$ General RL) with <strong>Cross-Stage On-Policy Distillation</strong> to prevent catastrophic forgetting.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="math-strip">
+          $$A_i^{\text{GRPO}} = \frac{r_i - \text{mean}(r_1, \dots, r_G)}{\text{std}(r_1, \dots, r_G)}, \qquad r_i = r_{\text{exactitud}}(y_i, y^\star) + r_{\text{formato }\langle\text{think}\rangle}(y_i)$$
+        </div>
+      </article>
+
+      <!-- PANEL INTERACTIVO DERECHO 05: PRUEBA / Ventaja GRPO y Factura <think> -->
+      <aside class="prueba-panel">
+        <div class="prueba-header halftone-yellow">
+          <span>
+            <span data-lang="es">PRUEBA / GRPO &amp; Coste &lt;think&gt;</span>
+            <span data-lang="en">TRY IT / GRPO &amp; &lt;think&gt; Cost</span>
+          </span>
+          <span style="font-family:var(--font-mono); font-size:0.8rem;">[01:21:15]</span>
+        </div>
+
+        <div class="prueba-body">
+          <p style="margin:0; font-size:0.86rem;">
+            <span data-lang="es">Para un problema matemático, GRPO muestrea $G=4$ respuestas. Ajusta la recompensa de la <strong>Respuesta 1</strong> y la longitud del bloque <code>&lt;think&gt;</code> para ver las ventajas relativas $A_i$ y el impacto en facturación API:</span>
+            <span data-lang="en">For a math problem, GRPO samples $G=4$ outputs. Adjust the reward of <strong>Output 1</strong> and the <code>&lt;think&gt;</code> block length to see group relative advantages $A_i$ and API billing impact:</span>
+          </p>
+
+          <div>
+            <label for="grpo-r1" style="font-weight:800; font-size:0.82rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Recompensa Respuesta 1 ($r_1$):</span><span data-lang="en">Output 1 Reward ($r_1$):</span></span>
+              <span id="grpo-r1-val" style="font-family:var(--font-mono);">1.20</span>
+            </label>
+            <select id="grpo-r1" onchange="updateGRPOWidget()" style="width:100%; min-height:36px; border:2px solid #141414; font-family:var(--font-mono); font-weight:700; background:#fff;">
+              <option value="1.20" selected>1.20 (Correcta + &lt;think&gt; válido)</option>
+              <option value="1.00">1.00 (Correcta sin formato &lt;think&gt;)</option>
+              <option value="0.20">0.20 (Incorrecta pero con &lt;think&gt;)</option>
+              <option value="0.00">0.00 (Incorrecta y sin formato)</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="grpo-think-toks" style="font-weight:800; font-size:0.82rem; display:flex; justify-content:space-between;">
+              <span><span data-lang="es">Tokens ocultos en <code>&lt;think&gt;</code>:</span><span data-lang="en">Hidden <code>&lt;think&gt;</code> tokens:</span></span>
+              <span id="grpo-think-val" style="font-family:var(--font-mono);">1500</span>
+            </label>
+            <input type="range" id="grpo-think-toks" class="comic-slider" min="0" max="4000" step="250" value="1500" oninput="updateGRPOWidget()" />
+          </div>
+
+          <div class="mini-prob-box" id="grpo-output-box" aria-live="polite"></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- TIRA CÓMICA DE COMPROBACIÓN 05 -->
+    <div class="comprueba-strip halftone-mint" id="strip-check-05">
+      <div class="comprueba-left">
+        <div class="comprueba-banner-title">
+          <span data-lang="es">COMPRUEBA<br />VIÑETA 05</span>
+          <span data-lang="en">CHECK<br />PANEL 05</span>
+        </div>
+      </div>
+      <div class="comprueba-card">
+        <p class="comprueba-question">
+          <span data-lang="es">¿Por qué la Destilación On-Policy (<span lang="en">On-Policy Distillation</span>) combina las ventajas de SFT y del aprendizaje por refuerzo (RL)?</span>
+          <span data-lang="en">Why does On-Policy Distillation combine the strengths of both SFT and Reinforcement Learning (RL)?</span>
+        </p>
+        <div class="comprueba-options-grid">
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s5', 0, false)">
+            <span class="opt-letter">A</span>
+            <span>
+              <span data-lang="es">Porque es <span lang="en">off-policy</span> y solo da un bit de recompensa al final del documento.</span>
+              <span data-lang="en">Because it is off-policy and only provides a single bit of reward at the end of the document.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s5', 1, true)">
+            <span class="opt-letter">B</span>
+            <span>
+              <span data-lang="es">Porque el estudiante genera sus propias trayectorias (<span lang="en">on-policy</span> como en RL) pero recibe supervisión en cada token (<span lang="en">dense signal</span> como en SFT).</span>
+              <span data-lang="en">Because the student samples its own trajectories (on-policy like RL) while receiving per-token supervision (dense signal like SFT).</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s5', 2, false)">
+            <span class="opt-letter">C</span>
+            <span>
+              <span data-lang="es">Porque elimina la necesidad de usar tokenizadores por subpalabras.</span>
+              <span data-lang="en">Because it eliminates the need for subword tokenizers.</span>
+            </span>
+          </button>
+        </div>
+        <div id="s5-feedback" class="comprueba-feedback-box" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SECCIÓN 03: LABORATORIO DE PRÁCTICA COMPLETO (#practica)
+         =================================================================== -->
+    <div id="practica" class="section-divider-banner">
+      <h2>
+        <span data-lang="es">03 / Laboratorio Interactivo — Matriz de Post-Entrenamiento y Pipeline GLM-5</span>
+        <span data-lang="en">03 / Interactive Laboratory — Post-Training Matrix &amp; GLM-5 Pipeline</span>
+      </h2>
+      <span style="font-family:var(--font-mono); font-size:0.82rem; color:var(--comic-yellow);">
+        <span data-lang="es">1. Objetivo → 2. Predicción → 3. Controles → 4. Resultado → 5. Límites → 6. Comprobación</span>
+        <span data-lang="en">1. Goal → 2. Prediction → 3. Controls → 4. Output → 5. Limits → 6. Check</span>
+      </span>
+    </div>
+
+    <div class="comic-spread">
+      <!-- LABORATORIO A: MATRIZ 2x2 ON-POLICY/OFF-POLICY vs DENSE/SPARSE -->
+      <div class="comic-panel">
+        <div>
+          <div class="panel-header">
+            <span class="num-tag yellow">LAB A</span>
+            <h3 class="panel-title">
+              <span data-lang="es">/ Explorador 2×2: Muestreo vs. Densidad de Señal</span>
+              <span data-lang="en">/ 2×2 Explorer: Policy Sampling vs. Signal Density</span>
+            </h3>
+          </div>
+
+          <p style="margin:0 0 8px 0; font-size:0.9rem;">
+            <span data-lang="es"><strong>1. Objetivo (`01:26:40`):</strong> Clasificar todos los métodos de post-entrenamiento según dos ejes: ¿quién genera las secuencias (<strong>Off-Policy</strong> vs. <strong>On-Policy</strong>) y cada cuánto se evalúa el error (<strong>Señal Densa por token</strong> vs. <strong>Señal Dispersa al final</strong>)?</span>
+            <span data-lang="en"><strong>1. Objective (`01:26:40`):</strong> Classify post-training methods along two axes: who generates the sequences (<strong>Off-Policy</strong> vs. <strong>On-Policy</strong>) and how frequently feedback is given (<strong>Dense per-token</strong> vs. <strong>Sparse sequence-end</strong>)?</span>
+          </p>
+
+          <div class="comic-subcard" style="background:var(--comic-blue-light);">
+            <strong>
+              <span data-lang="es">2. Predicción:</span>
+              <span data-lang="en">2. Prediction:</span>
+            </strong>
+            <span data-lang="es"> Antes de hacer clic en los cuadrantes, ¿en qué casilla se ubican <strong>SFT y DPO</strong>, dónde cae <strong>GRPO / RLHF</strong>, y qué técnica llena el cuadrante <strong>On-Policy + Señal Densa</strong>?</span>
+            <span data-lang="en"> Before clicking the quadrants, where do <strong>SFT and DPO</strong> sit, where does <strong>GRPO / RLHF</strong> fall, and which method fills the <strong>On-Policy + Dense Signal</strong> quadrant?</span>
+          </div>
+
+          <!-- 3. Controles: Cuadrícula 2x2 -->
+          <div class="matrix-2x2" role="group" aria-label="Matriz 2x2 de métodos de entrenamiento">
+            <div id="cell-off-dense" class="matrix-cell selected-cell" tabindex="0" onclick="selectMatrixQuad('off-dense')">
+              <div style="font-family:var(--font-mono); font-size:0.74rem; font-weight:800; color:var(--comic-blue-dark);">OFF-POLICY + DENSO</div>
+              <div style="font-family:var(--font-display); font-weight:900; font-size:1.05rem;">SFT / Distill SFT</div>
+            </div>
+            <div id="cell-on-dense" class="matrix-cell" tabindex="0" onclick="selectMatrixQuad('on-dense')">
+              <div style="font-family:var(--font-mono); font-size:0.74rem; font-weight:800; color:var(--comic-mint-dark);">ON-POLICY + DENSO</div>
+              <div style="font-family:var(--font-display); font-weight:900; font-size:1.05rem;">On-Policy Distillation</div>
+            </div>
+            <div id="cell-off-sparse" class="matrix-cell" tabindex="0" onclick="selectMatrixQuad('off-sparse')">
+              <div style="font-family:var(--font-mono); font-size:0.74rem; font-weight:800; color:#991b1b;">OFF-POLICY + PREFERENCIA</div>
+              <div style="font-family:var(--font-display); font-weight:900; font-size:1.05rem;">DPO</div>
+            </div>
+            <div id="cell-on-sparse" class="matrix-cell" tabindex="0" onclick="selectMatrixQuad('on-sparse')">
+              <div style="font-family:var(--font-mono); font-size:0.74rem; font-weight:800; color:#6b21a8;">ON-POLICY + DISPERSO</div>
+              <div style="font-family:var(--font-display); font-weight:900; font-size:1.05rem;">RLHF / GRPO</div>
+            </div>
+          </div>
+
+          <!-- 4. Resultado e interpretación -->
+          <div class="mini-prob-box" id="matrix-quad-output" aria-live="polite" style="margin-bottom:10px;"></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span style="font-family:var(--font-mono); font-size:0.74rem; background:var(--comic-yellow-light); border:1px solid #141414; padding:3px 7px;">
+            <span data-lang="es"><strong>5. Aviso:</strong> <em>Ilustrativo</em> de la taxonomía de la clase (`01:26:40`).</span>
+            <span data-lang="en"><strong>5. Notice:</strong> <em>Illustrative</em> of the lecture's taxonomy (`01:26:40`).</span>
+          </span>
+          <button type="button" class="btn-comic-secondary" onclick="selectMatrixQuad('off-dense')">
+            <span data-lang="es">Restablecer</span><span data-lang="en">Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- LABORATORIO B: BEST-FIT PACKING & MODEL COLLAPSE EN GLM-5 -->
+      <div class="comic-panel">
+        <div>
+          <div class="panel-header">
+            <span class="num-tag blue">LAB B</span>
+            <h3 class="panel-title">
+              <span data-lang="es">/ Simulador GLM-5: Best-Fit Packing y Colapso Sintético</span>
+              <span data-lang="en">/ GLM-5 Simulator: Best-Fit Packing &amp; Synthetic Collapse</span>
+            </h3>
+          </div>
+
+          <p style="margin:0 0 8px 0; font-size:0.9rem;">
+            <span data-lang="es"><strong>1. Objetivo (`01:32:10 – 01:39:15`):</strong> Comparar cómo el empaquetado <strong>Best-Fit Packing</strong> evita cortar documentos por la mitad frente al concatenado estándar, y cómo el exceso de datos sintéticos recursivos reduce la diversidad léxica de las colas (<span lang="en">Model Collapse</span>).</span>
+            <span data-lang="en"><strong>1. Objective (`01:32:10 – 01:39:15`):</strong> Compare how <strong>Best-Fit Packing</strong> avoids mid-document truncation versus standard concatenation, and how recursive synthetic data erodes tail lexical diversity (<span lang="en">Model Collapse</span>).</span>
+          </p>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+            <div>
+              <label for="glm-pack" style="font-weight:800; font-size:0.8rem; display:block; margin-bottom:4px;">
+                <span data-lang="es">Estrategia de empaquetado ($W=4\text{K}$):</span>
+                <span data-lang="en">Packing strategy ($W=4\text{K}$):</span>
+              </label>
+              <select id="glm-pack" onchange="updateGLM5Lab()" style="width:100%; min-height:38px; border:2px solid #141414; font-family:var(--font-mono); font-weight:700; background:#fff;">
+                <option value="bestfit" selected>Best-Fit Packing (GLM-5)</option>
+                <option value="naive">Concatenar + Truncar</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="glm-synth" style="font-weight:800; font-size:0.8rem; display:flex; justify-content:space-between; margin-bottom:4px;">
+                <span><span data-lang="es">Generaciones sintéticas:</span><span data-lang="en">Synthetic generations:</span></span>
+                <span id="glm-synth-val" style="font-family:var(--font-mono);">0</span>
+              </label>
+              <input type="range" id="glm-synth" class="comic-slider" min="0" max="5" step="1" value="0" oninput="updateGLM5Lab()" />
+            </div>
+          </div>
+
+          <div class="mini-prob-box" id="glm5-lab-output" aria-live="polite" style="margin-bottom:10px;"></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <span style="font-family:var(--font-mono); font-size:0.74rem; background:var(--comic-yellow-light); border:1px solid #141414; padding:3px 7px;">
+            <span data-lang="es"><strong>5. Aviso:</strong> <em>Calculado / Ilustrativo</em> sobre lote de documentos $[2{,}5\text{K}, 1{,}4\text{K}, 2{,}8\text{K}, 1{,}1\text{K}]$.</span>
+            <span data-lang="en"><strong>5. Notice:</strong> <em>Computed / Illustrative</em> on document batch $[2.5\text{K}, 1.4\text{K}, 2.8\text{K}, 1.1\text{K}]$.</span>
+          </span>
+          <button type="button" class="btn-comic-secondary" onclick="resetGLM5Lab()">
+            <span data-lang="es">Restablecer</span><span data-lang="en">Reset</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. PREGUNTA DE COMPRENSIÓN DEL LABORATORIO -->
+    <div class="comprueba-strip halftone-mint" id="strip-check-06">
+      <div class="comprueba-left">
+        <div class="comprueba-banner-title">
+          <span data-lang="es">6. COMPRUEBA<br />LABORATORIO</span>
+          <span data-lang="en">6. CHECK<br />LABORATORY</span>
+        </div>
+      </div>
+      <div class="comprueba-card">
+        <p class="comprueba-question">
+          <span data-lang="es">En el entrenamiento de GLM-5, ¿por qué se aplica Destilación On-Policy entre etapas (<span lang="en">Cross-Stage Distillation</span>) al encadenar Reasoning RL $\to$ Agentic RL $\to$ General RL?</span>
+          <span data-lang="en">In GLM-5 training, why is Cross-Stage On-Policy Distillation applied when chaining Reasoning RL $\to$ Agentic RL $\to$ General RL?</span>
+        </p>
+        <div class="comprueba-options-grid">
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s6', 0, true)">
+            <span class="opt-letter">A</span>
+            <span>
+              <span data-lang="es">Para evitar el olvido catastrófico (<span lang="en">catastrophic forgetting</span>), usando los mejores checkpoints de etapas previas (SFT, Reasoning RL, Agentic RL) como profesores densos.</span>
+              <span data-lang="en">To prevent catastrophic forgetting by using the best checkpoints from earlier stages (SFT, Reasoning RL, Agentic RL) as dense on-policy teachers.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s6', 1, false)">
+            <span class="opt-letter">B</span>
+            <span>
+              <span data-lang="es">Para reducir la ventana de contexto de $200\text{K}$ a $512$ tokens.</span>
+              <span data-lang="en">To shrink the context window from $200\text{K}$ back down to $512$ tokens.</span>
+            </span>
+          </button>
+          <button type="button" class="comic-opt-btn" onclick="gradeInlineStrip('s6', 2, false)">
+            <span class="opt-letter">C</span>
+            <span>
+              <span data-lang="es">Porque GLM-5 no pasó por ninguna etapa de pre-entrenamiento ni SFT.</span>
+              <span data-lang="en">Because GLM-5 skipped both pre-training and SFT.</span>
+            </span>
+          </button>
+        </div>
+        <div id="s6-feedback" class="comprueba-feedback-box" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SECCIÓN 04: QUIZ FINAL DE INTEGRACIÓN (#cuestionario)
+         =================================================================== -->
+    <div id="cuestionario" class="section-divider-banner">
+      <h2>
+        <span data-lang="es">04 / Comprueba lo aprendido — Quiz de Integración (8 Preguntas)</span>
+        <span data-lang="en">04 / Check Your Understanding — Integration Quiz (8 Questions)</span>
+      </h2>
+      <span id="quiz-score-badge" style="font-family:var(--font-mono); font-size:0.88rem; background:var(--comic-mint); color:#141414; padding:4px 12px; border:2px solid #fff; font-weight:900;">
+        0 / 8
+      </span>
+    </div>
+
+    <div id="comic-quiz-list"></div>
+
+    <!-- ===================================================================
+         SECCIÓN 05: RESUMEN Y REFERENCIAS VERIFICADAS (#referencias)
+         =================================================================== -->
+    <div id="referencias" class="section-divider-banner">
+      <h2>
+        <span data-lang="es">05 / Resumen, Checklist de Dominio y Marcas de Tiempo Verificadas</span>
+        <span data-lang="en">05 / Summary, Mastery Checklist &amp; Verified Timestamps</span>
+      </h2>
+      <span style="font-family:var(--font-mono); font-size:0.82rem; color:var(--comic-yellow);">
+        Stanford CME295 • Lecture 03
+      </span>
+    </div>
+
+    <div class="comic-spread">
+      <div class="comic-panel">
+        <div class="panel-header">
+          <span class="num-tag lavender">05</span>
+          <h3 class="panel-title">
+            <span data-lang="es">/ Lo que debes poder explicar al terminar la Clase 03</span>
+            <span data-lang="en">/ What you should be able to explain after Lecture 03</span>
+          </h3>
+        </div>
+        <ul style="margin:0; padding-left:20px; font-size:0.93rem;">
+          <li style="margin-bottom:8px;">
+            <span data-lang="es"><strong>Pre-training y Mid-training:</strong> Cómo funciona el <em>Teacher Forcing</em> paralelo con máscara causal, por qué se minimiza la entropía cruzada logarítmica, cómo <strong>Bits-per-Byte (BPB)</strong> compara modelos con distinto tokenizador y cómo <strong>YaRN</strong> extiende la ventana de contexto interpolando frecuencias RoPE.</span>
+            <span data-lang="en"><strong>Pre-training &amp; Mid-training:</strong> How parallel causal-masked <em>Teacher Forcing</em> works, why logarithmic cross-entropy avoids underflow, how <strong>Bits-per-Byte (BPB)</strong> compares models across tokenizers, and how <strong>YaRN</strong> extends context by interpolating RoPE frequencies.</span>
+          </li>
+          <li style="margin-bottom:8px;">
+            <span data-lang="es"><strong>SFT y LoRA:</strong> Por qué en SFT la pérdida se calcula únicamente sobre los tokens de la respuesta $y_t$, cómo <strong>LoRA</strong> congela $W_0$ y aprende $\Delta W = B A$ ($B=0$ al inicio), y por qué es más efectivo aplicarlo en las capas <strong>FFN</strong>.</span>
+            <span data-lang="en"><strong>SFT &amp; LoRA:</strong> Why SFT computes loss strictly on response tokens $y_t$, how <strong>LoRA</strong> freezes $W_0$ to learn $\Delta W = B A$ ($B=0$ at start), and why targeting <strong>FFN</strong> layers yields the best performance.</span>
+          </li>
+          <li style="margin-bottom:8px;">
+            <span data-lang="es"><strong>RLHF y DPO:</strong> Cómo el modelo de <strong>Bradley-Terry</strong> entrena un modelo de recompensa a partir de preferencias por pares, por qué la Etapa 2 de RLHF congela $r_\phi$ y añade una penalización KL contra el <span lang="en">reward hacking</span>, y cómo <strong>DPO</strong> optimiza preferencias directamente <span lang="en">off-policy</span>.</span>
+            <span data-lang="en"><strong>RLHF &amp; DPO:</strong> How <strong>Bradley-Terry</strong> trains a scalar reward model from pairwise preferences, why RLHF Stage 2 freezes $r_\phi$ and adds a KL penalty against reward hacking, and how <strong>DPO</strong> optimizes preferences directly off-policy.</span>
+          </li>
+          <li>
+            <span data-lang="es"><strong>GRPO, Destilación On-Policy y GLM-5:</strong> Cómo <strong>GRPO</strong> usa recompensas verificables y ventaja relativa de grupo para activar el razonamiento en <code>&lt;think&gt;</code>, cómo la <strong>Destilación On-Policy</strong> une muestreo <span lang="en">on-policy</span> y señal densa, y cómo se mitiga el <strong>colapso del modelo</strong>.</span>
+            <span data-lang="en"><strong>GRPO, On-Policy Distillation &amp; GLM-5:</strong> How <strong>GRPO</strong> uses verifiable rewards and group relative advantage to unlock <code>&lt;think&gt;</code> reasoning, how <strong>On-Policy Distillation</strong> unites on-policy sampling with dense token supervision, and how <strong>model collapse</strong> is mitigated.</span>
+          </li>
+        </ul>
+      </div>
+
+
+    </div>
+
+    <div class="table-scroll" style="margin-top:16px;">
+      <table>
+        <thead>
+          <tr>
+            <th><span data-lang="es">Marca de tiempo</span><span data-lang="en">Timestamp</span></th>
+            <th><span data-lang="es">Viñeta / Tema cubierto en la clase</span><span data-lang="en">Panel / Topic covered in lecture</span></th>
+            <th><span data-lang="es">Referencia técnica asociada</span><span data-lang="en">Associated technical reference</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">00:00:05 – 00:05:30</td>
+            <td><span data-lang="es">Viñeta 01: Repaso Clase 2, aprendizaje por transferencia y visión general de las 4 etapas</span><span data-lang="en">Panel 01: Lecture 2 recap, transfer learning, and overview of the 4 training stages</span></td>
+            <td>Hoffmann et al. (2022) <em>Chinchilla</em></td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">00:05:32 – 00:22:12</td>
+            <td><span data-lang="es">Viñeta 02 (Parte A): Pre-entrenamiento, Teacher Forcing, Entropía Cruzada, Bits-per-Byte (BPB), DataComp-LM y OLMo 3 (4 épocas)</span><span data-lang="en">Panel 02 (Part A): Pre-training, Teacher Forcing, Cross-Entropy, Bits-per-Byte (BPB), DataComp-LM &amp; OLMo 3 (4 epochs)</span></td>
+            <td>Li et al. (2024) <em>DataComp-LM</em>; OLMo 3 Technical Report</td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">00:22:13 – 00:30:35</td>
+            <td><span data-lang="es">Viñeta 02 (Parte B): Mid-training, extensión de ventana de contexto con YaRN y fecha de corte de conocimiento</span><span data-lang="en">Panel 02 (Part B): Mid-training, context window extension via YaRN, and knowledge cutoff</span></td>
+            <td>Peng et al. (2023), <em>YaRN: Efficient Context Window Extension of LLMs</em></td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">00:30:40 – 00:46:34</td>
+            <td><span data-lang="es">Viñeta 03: SFT con pérdida localizada en la respuesta, datos sintéticos y adaptación de bajo rango (LoRA en capas FFN)</span><span data-lang="en">Panel 03: SFT with response-localized loss, synthetic data, and Low-Rank Adaptation (LoRA on FFN layers)</span></td>
+            <td>Hu et al. (2021) <em>LoRA</em>; Dettmers et al. (2023)</td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">00:46:35 – 01:12:08</td>
+            <td><span data-lang="es">Viñeta 04: Alineación de preferencias por pares, modelo Bradley-Terry, RLHF (Etapas 1 y 2, Reward Hacking) y DPO</span><span data-lang="en">Panel 04: Pairwise preference alignment, Bradley-Terry model, RLHF (Stages 1 &amp; 2, Reward Hacking), and DPO</span></td>
+            <td>Ouyang et al. (2022) <em>InstructGPT</em>; Rafailov et al. (2023) <em>DPO</em></td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">01:12:09 – 01:28:45</td>
+            <td><span data-lang="es">Viñeta 05 (Parte A): Modelos de razonamiento (<code>&lt;think&gt;</code>), recompensas verificables, GRPO y Destilación On-Policy</span><span data-lang="en">Panel 05 (Part A): Reasoning models (<code>&lt;think&gt;</code>), verifiable rewards, GRPO, and On-Policy Distillation</span></td>
+            <td>Shao et al. (2024) / DeepSeek-AI (2025) <em>DeepSeek-R1 &amp; GRPO</em>; Agarwal et al. (2024) <em>GKD</em></td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-mono); font-weight:800;">01:28:50 – 01:44:25</td>
+            <td><span data-lang="es">Viñeta 05 (Parte B) y Laboratorio: Receta completa de GLM-5 ($30\text{T}$ tokens), Colapso del Modelo, Best-Fit Packing y 3 etapas RL</span><span data-lang="en">Panel 05 (Part B) &amp; Lab: End-to-end GLM-5 recipe ($30\text{T}$ tokens), Model Collapse, Best-Fit Packing &amp; 3 RL stages</span></td>
+            <td>Shumailov et al. (2024) <em>Model Collapse</em>; Ding et al. (2024) <em>Best-Fit Packing</em>; GLM-5 Report</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    // =========================================================================
+    // ESTADO GLOBAL BILINGÜE (CONSERVA RESPUESTAS Y SIMULADORES AL CAMBIAR IDIOMA)
+    // =========================================================================
+    let currentLang = 'es';
+    let currentMatrixQuad = 'off-dense';
+
+    const inlineStripsState = {
+      s1: { answered: false, idx: null, correct: false },
+      s2: { answered: false, idx: null, correct: false },
+      s3: { answered: false, idx: null, correct: false },
+      s4: { answered: false, idx: null, correct: false },
+      s5: { answered: false, idx: null, correct: false },
+      s6: { answered: false, idx: null, correct: false }
+    };
+
+    const inlineStripExplanations = {
+      s1: {
+        okEs: '¡Bien! (00:31:05). El modelo base solo aprendió a continuar documentos web; el formato pregunta-respuesta se enseña en SFT.',
+        okEn: 'Spot on! (00:31:05). The base model only learned to continue web documents; the question-answering assistant format is taught in SFT.',
+        errEs: 'Pista (00:31:05): El modelo pre-entrenado sí tiene autoatención y vio billones de tokens, pero solo sabe autocompletar texto.',
+        errEn: 'Hint (00:31:05): The pre-trained model has self-attention and saw trillions of tokens, but only knows how to autocomplete text.'
+      },
+      s2: {
+        okEs: '¡Correcto! (00:09:42). En entrenamiento siempre alimentamos el token real (ground-truth), mientras que en inferencia el modelo se alimenta de sus propias predicciones.',
+        okEn: 'Correct! (00:09:42). In training we always feed clean ground-truth tokens, whereas at inference the model feeds on its own predictions.',
+        errEs: 'Revisa la Viñeta 02 (00:09:42): Teacher Forcing permite paralelizar en GPU, pero crea una discrepancia entre prefijos limpios y prefijos autogenerados.',
+        errEn: 'Check Panel 02 (00:09:42): Teacher Forcing enables GPU parallelism, but creates a mismatch between clean prefixes and self-generated prefixes.'
+      },
+      s3: {
+        okEs: '¡Exacto! (00:45:30). Con B = 0 y A aleatoria, al inicio ΔW = B·A = 0 para no alterar W_0, pero las derivadas permiten aprender desde el paso 1.',
+        okEn: 'Exactly! (00:45:30). With B = 0 and random A, initially ΔW = B·A = 0 so W_0 is preserved, while non-zero gradients flow from step 1.',
+        errEs: 'Pista (00:45:30): Si ambas fueran cero el gradiente se bloquearía; por eso A es aleatoria gaussiana y B se inicializa a cero.',
+        errEn: 'Hint (00:45:30): If both were zero gradients would vanish; hence A is random Gaussian and B is initialized to zero.'
+      },
+      s4: {
+        okEs: '¡Muy bien! (01:02:15 y 01:08:20). En RLHF Etapa 2 el modelo de recompensa está congelado y el entrenamiento es on-policy; DPO es off-policy sin modelo de recompensa.',
+        okEn: 'Great job! (01:02:15 & 01:08:20). In RLHF Stage 2 the reward model is frozen and training is on-policy; DPO is off-policy with no separate reward model.',
+        errEs: 'Revisa la Viñeta 04 (01:02:15): En la Etapa 2 de RLHF ya entrenamos el modelo de recompensa en la Etapa 1, por lo que ahora se congela.',
+        errEn: 'Check Panel 04 (01:02:15): By RLHF Stage 2 the reward model was already trained in Stage 1, so it is kept frozen while the LLM updates.'
+      },
+      s5: {
+        okEs: '¡Perfecto! (01:26:40). La Destilación On-Policy muestrea trayectorias del propio estudiante (on-policy) y las evalúa token a token con el profesor (señal densa).',
+        okEn: 'Perfect! (01:26:40). On-Policy Distillation samples trajectories from the student (on-policy) and scores every token against the teacher (dense signal).',
+        errEs: 'Pista (01:26:40): Recuerda los dos ejes: quién genera la secuencia (on-policy) y cada cuánto se supervisa (densa, en cada token).',
+        errEn: 'Hint (01:26:40): Recall the two axes: who generates the sequence (on-policy) and how often supervision is given (dense, at every token).'
+      },
+      s6: {
+        okEs: '¡Correcto! (01:42:35). GLM-5 usa los mejores modelos previos (SFT, Reasoning RL, Agentic RL) como profesores on-policy para no perder habilidades al pasar a General RL.',
+        okEn: 'Correct! (01:42:35). GLM-5 uses earlier stage checkpoints (SFT, Reasoning RL, Agentic RL) as on-policy teachers so skills are not forgotten in General RL.',
+        errEs: 'Pista (01:42:35): Al encadenar múltiples etapas de RL existe riesgo de olvidar capacidades anteriores; la destilación entre etapas lo previene.',
+        errEn: 'Hint (01:42:35): Chaining multiple RL stages risks forgetting earlier skills; cross-stage distillation prevents this.'
+      }
+    };
+
+    const finalQuizData = [
+      {
+        id: 'fq1',
+        qEs: '01 / ¿Por qué durante el pre-entrenamiento minimizamos la suma de logaritmos negativos en lugar de maximizar directamente el producto de probabilidades?',
+        qEn: '01 / Why do we minimize the sum of negative log-probabilities during pre-training instead of directly maximizing the product of probabilities?',
+        optsEs: [
+          'Porque multiplicar miles o millones de probabilidades entre 0 y 1 provoca desbordamiento numérico a cero (underflow), mientras que el logaritmo transforma el producto en una suma estable.',
+          'Porque el producto de probabilidades solo funciona en modelos BERT de solo codificador.',
+          'Porque la función logaritmo elimina la necesidad de usar descenso de gradiente.'
+        ],
+        optsEn: [
+          'Because multiplying thousands or millions of probabilities in [0, 1] causes numerical underflow to zero, whereas the logarithm turns the product into a numerically stable sum.',
+          'Because the product of probabilities only works in encoder-only BERT models.',
+          'Because the logarithm function eliminates the need for gradient descent.'
+        ],
+        correct: 0,
+        expEs: '¡Bien! (00:13:05). El producto de millones de factores menores que 1 colapsa a 0 en precisión finita; −Σ log P_θ convierte el producto en una suma bien condicionada.',
+        expEn: 'Correct! (00:13:05). Multiplying millions of factors below 1 underflows to 0 in floating-point arithmetic; −Σ log P_θ turns the product into a well-behaved sum.'
+      },
+      {
+        id: 'fq2',
+        qEs: '02 / Quieres comparar la calidad de pre-entrenamiento de dos LLMs que utilizan distintos tokenizadores y tamaños de vocabulario. ¿Qué métrica debes usar y por qué?',
+        qEn: '02 / You want to compare pre-training quality across two LLMs that use different tokenizers and vocabulary sizes. Which metric should you use and why?',
+        optsEs: [
+          'Bits-per-Byte (BPB), porque normaliza la pérdida total por el número de bytes UTF-8 del texto original, que es independiente del tokenizador.',
+          'La pérdida de entropía cruzada por token sin normalizar, porque el tamaño del vocabulario no afecta a las probabilidades.',
+          'El número total de épocas de entrenamiento.'
+        ],
+        optsEn: [
+          'Bits-per-Byte (BPB), because it normalizes total loss by the raw text UTF-8 byte count, which is independent of the tokenizer.',
+          'Unnormalized per-token cross-entropy loss, because vocabulary size never affects probabilities.',
+          'The total number of training epochs.'
+        ],
+        correct: 0,
+        expEs: '¡Exacto! (00:14:50). BPB = (T / (B ln 2)) · L_CE mide la compresión por byte crudo de texto, permitiendo comparar cualquier tokenizador de forma justa.',
+        expEn: 'Exactly! (00:14:50). BPB = (T / (B ln 2)) · L_CE measures compression per raw byte of text, enabling fair comparisons across any tokenizer.'
+      },
+      {
+        id: 'fq3',
+        qEs: '03 / ¿Cuál es el propósito del Mid-training combinado con YaRN en los LLMs actuales?',
+        qEn: '03 / What is the purpose of Mid-training combined with YaRN in modern LLMs?',
+        optsEs: [
+          'Extender la ventana de contexto (por ejemplo, de 4K a 128K–200K tokens) entrenando sobre documentos largos y reescalando las frecuencias de RoPE para no pagar el coste cuadrático desde el inicio del pre-entrenamiento.',
+          'Reducir el tamaño del vocabulario a 256 caracteres ASCII.',
+          'Reemplazar las capas de atención por redes convolucionales.'
+        ],
+        optsEn: [
+          'To extend the context window (e.g., from 4K to 128K–200K tokens) by training on long documents and rescaling RoPE frequencies without paying quadratic attention cost from the start of pre-training.',
+          'To shrink the vocabulary size down to 256 ASCII characters.',
+          'To replace attention layers with convolutional networks.'
+        ],
+        correct: 0,
+        expEs: '¡Correcto! (00:22:13 – 00:29:10). Pre-entrenar a 4K es rápido; luego el Mid-training con YaRN adapta las frecuencias rotatorias de RoPE a contextos largos.',
+        expEn: 'Correct! (00:22:13 – 00:29:10). Pre-training at 4K is fast; Mid-training with YaRN then adapts RoPE rotational frequencies to long contexts.'
+      },
+      {
+        id: 'fq4',
+        qEs: '04 / En el Ajuste Fino Supervisado (SFT), ¿sobre qué tokens se calcula la pérdida de entropía cruzada y en qué capas recomiendan los estudios recientes aplicar LoRA?',
+        qEn: '04 / In Supervised Fine-Tuning (SFT), over which tokens is the cross-entropy loss computed, and on which layers do recent studies recommend applying LoRA?',
+        optsEs: [
+          'La pérdida SFT se calcula únicamente sobre los tokens de la respuesta (y_t) condicionando en el prompt (x); y LoRA rinde mejor aplicado en las capas FFN (MLP).',
+          'La pérdida SFT se calcula solo sobre el prompt (x) ignorando la respuesta; y LoRA solo puede aplicarse al token [CLS].',
+          'La pérdida SFT se calcula sobre tokens aleatorios; y LoRA congela las capas FFN sin añadir adaptadores.'
+        ],
+        optsEn: [
+          'SFT loss is computed strictly on the response tokens (y_t) conditioned on the prompt (x); and LoRA performs best when applied to the FFN (MLP) layers.',
+          'SFT loss is computed only on the prompt (x) ignoring the response; and LoRA can only be applied to the [CLS] token.',
+          'SFT loss is computed on random tokens; and LoRA freezes FFN layers without adding adapters.'
+        ],
+        correct: 0,
+        expEs: '¡Bien! (00:35:20 y 00:42:35). En SFT no queremos penalizar al modelo por predecir la pregunta del usuario, y las capas FFN concentran la mayor capacidad para LoRA.',
+        expEn: 'Spot on! (00:35:20 & 00:42:35). In SFT we do not penalize the model for predicting the user prompt, and FFN layers hold the most capacity for LoRA adapters.'
+      },
+      {
+        id: 'fq5',
+        qEs: '05 / En el modelo de Bradley-Terry usado en la Etapa 1 de RLHF, si el modelo de recompensa asigna r(x, y_w) = 3,0 a la respuesta ganadora y r(x, y_l) = 3,0 a la perdedora, ¿cuánto vale P(y_w > y_l | x)?',
+        qEn: '05 / In the Bradley-Terry model used in RLHF Stage 1, if the reward model assigns r(x, y_w) = 3.0 to the winning response and r(x, y_l) = 3.0 to the losing response, what is P(y_w > y_l | x)?',
+        optsEs: [
+          '0,50 (50%), porque σ(3,0 − 3,0) = σ(0) = 1 / (1 + e^0) = 0,5.',
+          '1,00 (100%), porque ambas recompensas son positivas.',
+          '0,00 (0%), porque las recompensas son iguales.'
+        ],
+        optsEn: [
+          '0.50 (50%), because σ(3.0 − 3.0) = σ(0) = 1 / (1 + e^0) = 0.5.',
+          '1.00 (100%), because both rewards are positive.',
+          '0.00 (0%), because the rewards are equal.'
+        ],
+        correct: 0,
+        expEs: '¡Exacto! (00:57:05). Bradley-Terry aplica la función sigmoide a la diferencia de puntuaciones: cuando r_w = r_l, la diferencia es 0 y la probabilidad es 0,5.',
+        expEn: 'Exactly! (00:57:05). Bradley-Terry applies the sigmoid function to the score difference: when r_w = r_l, the difference is 0 and the probability is 0.5.'
+      },
+      {
+        id: 'fq6',
+        qEs: '06 / ¿Por qué se incluye una penalización de divergencia KL respecto al modelo de referencia SFT (π_ref) durante el entrenamiento con RLHF y DPO?',
+        qEn: '06 / Why is a KL-divergence penalty relative to the SFT reference model (π_ref) included during RLHF and DPO training?',
+        optsEs: [
+          'Para evitar el "reward hacking" (que la política π_θ se aleje demasiado del lenguaje natural coherente buscando explotar fallos del modelo de recompensa).',
+          'Para obligar a que el modelo olvide todo el formato aprendido en SFT.',
+          'Para duplicar la velocidad de la caché KV en inferencia.'
+        ],
+        optsEn: [
+          'To prevent "reward hacking" (keeping the policy π_θ from drifting too far from coherent natural language to exploit quirks in the reward model).',
+          'To force the model to forget all formatting learned during SFT.',
+          'To double KV cache speed at inference time.'
+        ],
+        correct: 0,
+        expEs: '¡Correcto! (01:03:20). Sin la restricción KL respecto a π_ref, el LLM descubre atajos degenerados que obtienen alta puntuación en r_ϕ pero son texto incoherente.',
+        expEn: 'Correct! (01:03:20). Without the KL constraint toward π_ref, the LLM discovers degenerate shortcuts that score high under r_ϕ but produce incoherent text.'
+      },
+      {
+        id: 'fq7',
+        qEs: '07 / ¿Cuáles son las dos razones explicadas en clase por las que los proveedores actuales ocultan los tokens crudos de <think> en sus interfaces y cómo se facturan en la API?',
+        qEn: '07 / What are the two reasons explained in lecture for why modern providers hide raw <think> tokens in their UIs, and how are they billed in the API?',
+        optsEs: [
+          'Se ocultan para evitar que competidores destilen las trazas de razonamiento y por privacidad (el modelo puede repetir información sensible del contexto al pensar); y se facturan como tokens de salida.',
+          'Se ocultan porque no consumen cómputo en la GPU; y son completamente gratuitos en la API.',
+          'Se ocultan porque están escritos en código binario; y se facturan como tokens de imagen.'
+        ],
+        optsEn: [
+          'They are hidden to prevent competitors from distilling reasoning traces and for privacy (the model may repeat sensitive context while thinking); and they are billed as output tokens.',
+          'They are hidden because they consume zero GPU compute; and they are completely free in the API.',
+          'They are hidden because they are written in binary code; and they are billed as image tokens.'
+        ],
+        correct: 0,
+        expEs: '¡Muy bien! (01:15:30 – 01:18:45). Aunque el usuario solo vea un resumen en el chat, el modelo generó cada token dentro de <think>...</think> y se cobran como salida.',
+        expEn: 'Well done! (01:15:30 – 01:18:45). Even if the UI only shows a summary, the model generated every token inside <think>...</think> and bills them as output tokens.'
+      },
+      {
+        id: 'fq8',
+        qEs: '08 / ¿Qué es el "Model Collapse" (colapso del modelo) al entrenar con datos de la web actual y qué ejemplo léxico se menciona en la clase?',
+        qEn: '08 / What is "Model Collapse" when training on modern web data, and which lexical example is mentioned in the lecture?',
+        optsEs: [
+          'Es la degradación de la distribución al entrenar recursivamente con texto sintético generado por otros LLMs (perdiendo las colas de la distribución y amplificando muletillas como la palabra "load-bearing").',
+          'Es cuando la memoria RAM de la GPU se apaga por exceso de temperatura.',
+          'Es el método de empaquetado Best-Fit Packing utilizado en el Mid-training de GLM-5.'
+        ],
+        optsEn: [
+          'It is the degradation of the data distribution when training recursively on synthetic text generated by other LLMs (losing distribution tails and amplifying vendor quirks like the word "load-bearing").',
+          'It is when GPU RAM shuts down due to overheating.',
+          'It is the Best-Fit Packing method used during GLM-5 Mid-training.'
+        ],
+        correct: 0,
+        expEs: '¡Excelente! (01:32:10 – 01:36:40). El muestreo finito trunca la cola de eventos raros y amplifica sesgos propios de cada familia de modelos como el término "load-bearing".',
+        expEn: 'Excellent! (01:32:10 – 01:36:40). Finite sampling truncates the rare long tail and amplifies model-specific lexical biases such as overusing "load-bearing".'
+      }
+    ];
+
+    const finalQuizState = {};
+    finalQuizData.forEach(q => {
+      finalQuizState[q.id] = { answered: false, idx: null };
+    });
+
+    // =========================================================================
+    // RENDERIZADO DE FÓRMULAS CON KATEX
+    // =========================================================================
+    function renderMath(container) {
+      if (window.renderMathInElement) {
+        window.renderMathInElement(container || document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    // =========================================================================
+    // CAMBIO DE IDIOMA CONSERVANDO TODO EL ESTADO
+    // =========================================================================
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+
+      const btnEs = document.getElementById('btn-es');
+      const btnEn = document.getElementById('btn-en');
+      if (lang === 'es') {
+        btnEs.classList.add('active');
+        btnEs.setAttribute('aria-pressed', 'true');
+        btnEn.classList.remove('active');
+        btnEn.setAttribute('aria-pressed', 'false');
+      } else {
+        btnEn.classList.add('active');
+        btnEn.setAttribute('aria-pressed', 'true');
+        btnEs.classList.remove('active');
+        btnEs.setAttribute('aria-pressed', 'false');
+      }
+
+      updateStageSimulator();
+      updateBPBWidget();
+      updateLoRAWidget();
+      updateBTWidget();
+      updateGRPOWidget();
+      selectMatrixQuad(currentMatrixQuad);
+      updateGLM5Lab();
+      renderAllInlineStrips();
+      renderFinalQuiz();
+      renderMath(document.body);
+    }
+
+    // =========================================================================
+    // WIDGET 01: SIMULADOR DE LAS 4 ETAPAS (OSITO DE PELUCHE)
+    // =========================================================================
+    const stageSimData = {
+      washer: {
+        pre: {
+          outEs: '«...y si me preguntas si puedes meter otro peluche en la lavadora, los ositos suelen fabricarse con poliéster...»',
+          outEn: '"...and if you ask whether you can put another plush toy in the washer, teddy bears are usually made of polyester..."',
+          metaEs: 'Escala: Billones de tokens web | Señal: Densa (todos los tokens) | Falla: Autocompleta sin responder.',
+          metaEn: 'Scale: Trillions of web tokens | Signal: Dense (all tokens) | Issue: Autocompletes without answering.'
+        },
+        sft: {
+          outEs: '«No, podría dañarse. Lávalo a mano.»',
+          outEn: '"No, it might get damaged. Wash it by hand."',
+          metaEs: 'Escala: 10K–1M pares (x, y) | Señal: Densa solo en y (Off-policy) | Estado: Útil pero seco.',
+          metaEn: 'Scale: 10K–1M (x, y) pairs | Signal: Dense on y only (Off-policy) | Status: Helpful but dry.'
+        },
+        pref: {
+          outEs: '«¡Mejor no! Tu osito podría estropearse en el centrifugado; un lavado suave a mano con agua tibia lo mantendrá esponjoso.»',
+          outEn: '"Better not! Your teddy bear could get hurt in the spin cycle; gentle hand-washing in warm water will keep it fluffy."',
+          metaEs: 'Escala: Pares (y_w > y_l) | Método: RLHF (On-policy) o DPO (Off-policy) | Estado: Tono empático alineado.',
+          metaEn: 'Scale: (y_w > y_l) pairs | Method: RLHF (On-policy) or DPO (Off-policy) | Status: Aligned friendly tone.'
+        },
+        reas: {
+          outEs: '<think> Analizando etiqueta textil: relleno sintético + costuras delicadas -> riesgo mecánico alto en tambor. </think> «Te recomiendo lavarlo a mano sumergiéndolo en agua fría con jabón neutro.»',
+          outEn: '<think> Analyzing fabric tag: synthetic stuffing + delicate seams -> high mechanical drum risk. </think> "I recommend hand-washing in cold water with mild soap."',
+          metaEs: 'Método: GRPO / RL Verificable | Usa tokens <think> (facturados como salida).',
+          metaEn: 'Method: GRPO / Verifiable RL | Uses <think> tokens (billed as output tokens).'
+        }
+      },
+      activity: {
+        pre: {
+          outEs: '«...¿o qué actividad puedes hacer con tu perro? Las actividades al aire libre incluyen...»',
+          outEn: '"...or what activity can you do with your dog? Outdoor activities include..."',
+          metaEs: 'Escala: Billones de tokens web | Falla: Continúa con preguntas similares de foros.',
+          metaEn: 'Scale: Trillions of web tokens | Issue: Continues with similar forum questions.'
+        },
+        sft: {
+          outEs: '«Puedes leer un cuento junto a tu osito.»',
+          outEn: '"You can read a story with your teddy bear."',
+          metaEs: 'Escala: 10K–1M pares | Respuesta directa pero mínima.',
+          metaEn: 'Scale: 10K–1M pairs | Direct but minimal response.'
+        },
+        pref: {
+          outEs: '«¡Organiza un picnic de lectura en tu habitación con cojines y lee tu libro favorito junto a tu osito!»',
+          outEn: '"Host a cozy indoor reading picnic with pillows and read your favorite book with your teddy bear!"',
+          metaEs: 'Alineado con preferencias humanas (detallado y amigable).',
+          metaEn: 'Aligned with human preferences (detailed and engaging).'
+        },
+        reas: {
+          outEs: '<think> Buscando actividad creativa y segura en interior... </think> «¡Crea un pequeño campamento con una sábana y cuéntale una historia de aventuras!»',
+          outEn: '<think> Brainstorming safe, creative indoor activity... </think> "Build a blanket fort camp and tell your bear an adventure story!"',
+          metaEs: 'Planificación intermedia en <think> antes de responder.',
+          metaEn: 'Intermediate planning inside <think> prior to answering.'
+        }
+      },
+      math: {
+        pre: {
+          outEs: '«Problema 4: Si otro osito tuviera el triple de edad... (Ver soluciones en la página 92).»',
+          outEn: '"Problem 4: If another bear were three times as old... (See answers on page 92)."',
+          metaEs: 'Imita un libro de texto de matemáticas sin resolver el problema.',
+          metaEn: 'Mimics a math textbook without solving the problem.'
+        },
+        sft: {
+          outEs: '«El osito tiene 6 años.» (Respuesta intuitiva rápida pero matemáticamente incorrecta).',
+          outEn: '"The teddy bear is 6 years old." (Fast intuitive guess, but mathematically wrong).',
+          metaEs: 'Sin pasos de razonamiento intermedio falla en álgebra.',
+          metaEn: 'Without intermediate reasoning steps, it fails multi-step algebra.'
+        },
+        pref: {
+          outEs: '«¡Qué bonito acertijo! Seguro que tu osito tiene unos 6 años aproximadamente.» (Amable pero sigue fallando el cálculo).',
+          outEn: '"What a fun riddle! Your teddy bear is probably around 6 years old." (Polite, but still gets the math wrong).',
+          metaEs: 'RLHF mejora el estilo, pero no basta para razonamiento complejo.',
+          metaEn: 'RLHF improves style, but is insufficient for multi-step math.'
+        },
+        reas: {
+          outEs: '<think> Sea x la edad actual. Hace 2 años: x - 2. Dentro de 4 años: x + 4 = 3(x - 2) => x + 4 = 3x - 6 => 2x = 10 => x = 5. Comprobación: 5+4 = 9 y 3(5-2) = 9. ¡Correcto! </think> «El osito tiene exactamente 5 años.»',
+          outEn: '<think> Let x be current age. 2 years ago: x - 2. In 4 years: x + 4 = 3(x - 2) => x + 4 = 3x - 6 => 2x = 10 => x = 5. Check: 5+4 = 9 and 3(5-2) = 9. Correct! </think> "The teddy bear is exactly 5 years old."',
+          metaEs: '¡Éxito! GRPO con recompensa verificable descubre cómo plantear y verificar la ecuación.',
+          metaEn: 'Success! GRPO with verifiable reward learns to set up and verify the equation.'
+        }
+      }
+    };
+
+    function updateStageSimulator() {
+      const stage = document.getElementById('stage-select').value;
+      const promptKey = document.getElementById('prompt-select').value;
+      const item = stageSimData[promptKey][stage];
+      const box = document.getElementById('stage-sim-output');
+
+      const outText = currentLang === 'es' ? item.outEs : item.outEn;
+      const metaText = currentLang === 'es' ? item.metaEs : item.metaEn;
+
+      box.innerHTML = `
+        <div style="background:#fff; border:2px solid #141414; padding:10px; font-weight:700; font-size:0.88rem; margin-bottom:8px; box-shadow:2px 2px 0 #141414;">
+          ${outText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+        </div>
+        <div style="font-family:var(--font-mono); font-size:0.75rem; font-weight:800; color:var(--ink);">
+          ${metaText}
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // WIDGET 02: BITS-PER-BYTE (BPB)
+    // =========================================================================
+    function updateBPBWidget() {
+      const B = 400; // bytes UTF-8 fijos
+      const TA = parseInt(document.getElementById('bpb-ta').value, 10);
+      const LA = parseFloat(document.getElementById('bpb-la').value);
+
+      const TB = 120;
+      const LB = 2.10;
+
+      document.getElementById('bpb-ta-val').textContent = String(TA);
+      document.getElementById('bpb-la-val').textContent = LA.toFixed(2);
+
+      const bpbA = (TA * LA) / (B * Math.LN2);
+      const bpbB = (TB * LB) / (B * Math.LN2);
+
+      const winnerA = bpbA < bpbB;
+      const box = document.getElementById('bpb-output-box');
+
+      const labelWinEs = winnerA ? '¡Gana el Modelo A (menor BPB)!' : '¡Gana el Modelo B (menor BPB)!';
+      const labelWinEn = winnerA ? 'Model A wins (lower BPB)!' : 'Model B wins (lower BPB)!';
+
+      box.innerHTML = `
+        <div class="mini-prob-row" style="grid-template-columns:92px 1fr 62px;">
+          <span>Modelo A</span>
+          <div class="mini-bar-track"><div class="mini-bar-fill ${winnerA ? 'fill-mint' : 'fill-coral'}" style="width:${Math.min(bpbA * 65, 100)}%"></div></div>
+          <span>${bpbA.toFixed(3)}</span>
+        </div>
+        <div class="mini-prob-row" style="grid-template-columns:92px 1fr 62px;">
+          <span>Modelo B</span>
+          <div class="mini-bar-track"><div class="mini-bar-fill ${!winnerA ? 'fill-mint' : 'fill-blue'}" style="width:${Math.min(bpbB * 65, 100)}%"></div></div>
+          <span>${bpbB.toFixed(3)}</span>
+        </div>
+        <div style="margin-top:8px; font-family:var(--font-mono); font-size:0.76rem; font-weight:800; background:#fff; border:2px solid #141414; padding:6px 8px;">
+          ${currentLang === 'es' ? labelWinEs : labelWinEn}<br/>
+          BPB_A = (${TA} × ${LA.toFixed(2)}) / (400 × ln 2) = ${bpbA.toFixed(3)} bits/byte
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // WIDGET 03: CALCULADORA LoRA
+    // =========================================================================
+    function updateLoRAWidget() {
+      const d = parseInt(document.getElementById('lora-d').value, 10);
+      const r = parseInt(document.getElementById('lora-r').value, 10);
+      const M = parseInt(document.getElementById('lora-tasks').value, 10);
+
+      document.getElementById('lora-d-val').textContent = String(d);
+      document.getElementById('lora-r-val').textContent = String(r);
+      document.getElementById('lora-tasks-val').textContent = String(M);
+
+      const fullParams = d * d;
+      const loraParams = 2 * d * r;
+      const ratioPct = ((loraParams / fullParams) * 100).toFixed(2);
+      const reductionFactor = (fullParams / loraParams).toFixed(0);
+
+      // Supongamos un modelo completo de 14 GB en FP16 para ilustrar almacenamiento de M tareas
+      const baseModelGB = 14.0;
+      const fullMultiTaskGB = (baseModelGB * M).toFixed(1);
+      const loraAdapterGB = baseModelGB * (loraParams / fullParams);
+      const loraMultiTaskGB = (baseModelGB + M * loraAdapterGB).toFixed(2);
+
+      const box = document.getElementById('lora-output-box');
+      if (currentLang === 'es') {
+        box.innerHTML = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-family:var(--font-mono); font-size:0.78rem; margin-bottom:8px;">
+            <div style="background:#fff; border:2px solid #141414; padding:6px;">
+              <div style="color:var(--text-muted); font-size:0.68rem;">PESOS ENTRENABLES</div>
+              <div style="font-weight:900; font-size:0.95rem; color:var(--comic-mint-dark);">${ratioPct}% (${reductionFactor}× menos)</div>
+            </div>
+            <div style="background:#fff; border:2px solid #141414; padding:6px;">
+              <div style="color:var(--text-muted); font-size:0.68rem;">DISCO PARA ${M} TAREAS</div>
+              <div style="font-weight:900; font-size:0.95rem;">${loraMultiTaskGB} GB vs ${fullMultiTaskGB} GB</div>
+            </div>
+          </div>
+          <div style="font-size:0.8rem; font-weight:700;">
+            Matriz $W_0$: ${(fullParams / 1e6).toFixed(1)}M params | Adaptador $B\\cdot A$: ${(loraParams / 1e3).toFixed(0)}K params.
+          </div>
+        `;
+      } else {
+        box.innerHTML = `
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-family:var(--font-mono); font-size:0.78rem; margin-bottom:8px;">
+            <div style="background:#fff; border:2px solid #141414; padding:6px;">
+              <div style="color:var(--text-muted); font-size:0.68rem;">TRAINABLE WEIGHTS</div>
+              <div style="font-weight:900; font-size:0.95rem; color:var(--comic-mint-dark);">${ratioPct}% (${reductionFactor}× fewer)</div>
+            </div>
+            <div style="background:#fff; border:2px solid #141414; padding:6px;">
+              <div style="color:var(--text-muted); font-size:0.68rem;">STORAGE FOR ${M} TASKS</div>
+              <div style="font-weight:900; font-size:0.95rem;">${loraMultiTaskGB} GB vs ${fullMultiTaskGB} GB</div>
+            </div>
+          </div>
+          <div style="font-size:0.8rem; font-weight:700;">
+            Base $W_0$: ${(fullParams / 1e6).toFixed(1)}M params | Adapter $B\\cdot A$: ${(loraParams / 1e3).toFixed(0)}K params.
+          </div>
+        `;
+      }
+      renderMath(box);
+    }
+
+    // =========================================================================
+    // WIDGET 04: BRADLEY-TERRY Y PENALIZACIÓN KL
+    // =========================================================================
+    function updateBTWidget() {
+      const rw = parseFloat(document.getElementById('bt-rw').value);
+      const rl = parseFloat(document.getElementById('bt-rl').value);
+      const beta = parseFloat(document.getElementById('bt-beta').value);
+
+      document.getElementById('bt-rw-val').textContent = rw.toFixed(1);
+      document.getElementById('bt-rl-val').textContent = rl.toFixed(1);
+      document.getElementById('bt-beta-val').textContent = beta.toFixed(2);
+
+      const diff = rw - rl;
+      const prob = 1 / (1 + Math.exp(-diff));
+      const loss = -Math.log(Math.max(prob, 1e-9));
+
+      const hackingRisk = beta < 0.04;
+      const box = document.getElementById('bt-output-box');
+
+      const alertHtml = hackingRisk
+        ? `<div style="margin-top:8px; background:var(--comic-coral-light); border:2px solid #991b1b; padding:5px 8px; font-family:var(--font-mono); font-size:0.74rem; font-weight:800; color:#991b1b;">
+             ${currentLang === 'es' ? '⚠ ¡ALERTA REWARD HACKING! Con β ≈ 0 la política se aleja de π_ref y genera texto degenerado.' : '⚠ REWARD HACKING ALERT! With β ≈ 0 the policy drifts from π_ref and outputs degenerate text.'}
+           </div>`
+        : `<div style="margin-top:8px; background:var(--comic-mint-light); border:2px solid var(--comic-mint-dark); padding:5px 8px; font-family:var(--font-mono); font-size:0.74rem; font-weight:800; color:var(--comic-mint-dark);">
+             ${currentLang === 'es' ? '✓ Penalización KL activa (β = ' + beta.toFixed(2) + '): mantiene coherencia cercana a π_ref.' : '✓ Active KL penalty (β = ' + beta.toFixed(2) + '): preserves fluency close to π_ref.'}
+           </div>`;
+
+      box.innerHTML = `
+        <div class="mini-prob-row" style="grid-template-columns:115px 1fr 56px;">
+          <span>P(y_w &gt; y_l | x)</span>
+          <div class="mini-bar-track"><div class="mini-bar-fill fill-mint" style="width:${(prob * 100).toFixed(1)}%"></div></div>
+          <span>${(prob * 100).toFixed(1)}%</span>
+        </div>
+        <div style="font-family:var(--font-mono); font-size:0.78rem; font-weight:800; margin-top:6px;">
+          Δr = ${diff.toFixed(1)} | Loss = −log σ(Δr) = ${loss.toFixed(3)}
+        </div>
+        ${alertHtml}
+      `;
+    }
+
+    // =========================================================================
+    // WIDGET 05: GRPO VENTAJA RELATIVA Y COSTE <think>
+    // =========================================================================
+    function updateGRPOWidget() {
+      const r1 = parseFloat(document.getElementById('grpo-r1').value);
+      const thinkToks = parseInt(document.getElementById('grpo-think-toks').value, 10);
+
+      document.getElementById('grpo-r1-val').textContent = r1.toFixed(2);
+      document.getElementById('grpo-think-val').textContent = String(thinkToks);
+
+      // Grupo de 4 trayectorias muestreadas
+      const rewards = [r1, 1.00, 0.20, 0.00];
+      const mean = rewards.reduce((a, b) => a + b, 0) / rewards.length;
+      const variance = rewards.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / rewards.length;
+      const std = Math.sqrt(variance) || 1;
+      const advantages = rewards.map(r => (r - mean) / std);
+
+      const visibleOutToks = 120;
+      const totalBilledOut = thinkToks + visibleOutToks;
+      const pricePerMillionOut = 10.0; // $10 / 1M output tokens ilustrativo
+      const costPer1000Calls = ((totalBilledOut * 1000) / 1e6) * pricePerMillionOut;
+
+      const box = document.getElementById('grpo-output-box');
+      let rowsHtml = advantages.map((adv, idx) => {
+        const sign = adv >= 0 ? '+' : '';
+        const badgeColor = adv >= 0 ? 'var(--comic-mint)' : 'var(--comic-coral-light)';
+        return `
+          <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.75rem; font-weight:800; padding:3px 6px; border:1px solid #141414; background:${badgeColor}; margin-bottom:4px;">
+            <span>y_${idx + 1} (r = ${rewards[idx].toFixed(2)})</span>
+            <span>A_${idx + 1} = ${sign}${adv.toFixed(2)} ${adv >= 0 ? '↑ refuerza' : '↓ penaliza'}</span>
+          </div>
+        `;
+      }).join('');
+
+      box.innerHTML = `
+        ${rowsHtml}
+        <div style="margin-top:8px; background:#fff; border:2px solid #141414; padding:6px 8px; font-family:var(--font-mono); font-size:0.74rem; font-weight:800;">
+          ${currentLang === 'es'
+            ? `Factura salida: ${thinkToks} (&lt;think&gt;) + ${visibleOutToks} (visible) = ${totalBilledOut} tokens ($${costPer1000Calls.toFixed(2)} / 1K llamadas)`
+            : `Billed output: ${thinkToks} (&lt;think&gt;) + ${visibleOutToks} (visible) = ${totalBilledOut} tokens ($${costPer1000Calls.toFixed(2)} / 1K calls)`}
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // LABORATORIO A (#practica): EXPLORADOR MATRIZ 2x2
+    // =========================================================================
+    const matrixQuadInfo = {
+      'off-dense': {
+        titleEs: 'SFT / Destilación SFT Clásica (Off-Policy + Señal Densa)',
+        titleEn: 'SFT / Classical Distillation (Off-Policy + Dense Signal)',
+        descEs: 'Las respuestas provienen de un dataset fijo (humanos o profesor externo, off-policy), pero el modelo recibe gradiente exacto en cada uno de los T tokens de la respuesta.',
+        descEn: 'Responses come from a fixed dataset (humans or external teacher, off-policy), while the model receives exact token-level gradients across all T response tokens.'
+      },
+      'on-dense': {
+        titleEs: 'Destilación On-Policy / Autodestilación (On-Policy + Señal Densa)',
+        titleEn: 'On-Policy Distillation / Self-Distillation (On-Policy + Dense Signal)',
+        descEs: '¡Lo mejor de ambos mundos (01:26:40)! El estudiante genera sus propias secuencias on-policy y el profesor evalúa la distribución de probabilidad en cada token individual.',
+        descEn: 'Best of both worlds (01:26:40)! The student samples its own sequences on-policy while the teacher supervises the probability distribution at every single token.'
+      },
+      'off-sparse': {
+        titleEs: 'DPO — Direct Preference Optimization (Off-Policy + Preferencia de Secuencia)',
+        titleEn: 'DPO — Direct Preference Optimization (Off-Policy + Sequence Preference)',
+        descEs: 'Entrena sobre pares fijos (y_w, y_l) sin muestrear nuevas respuestas durante el bucle de optimización (off-policy), comparando la verosimilitud global de toda la respuesta.',
+        descEn: 'Trains on static (y_w, y_l) pairs without sampling new completions in the loop (off-policy), comparing sequence-level log-likelihood ratios.'
+      },
+      'on-sparse': {
+        titleEs: 'RLHF (PPO) y GRPO (On-Policy + Recompensa Dispersa al Final)',
+        titleEn: 'RLHF (PPO) & GRPO (On-Policy + Sparse End-of-Sequence Reward)',
+        descEs: 'El LLM explora activamente muestreando nuevas trayectorias (on-policy), pero solo recibe un escalar r al terminar toda la respuesta (alta varianza, requiere muchas muestras).',
+        descEn: 'The LLM actively explores by sampling new trajectories (on-policy), but only receives a single scalar reward r at the end of the completion.'
+      }
+    };
+
+    function selectMatrixQuad(quadKey) {
+      currentMatrixQuad = quadKey;
+      ['off-dense', 'on-dense', 'off-sparse', 'on-sparse'].forEach(k => {
+        const el = document.getElementById(`cell-${k}`);
+        if (el) {
+          el.classList.toggle('selected-cell', k === quadKey);
+        }
+      });
+
+      const info = matrixQuadInfo[quadKey];
+      const box = document.getElementById('matrix-quad-output');
+      box.innerHTML = `
+        <div style="font-family:var(--font-display); font-weight:900; font-size:0.95rem; margin-bottom:4px;">
+          ${currentLang === 'es' ? info.titleEs : info.titleEn}
+        </div>
+        <div style="font-size:0.86rem;">
+          ${currentLang === 'es' ? info.descEs : info.descEn}
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // LABORATORIO B (#practica): BEST-FIT PACKING & MODEL COLLAPSE EN GLM-5
+    // =========================================================================
+    function updateGLM5Lab() {
+      const packMode = document.getElementById('glm-pack').value;
+      const gen = parseInt(document.getElementById('glm-synth').value, 10);
+      document.getElementById('glm-synth-val').textContent = String(gen);
+
+      // Retención de la cola léxica al entrenar recursivamente con muestras finitas
+      const tailRetention = Math.round(100 * Math.pow(0.62, gen));
+      const quirkFreq = (0.05 * Math.pow(1.85, gen)).toFixed(2);
+
+      const packTextEs = packMode === 'bestfit'
+        ? '<strong>Best-Fit Packing (GLM-5):</strong> Agrupa [Doc1: 2,5K + Doc4: 1,1K = 3,6K] y [Doc2: 1,4K + Doc3: 2,6K = 4,0K]. <strong>0 documentos truncados</strong> (preserva coherencia de principio a fin).'
+        : '<strong>Concatenar + Truncar:</strong> Une [Doc1: 2,5K + parte de Doc2: 1,5K = 4,0K] y <strong>corta el Doc2 por la mitad</strong>, perdiendo el contexto inicial en el bloque siguiente.';
+
+      const packTextEn = packMode === 'bestfit'
+        ? '<strong>Best-Fit Packing (GLM-5):</strong> Packs [Doc1: 2.5K + Doc4: 1.1K = 3.6K] and [Doc2: 1.4K + Doc3: 2.6K = 4.0K]. <strong>0 truncated documents</strong> (preserves full-document coherence).'
+        : '<strong>Concatenate + Truncate:</strong> Joins [Doc1: 2.5K + part of Doc2: 1.5K = 4.0K] and <strong>slices Doc2 in half</strong>, losing opening context in the next chunk.';
+
+      const box = document.getElementById('glm5-lab-output');
+      box.innerHTML = `
+        <div style="font-size:0.84rem; margin-bottom:8px; background:#fff; border:2px solid #141414; padding:8px;">
+          ${currentLang === 'es' ? packTextEs : packTextEn}
+        </div>
+        <div class="mini-prob-row" style="grid-template-columns:130px 1fr 50px;">
+          <span>${currentLang === 'es' ? 'Cola léxica rara' : 'Rare lexical tail'}</span>
+          <div class="mini-bar-track"><div class="mini-bar-fill ${tailRetention > 50 ? 'fill-mint' : 'fill-coral'}" style="width:${tailRetention}%"></div></div>
+          <span>${tailRetention}%</span>
+        </div>
+        <div style="font-family:var(--font-mono); font-size:0.75rem; font-weight:800; margin-top:6px;">
+          ${currentLang === 'es'
+            ? `Generación sintética #${gen}: Frecuencia muletilla "load-bearing" = ${quirkFreq}% ${gen >= 3 ? '(¡Colapso de distribución!)' : ''}`
+            : `Synthetic generation #${gen}: Vendor quirk "load-bearing" freq = ${quirkFreq}% ${gen >= 3 ? '(Distribution collapse!)' : ''}`}
+        </div>
+      `;
+    }
+
+    function resetGLM5Lab() {
+      document.getElementById('glm-pack').value = 'bestfit';
+      document.getElementById('glm-synth').value = '0';
+      updateGLM5Lab();
+    }
+
+    // =========================================================================
+    // TIRAS CÓMICAS INLINE ("COMPRUEBA LO APRENDIDO")
+    // =========================================================================
+    function gradeInlineStrip(stripId, optIdx, isCorrect) {
+      inlineStripsState[stripId] = { answered: true, idx: optIdx, correct: isCorrect };
+      renderSingleInlineStrip(stripId);
+    }
+
+    function resetInlineStrip(stripId) {
+      inlineStripsState[stripId] = { answered: false, idx: null, correct: false };
+      renderSingleInlineStrip(stripId);
+    }
+
+    function renderSingleInlineStrip(stripId) {
+      const numMap = { s1: '01', s2: '02', s3: '03', s4: '04', s5: '05', s6: '06' };
+      const container = document.getElementById(`strip-check-${numMap[stripId]}`);
+      if (!container) return;
+
+      const state = inlineStripsState[stripId];
+      const buttons = container.querySelectorAll('.comic-opt-btn');
+      buttons.forEach((btn, i) => {
+        btn.classList.remove('is-correct', 'is-wrong');
+        btn.disabled = state.answered;
+        if (state.answered && i === state.idx) {
+          btn.classList.add(state.correct ? 'is-correct' : 'is-wrong');
+        }
+      });
+
+      const fb = document.getElementById(`${stripId}-feedback`);
+      if (!state.answered) {
+        fb.className = 'comprueba-feedback-box';
+        fb.innerHTML = '';
+        return;
+      }
+
+      const copy = inlineStripExplanations[stripId];
+      const msg = state.correct
+        ? (currentLang === 'es' ? copy.okEs : copy.okEn)
+        : (currentLang === 'es' ? copy.errEs : copy.errEn);
+      const retryTxt = currentLang === 'es' ? 'Reintentar ↺' : 'Retry ↺';
+
+      fb.className = `comprueba-feedback-box visible ${state.correct ? '' : 'wrong'}`;
+      fb.innerHTML = `
+        <span><strong>${state.correct ? '✓ ' : '⚠ '}</strong>${msg}</span>
+        <button type="button" class="btn-comic-secondary" onclick="resetInlineStrip('${stripId}')">${retryTxt}</button>
+      `;
+    }
+
+    function renderAllInlineStrips() {
+      ['s1', 's2', 's3', 's4', 's5', 's6'].forEach(renderSingleInlineStrip);
+    }
+
+    // =========================================================================
+    // SECCIÓN 04: QUIZ DE INTEGRACIÓN EN VIÑETAS (8 PREGUNTAS)
+    // =========================================================================
+    function answerFinalQuiz(qId, optIdx) {
+      finalQuizState[qId] = { answered: true, idx: optIdx };
+      renderFinalQuiz();
+    }
+
+    function retryFinalQuiz(qId) {
+      finalQuizState[qId] = { answered: false, idx: null };
+      renderFinalQuiz();
+    }
+
+    function renderFinalQuiz() {
+      const list = document.getElementById('comic-quiz-list');
+      let correctTotal = 0;
+
+      list.innerHTML = finalQuizData.map((q) => {
+        const st = finalQuizState[q.id];
+        const isOk = st.answered && st.idx === q.correct;
+        if (isOk) correctTotal++;
+
+        const questionText = currentLang === 'es' ? q.qEs : q.qEn;
+        const options = currentLang === 'es' ? q.optsEs : q.optsEn;
+        const expText = currentLang === 'es' ? q.expEs : q.expEn;
+        const retryLabel = currentLang === 'es' ? 'Reintentar viñeta ↺' : 'Retry panel ↺';
+
+        const letters = ['A', 'B', 'C'];
+        const optsHtml = options.map((opt, i) => {
+          let cls = 'comic-opt-btn';
+          if (st.answered && st.idx === i) {
+            cls += isOk ? ' is-correct' : ' is-wrong';
+          }
+          return `
+            <button type="button" class="${cls}" ${st.answered ? 'disabled' : ''} onclick="answerFinalQuiz('${q.id}', ${i})">
+              <span class="opt-letter">${letters[i]}</span>
+              <span>${opt}</span>
+            </button>
+          `;
+        }).join('');
+
+        return `
+          <div class="comprueba-card" style="margin-bottom:14px; border:var(--border-thick); box-shadow:var(--shadow-comic);">
+            <p class="comprueba-question">${questionText}</p>
+            <div class="comprueba-options-grid">
+              ${optsHtml}
+            </div>
+            <div class="comprueba-feedback-box ${st.answered ? 'visible ' + (isOk ? '' : 'wrong') : ''}" aria-live="polite">
+              ${st.answered ? `
+                <span><strong>${isOk ? '✓ ' : '✗ '}</strong>${expText}</span>
+                <button type="button" class="btn-comic-secondary" onclick="retryFinalQuiz('${q.id}')">${retryLabel}</button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('quiz-score-badge').textContent = `${correctTotal} / ${finalQuizData.length}`;
+      renderMath(list);
+    }
+
+    // =========================================================================
+    // DESCARGA DIRECTA DEL ARCHIVO HTML PARA GITHUB PAGES
+    // =========================================================================
+    function downloadComicHTML() {
+      const content = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'clase-03-llm-training.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Inicialización al cargar el DOM
+    window.addEventListener('DOMContentLoaded', () => {
+      updateStageSimulator();
+      updateBPBWidget();
+      updateLoRAWidget();
+      updateBTWidget();
+      updateGRPOWidget();
+      selectMatrixQuad('off-dense');
+      updateGLM5Lab();
+      renderAllInlineStrips();
+      renderFinalQuiz();
+      renderMath(document.body);
+    });
+  </script>
+</body>
+</html>
+```
+
+### ¿Qué incluye esta página de apuntes de la **Clase 03 (`LLM Training`)**?
+
+1. **Misma identidad visual «Neo-Brutalismo + Cómic» (Bento Grid):**
+   - Cabecera negra superior con selector bilingüe `ES` | `EN` (que conserva el estado de todos los simuladores y respuestas al alternar idioma) y botón de descarga directa para GitHub Pages.
+   - **Viñeta 01 (`#inicio`)**: El ejemplo conductor de la clase (*«¿Puedo meter mi osito de peluche en la lavadora?»*) a través de las **4 etapas** (Pre-training $\to$ SFT $\to$ RLHF/DPO $\to$ Reasoning RL) junto con un simulador interactivo de respuestas y tipo de señal.
+2. **Viñetas de Teoría + Micro-simuladores `PRUEBA / ...` + Tiras `COMPRUEBA LO APRENDIDO`:**
+   - **Viñeta 02**: *Teacher Forcing*, derivación de Entropía Cruzada, calculadora interactiva de **Bits-per-Byte (BPB)** para comparar modelos con diferentes tokenizadores, repetición hasta 4 épocas (OLMo 3) y extensión de contexto con **YaRN** en el *Mid-training*.
+   - **Viñeta 03**: **SFT** con pérdida localizada exclusivamente en los tokens de la respuesta y calculadora interactiva de **LoRA** ($\Delta W = B A$, inicialización $B=0$ y aplicación en capas **FFN**).
+   - **Viñeta 04**: Preferencias por pares, simulador interactivo del modelo de **Bradley-Terry**, **RLHF Etapa 2** (con alerta de *Reward Hacking* según la penalización KL $\beta$) y **DPO**.
+   - **Viñeta 05**: Modelos de razonamiento con tokens `<think>` (por qué se ocultan y cómo se facturan como salida), simulador de ventajas relativas de grupo en **GRPO**, **Destilación On-Policy** y la receta real de **GLM-5** (*Model Collapse* con el ejemplo de *«load-bearing»*, *Best-Fit Packing* y destilación entre etapas).

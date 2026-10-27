@@ -1,6 +1,6 @@
 // Catálogo de clases. Edita este archivo al añadir un nuevo HTML a /clases/.
 // No necesitas herramientas de compilación ni instalar nada.
-// Clases 1 y 2 disponibles; clases 03-10 pendientes.
+// Clases 1–3 disponibles; clases 04–10 pendientes.
 window.CME295_CLASES = [
   {
     numero: 1,
@@ -12,7 +12,7 @@ window.CME295_CLASES = [
     laboratorio: true
   },
   { numero: 2, titulo: 'Modelos de lenguaje: arquitectura, escalado e inferencia', descripcion: 'BERT y GPT, Chinchilla, MoE, RoPE, GQA, normalización y muestreo. Apuntes bilingües y práctica.', temas: ['LLMs', 'BERT', 'GPT', 'MoE', 'RoPE', 'GQA', 'Muestreo'], archivo: 'clases/clase-02.html', publicada: true, laboratorio: true },
-  { numero: 3, titulo: 'Clase 03', descripcion: 'Pendiente de añadir los apuntes.', temas: [], archivo: 'clases/clase-03.html', publicada: false, laboratorio: false },
+  { numero: 3, titulo: 'Entrenamiento de modelos de lenguaje', descripcion: 'Preentrenamiento, ajuste fino, aprendizaje por refuerzo y destilación. Teoría bilingüe, simuladores y cuestionarios.', temas: ['Entrenamiento', 'LLMs', 'Pretraining', 'SFT', 'RL', 'GRPO', 'Destilación'], archivo: 'clases/clase-03.html', publicada: true, laboratorio: true },
   { numero: 4, titulo: 'Clase 04', descripcion: 'Pendiente de añadir los apuntes.', temas: [], archivo: 'clases/clase-04.html', publicada: false, laboratorio: false },
   { numero: 5, titulo: 'Clase 05', descripcion: 'Pendiente de añadir los apuntes.', temas: [], archivo: 'clases/clase-05.html', publicada: false, laboratorio: false },
   { numero: 6, titulo: 'Clase 06', descripcion: 'Pendiente de añadir los apuntes.', temas: [], archivo: 'clases/clase-06.html', publicada: false, laboratorio: false },
